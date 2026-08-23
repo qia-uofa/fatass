@@ -9,6 +9,7 @@ from .base import Command
 class ArchiveCommand(Command):
     name = "archive"
     help = "move the current topology/nodes trees under ./archive/ and start fresh"
+    mutates_topology = True
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(

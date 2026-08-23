@@ -3,5 +3,6 @@ __pycache__/
 .pytest_cache/
 .fatass/
 .claude/
-blueprint/
+fatass_blueprint/
 tests/
+/log

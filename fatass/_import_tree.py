@@ -1,5 +1,24 @@
 import importlib
 import pkgutil
+import sys
+
+
+def reload_all(package_name: str) -> None:
+    """Evict `package_name` and every already-imported submodule of it from
+    sys.modules, then re-walk the current on-disk tree via import_all.
+
+    Within one interpreter (notably the `shell` REPL, where multiple
+    commands run in the same process) a topology-mutating command
+    (create/modify/move/remove/archive/retrieve) changes files on disk but
+    not the module objects already cached in sys.modules from the initial
+    `import fatass` — a later command would otherwise see stale entries:
+    a moved/removed node still importable under its old path, or a
+    modified transform still running its pre-edit code. Re-running after
+    such a command clears that staleness."""
+    prefix = f"{package_name}."
+    for name in [n for n in sys.modules if n == package_name or n.startswith(prefix)]:
+        del sys.modules[name]
+    import_all(package_name)
 
 
 def import_all(package_name: str) -> None:

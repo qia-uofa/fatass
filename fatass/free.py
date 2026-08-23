@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
+from ._logging import get_logger
 from ._paths import TOPOLOGY_ROOT
 from .errors import FreeCoercionError, FreeError
 from .node import Node
@@ -40,10 +41,21 @@ def _invoke_claude(cwd: Path, add_dirs: list[Path], prompt: str) -> subprocess.C
     for path in add_dirs:
         command += ["--add-dir", str(path)]
 
+    logger = get_logger()
+    logger.info(
+        "free(): cwd=%s add_dirs=[%s] prompt=%r",
+        cwd,
+        ", ".join(str(path) for path in add_dirs),
+        prompt,
+    )
+
     try:
-        return subprocess.run(command, cwd=cwd, capture_output=True, text=True)
+        result = subprocess.run(command, cwd=cwd, capture_output=True, text=True)
     except FileNotFoundError as exc:
         raise FreeError("the `claude` CLI was not found on PATH") from exc
+
+    logger.info("free(): exit=%s", result.returncode)
+    return result
 
 
 def free(readable: list[Node], prompt: str, returns: type | None = None) -> Any:

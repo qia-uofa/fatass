@@ -9,6 +9,7 @@ from .base import Command
 class RetrieveCommand(Command):
     name = "retrieve"
     help = "restore an archived topology/nodes snapshot from ./archive/"
+    mutates_topology = True
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(

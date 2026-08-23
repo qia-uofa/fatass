@@ -10,6 +10,7 @@ from .base import Command
 class CreateCommand(Command):
     name = "create"
     help = "scaffold a node or transform if it doesn't exist yet"
+    mutates_topology = True
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
@@ -20,8 +21,8 @@ class CreateCommand(Command):
         )
 
     def run(self, args: argparse.Namespace) -> int:
-        node_path, transform_name = parse_maybe_at_target(args.target)
         try:
+            node_path, transform_name = parse_maybe_at_target(args.target)
             if transform_name is not None:
                 created = create_transform(node_path, transform_name)
                 label = f"{node_path}.transforms.{transform_name}"

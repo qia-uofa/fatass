@@ -154,17 +154,78 @@ def move_node(old_path: str, new_path: str) -> int:
     return _rewrite_references(old_path, new_path)
 
 
-def _rewrite_references(old_path: str, new_path: str) -> int:
+def copy_node(old_path: str, new_path: str) -> int:
+    """Copy a node (and any nodes nested under it) from `old_path` to
+    `new_path`, both under fatass/topology/ and nodes/, leaving the
+    original untouched. Only files inside the *copy* are touched
+    afterward: any `fatass.topology.<old_path>` reference found there —
+    i.e. a dependency between the copied node's own subnodes — is
+    rewritten to `new_path`, so it stays relative to the copy rather than
+    pointing back at the original. A reference to anything outside the
+    copied subtree (an outgoing dependency) doesn't match that pattern and
+    is left unchanged, and nothing outside the copy is ever touched, so
+    existing dependents of `old_path` keep pointing at the original.
+    Doesn't call free(). Returns the number of files whose references were
+    rewritten."""
+    if new_path == old_path:
+        raise TopologyValidationError(f"{old_path!r} is already at that path")
+    if new_path.startswith(old_path + "."):
+        raise TopologyValidationError(
+            f"can't copy {old_path!r} into its own subtree ({new_path!r})"
+        )
+
+    old_node_dir = _node_dir(old_path)
+    new_node_dir = _node_dir(new_path)
+    old_assets_dir = _assets_dir(old_path)
+    new_assets_dir = _assets_dir(new_path)
+
+    if not old_node_dir.is_dir():
+        raise TopologyValidationError(f"no node at {old_path!r}")
+    if not old_assets_dir.is_dir():
+        raise TopologyValidationError(
+            f"{old_path!r} has no corresponding nodes/ directory "
+            f"(expected {old_assets_dir}) — topology and nodes/ have "
+            f"already diverged, refusing to copy"
+        )
+
+    collisions = [d for d in (new_node_dir, new_assets_dir) if d.exists()]
+    if collisions:
+        raise TopologyValidationError(
+            f"{new_path!r} already exists at: "
+            f"{', '.join(str(d) for d in collisions)}"
+        )
+
+    new_node_parent = new_node_dir.parent
+    if not new_node_parent.is_dir():
+        raise TopologyValidationError(
+            f"parent of {new_path!r} doesn't exist yet ({new_node_parent}) "
+            f"— create it first"
+        )
+
+    shutil.copytree(str(old_node_dir), str(new_node_dir))
+
+    new_assets_dir.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(str(old_assets_dir), str(new_assets_dir))
+
+    return _rewrite_references(old_path, new_path, root=new_node_dir)
+
+
+def _rewrite_references(old_path: str, new_path: str, root: Path | None = None) -> int:
     """Rewrite every `fatass.topology.<old_path>` reference (import
     statements, and the `<old_path>.transforms.<name>` dotted addressing
-    used elsewhere) under fatass/topology/ to `new_path`. Matches
-    `old_path` as a whole dotted segment, so moving "a.b" also fixes up
-    references to its nested nodes ("a.b.c" -> "new.a.b.c")."""
+    used elsewhere) under `root` (the whole topology tree by default) to
+    `new_path`. Matches `old_path` as a whole dotted segment, so moving or
+    copying "a.b" also fixes up references to its nested nodes ("a.b.c" ->
+    "new.a.b.c"). `copy_node` passes the copy's own directory as `root`,
+    so only references between the copy's own subnodes are rewritten —
+    everything outside that directory, including the original subtree, is
+    left untouched."""
+    root = root if root is not None else _TOPOLOGY_ROOT
     pattern = _reference_pattern(old_path)
     replacement = f"fatass.topology.{new_path}"
 
     updated = 0
-    for file in _TOPOLOGY_ROOT.rglob("*.py"):
+    for file in root.rglob("*.py"):
         text = file.read_text()
         new_text = pattern.sub(replacement, text)
         if new_text != text:

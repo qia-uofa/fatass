@@ -10,14 +10,87 @@ plain Python functions whose `Node`-typed parameters declare dependencies
 on other nodes; running a transform invokes a Claude CLI agent that reads
 its dependencies' asset directories and writes into the node's own.
 
-## Install
+## Setup
+
+### 1. Prerequisites
+
+- Python 3.10+
+- Node.js/npm (only needed to install the `claude` CLI below) or your
+  package manager of choice
+- `git`, to clone this repo
+
+### 2. Install the Claude CLI
+
+fatass shells out to the real `claude` CLI (Claude Code) for every agent
+call, so it has to be installed and authenticated *before* fatass is
+useful — `create --prompt`, `run`, `apply`, `build`, `modify`, and `free`
+all depend on it.
 
 ```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+See the [Claude Code docs](https://docs.claude.com/en/docs/claude-code)
+if you'd rather use the native installer instead of npm.
+
+Then authenticate it once, interactively:
+
+```bash
+claude
+```
+
+This walks you through logging in (Claude subscription or Anthropic
+Console account). If you'd rather use an API key non-interactively —
+useful for CI or headless boxes — set `ANTHROPIC_API_KEY` in your
+environment instead; the `claude` CLI picks it up automatically and no
+login step is needed.
+
+Verify it's on `PATH` and authenticated:
+
+```bash
+claude -p "say hi" --output-format json
+```
+
+If this fails with a "not found" error, `claude` isn't on `PATH` — fix
+that before installing fatass, since every fatass command that reaches
+`fatass.free()` will fail the same way (`FreeError: the claude CLI was
+not found on PATH`).
+
+### 3. Install fatass
+
+```bash
+git clone <this-repo-url>
+cd fatass
 pip install -e .
 ```
 
-Editable install, so every run picks up the latest source. The `claude`
-CLI must be on `PATH` for anything that actually invokes an agent.
+Editable install, so every run picks up the latest source. This also
+installs the `fatass` console script (via `pyproject.toml`'s
+`[project.scripts]`), so `fatass ...` works as a shorthand for
+`python -m fatass ...` once your `pip`'s script directory is on `PATH`.
+
+For running the test suite too:
+
+```bash
+pip install -e ".[dev]"
+```
+
+### 4. Layout sanity check
+
+fatass resolves its own paths relative to the installed package (see
+`fatass/_paths.py`), not the current working directory, so commands work
+from anywhere once installed:
+
+- `fatass/topology/` — node/transform Python definitions
+- `nodes/` — node asset directories (transform inputs/outputs)
+- `.fatass/.env` — local state (e.g. `FATASS_NODE`, the `cd`-like current
+  node used by `sh`/`free`/`cd` target expressions); safe to delete, and
+  already covered by `.gitignore`
+- `archive/` — snapshots created by `fatass archive`
+
+No further configuration is required — once `claude` is authenticated
+and `fatass` is installed, the [Quickstart](#quickstart) below is a
+working example.
 
 ## Quickstart
 
@@ -50,11 +123,14 @@ setup.
 | `create <node.path \| transform@node.path> [--prompt ""]` | Scaffold a node or transform if it doesn't exist yet. |
 | `modify <node.path \| transform@node.path> --prompt ""` | Edit an existing node/transform file with an agent. |
 | `move <old.node.path> <new.node.path>` | Move/rename a node, rewriting references to it. |
+| `copy <old.node.path> <new.node.path>` | Copy a node, rewriting the copy's internal references to itself. |
 | `remove <node.path \| transform@node.path>` | Remove a node (and nested nodes) or a single transform. |
+| `purge <node.path> [-rs] [-rd] [-rsd]` | Empty a node's own `nodes/` content; flags reach subnodes/dependencies too. |
 | `archive [name]` | Move the whole topology/nodes trees under `./archive/`, start fresh. |
 | `retrieve [name]` | Restore an archived topology/nodes snapshot. |
 | `build <node.path> [key=value ...]` | Shorthand for `apply build@<node.path>`. |
 | `free <nodes\|topology>.<path> --prompt ""` | Ad-hoc agent call scoped to one directory. |
+| `shell` | Interactive REPL — one command per line. |
 
 Node and transform paths are `.`-separated, matching Python module
 addressing directly (`node1.node2`, `node1.node2.transforms.synthesize`) —

@@ -11,7 +11,9 @@ from .errors import FreeCoercionError, FreeError, TopologyValidationError
 # is grandfathered in since it's the whole point of the package's name.
 from .free import free, free_topology
 from .node import Node
+from .purge import purge_node
 from .scaffold import (
+    copy_node,
     create_node,
     create_transform,
     move_node,
@@ -39,8 +41,10 @@ __all__ = [
     "refine_node",
     "refine_transform",
     "move_node",
+    "copy_node",
     "remove_node",
     "remove_transform",
+    "purge_node",
     "free_at",
     "archive_topology",
     "retrieve_topology",

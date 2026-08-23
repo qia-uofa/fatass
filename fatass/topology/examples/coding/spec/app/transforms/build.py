@@ -1,5 +1,5 @@
 import fatass
-from fatass.topology.spec import Node as Spec
+from fatass.topology.examples.coding.spec import Node as Spec
 
 
 def build(spec: Spec, prompt: str = "a python project"):

@@ -10,6 +10,7 @@ from .base import Command
 class RemoveCommand(Command):
     name = "remove"
     help = "remove a node (and its nested nodes), or a single transform"
+    mutates_topology = True
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
@@ -18,8 +19,8 @@ class RemoveCommand(Command):
         )
 
     def run(self, args: argparse.Namespace) -> int:
-        node_path, transform_name = parse_maybe_at_target(args.target)
         try:
+            node_path, transform_name = parse_maybe_at_target(args.target)
             if transform_name is not None:
                 remove_transform(node_path, transform_name)
                 label = f"{node_path}.transforms.{transform_name}"

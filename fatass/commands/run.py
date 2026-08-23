@@ -16,8 +16,8 @@ class RunCommand(Command):
         parser.add_argument("--force", action="store_true", help="bypass the cache")
 
     def run(self, args: argparse.Namespace) -> int:
-        node_path, transform_name = parse_node_path(args.path)
         try:
+            node_path, transform_name = parse_node_path(args.path)
             results = run_transform(node_path, transform_name, force=args.force)
         except (TopologyValidationError, ValueError) as exc:
             print(f"error: {exc}", file=sys.stderr)

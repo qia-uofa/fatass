@@ -10,6 +10,7 @@ from .base import Command
 class ModifyCommand(Command):
     name = "modify"
     help = "edit an existing node's class file or transform file with a prompt"
+    mutates_topology = True
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
@@ -18,8 +19,8 @@ class ModifyCommand(Command):
         parser.add_argument("--prompt", required=True, help="what the agent should do")
 
     def run(self, args: argparse.Namespace) -> int:
-        node_path, transform_name = parse_maybe_at_target(args.target)
         try:
+            node_path, transform_name = parse_maybe_at_target(args.target)
             if transform_name is not None:
                 refine_transform(node_path, transform_name, args.prompt)
                 label = f"{node_path}.transforms.{transform_name}"

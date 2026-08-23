@@ -19,15 +19,84 @@ python -m fatass apply <transform>@<node.path> [key=value ...]    # run one tran
 python -m fatass create <node.path | transform@node.path> [--prompt "..."]  # scaffold if missing
 python -m fatass modify <node.path | transform@node.path> --prompt "..."    # edit an existing node/transform file
 python -m fatass move <node.path> <new.node.path>                 # move/rename a node, rewriting references
+python -m fatass copy <node.path> <new.node.path>                 # copy a node, rewriting the copy's internal references
 python -m fatass remove <node.path | transform@node.path>         # remove a node (and nested nodes) or one transform
+python -m fatass purge <node.path> [-rs] [-rd] [-rsd]              # empty a node's nodes/ content (see command docs for flags)
 python -m fatass archive [name]                                    # move topology/nodes under ./archive/, start fresh
 python -m fatass retrieve [name]                                   # restore an archived topology/nodes snapshot
 python -m fatass build <node.path> [key=value ...]                 # shorthand for `apply build@<node.path>`
-python -m fatass free <nodes|topology>.<path> --prompt "..."      # ad-hoc agent call scoped to one directory
+python -m fatass free <target> --prompt "..."                      # ad-hoc agent call scoped to a resolved target's directory
+python -m fatass sh <target> <command...>                          # run a shell command, cwd resolved from target
+python -m fatass cd <expr>                                          # change the current node (FATASS_NODE)
+python -m fatass pwd                                                # print the current node (FATASS_NODE)
+python -m fatass graph [-o/--output ./graph.uml]                    # write a PlantUML diagram of node inclusion + transform dependencies
+python -m fatass shell                                              # interactive REPL, one command per line
 ```
 
 Node/transform paths are `.`-separated, matching Python module addressing
 (`node1.node2`, `node1.node2.transforms.synthesize`).
+
+`sh` and `free` share one `<target>` grammar (`fatass.targets.resolve`):
+`node1.node2` (that node's own directory under `fatass/topology/`),
+`transform@node1.node2` (that transform file's directory, also under
+`fatass/topology/`), or `node1.node2:dir1/dir2/file.txt` (a path relative
+to the node's `nodes/` assets directory — `node1.node2:./` names that
+directory itself; a file path resolves to its parent dir).
+
+### Current node (`FATASS_NODE`)
+
+Every `<node.path>` argument anywhere in the CLI is resolved relative to
+a **current node**, stored as `FATASS_NODE` in the dotenv file at
+`.fatass/.env` (`fatass.cwd`) — no file, or no `FATASS_NODE` in it,
+defaults to `~` (the sentinel for "no current node", i.e. the true
+topology root). `cd` changes it, `pwd` prints it. One primitive,
+`fatass.cwd.expand`, backs all of it: `fatass.targets.resolve` runs it
+over the node-path portion of `sh`/`free` targets, and
+`fatass.commands._targets.resolve_node_path` runs it (rejecting the `~`
+sentinel — these all need a real node) for every node-path argument to
+`run`/`apply`/`build`/`create`/`modify`/`move`/`remove`:
+
+- A bare expression is prefixed with the current node: `node1.node2`
+  resolves under it, exactly as before, when `FATASS_NODE` is unset.
+- A leading `~` ignores the current node for an absolute path:
+  `~.something` == `something`; `~` alone resolves to the root sentinel
+  itself (rejected by things that need a real node, e.g. `transform@~`).
+- A run of *N* consecutive dots ascends *N*-1 levels from wherever the
+  walk currently stands, then descends into whatever follows: `.` stays
+  put (the current node itself), `..` goes to its parent, `...` its
+  grandparent, and `node1..node2` is "node1's parent's child node2"
+  (siblings of node1, from the current node). Going above the root
+  raises an error.
+
+Every command that changes `fatass/topology/` itself
+(`create`/`modify`/`move`/`remove`/`archive`/`retrieve`) reloads the
+already-imported `fatass.topology` tree afterward (`cli.main()`, via
+`_import_tree.reload_all`) — needed because `import fatass` eagerly
+imports the whole tree once, and a long-lived process (the `shell` REPL
+running several commands in a row) would otherwise keep seeing
+`sys.modules` entries from before that command ran.
+
+### `graph`
+
+`fatass.graph.build_graph()` writes a PlantUML (`@startuml`/`@enduml`)
+diagram of the whole topology: nested `package` blocks mirror the
+inclusion relation (root package is `"topology"`), and one arrow per
+transform dependency — `dependency --> owner : transform_name` — draws
+the dependency relation, pointing from the dependency into the node
+whose transform reads it. A transform with no `Node`-typed dependency
+(not reachable via `transform.discover()` today, but handled anyway)
+draws from a special `"None"` node instead.
+
+### Logging
+
+Every CLI command dispatch appends one line to `./log` at the repo root
+(the command line plus its exit code), via the stdlib `logging` module
+(`fatass._logging.get_logger()`, a `FileHandler` configured once per
+process). `_invoke_claude` (the single subprocess choke point behind
+`free()`, `free_topology()`, and `fatass free`) additionally logs its
+`cwd`, `add_dirs`, and the full `prompt` text before each call, and the
+resulting exit code after — so every real agent invocation's exact
+arguments are recoverable from `./log` afterward.
 
 **Every `run`/`apply`/`build`/`create --prompt`/`modify`/`free` invocation
 that reaches `fatass.free()` actually shells out to the real `claude`

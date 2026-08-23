@@ -3,7 +3,7 @@ import sys
 
 from ..errors import TopologyValidationError
 from ..transform import apply_transform
-from ._targets import parse_kv_args
+from ._targets import parse_kv_args, resolve_node_path
 from .base import Command
 
 
@@ -19,11 +19,12 @@ class BuildCommand(Command):
 
     def run(self, args: argparse.Namespace) -> int:
         try:
+            node_path = resolve_node_path(args.node_path)
             context = parse_kv_args(args.args)
-            apply_transform(args.node_path, "build", context)
+            apply_transform(node_path, "build", context)
         except (TopologyValidationError, ValueError) as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1
 
-        print(f"{args.node_path}.transforms.build: applied")
+        print(f"{node_path}.transforms.build: applied")
         return 0
