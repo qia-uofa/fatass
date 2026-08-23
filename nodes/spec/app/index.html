@@ -1,0 +1,1331 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>spec.json &mdash; Python project survey</title>
+<style>
+  :root {
+    --bg: #1b212c;
+    --panel: #232b38;
+    --panel-alt: #2a3342;
+    --panel-raised: #2f3a4b;
+    --border: #3a4556;
+    --border-soft: #313c4c;
+    --text: #e7edf5;
+    --text-dim: #93a4ba;
+    --text-faint: #6c7c92;
+    --blue: #4b8bbe;
+    --blue-bright: #6fb1e6;
+    --yellow: #ffd43b;
+    --yellow-dim: #ceab2c;
+    --green: #4caf7d;
+    --danger: #e5534b;
+    --radius: 10px;
+    --mono: "Cascadia Code", "JetBrains Mono", Consolas, "Courier New", monospace;
+    --sans: "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+  }
+
+  body {
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(75, 139, 190, 0.10), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(255, 212, 59, 0.06), transparent 45%);
+  }
+
+  .app {
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .brand svg { flex-shrink: 0; }
+
+  .brand-text {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+  }
+
+  .brand-text .dot { color: var(--yellow); }
+
+  .brand-sub {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    margin: 0 0 26px 0;
+    padding-left: 42px;
+  }
+
+  .progress-wrap {
+    margin-bottom: 22px;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .progress-bar {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--panel-alt);
+    overflow: hidden;
+    border: 1px solid var(--border-soft);
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--blue), var(--yellow));
+    transition: width 0.25s ease;
+  }
+
+  .steps-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .steps-nav li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    font-size: 0.86rem;
+    color: var(--text-faint);
+    cursor: default;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .steps-nav li.visited { cursor: pointer; color: var(--text-dim); }
+  .steps-nav li.visited:hover { background: var(--panel-alt); }
+
+  .steps-nav li .num {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+  }
+
+  .steps-nav li.current {
+    color: var(--text);
+    background: var(--panel-alt);
+    font-weight: 600;
+  }
+
+  .steps-nav li.current .num {
+    border-color: var(--yellow);
+    color: var(--yellow);
+    background: rgba(255, 212, 59, 0.08);
+  }
+
+  .steps-nav li.done .num {
+    border-color: var(--green);
+    color: var(--green);
+    background: rgba(76, 175, 125, 0.08);
+  }
+
+  .sidebar-footer {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--text-faint);
+    padding-top: 16px;
+    border-top: 1px solid var(--border-soft);
+    line-height: 1.5;
+  }
+
+  /* ---------- Main ---------- */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .main-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 48px 56px 24px;
+  }
+
+  .step {
+    display: none;
+    max-width: 720px;
+    margin: 0 auto;
+    animation: fadein 0.2s ease;
+  }
+
+  .step.active { display: block; }
+
+  @keyframes fadein {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-eyebrow {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--yellow-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 6px 0;
+  }
+
+  .step h1 {
+    font-family: var(--mono);
+    font-size: 1.6rem;
+    margin: 0 0 8px 0;
+    color: var(--text);
+  }
+
+  .step > .desc {
+    color: var(--text-dim);
+    margin: 0 0 32px 0;
+    line-height: 1.5;
+    max-width: 60ch;
+  }
+
+  .field {
+    margin-bottom: 26px;
+  }
+
+  .field label.field-label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.92rem;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+
+  .field .hint {
+    font-size: 0.8rem;
+    color: var(--text-faint);
+    margin: 0 0 10px 0;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  textarea,
+  select {
+    width: 100%;
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.92rem;
+    font-family: var(--sans);
+    outline: none;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  textarea { min-height: 90px; resize: vertical; font-family: var(--sans); line-height: 1.5; }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--blue-bright);
+    background: var(--panel-raised);
+  }
+
+  select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--text-dim) 50%), linear-gradient(135deg, var(--text-dim) 50%, transparent 50%);
+    background-position: calc(100% - 18px) center, calc(100% - 13px) center;
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 34px;
+  }
+
+  .choice-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 10px;
+  }
+
+  .choice {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 0.86rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+
+  .choice:hover { border-color: var(--blue); }
+
+  .choice input { accent-color: var(--blue-bright); flex-shrink: 0; }
+
+  .choice.checked {
+    border-color: var(--yellow-dim);
+    background: rgba(255, 212, 59, 0.06);
+  }
+
+  .radio-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .radio-row .choice { flex: 1 1 150px; }
+
+  .list-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+
+  .list-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .list-row input { flex: 1; }
+
+  .icon-btn {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel-alt);
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+
+  .icon-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+  .add-btn {
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--blue-bright);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.84rem;
+    cursor: pointer;
+    font-family: var(--mono);
+  }
+
+  .add-btn:hover { border-color: var(--blue-bright); background: rgba(75, 139, 190, 0.08); }
+
+  .component-row, .milestone-row {
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  .component-row .row-top, .milestone-row .row-top {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .component-row input[name="c-name"] { font-weight: 600; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 620px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Footer nav ---------- */
+  .nav-bar {
+    border-top: 1px solid var(--border);
+    background: var(--panel);
+    padding: 16px 56px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .btn {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 11px 22px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel-alt);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .btn:hover { border-color: var(--blue-bright); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--blue), #3f6f96);
+    border-color: var(--blue);
+    color: #fff;
+  }
+
+  .btn-primary:hover { border-color: var(--blue-bright); background: linear-gradient(135deg, var(--blue-bright), var(--blue)); }
+
+  .btn-submit {
+    background: linear-gradient(135deg, var(--yellow), var(--yellow-dim));
+    border-color: var(--yellow-dim);
+    color: #1b212c;
+  }
+
+  .btn-submit:hover { filter: brightness(1.08); }
+
+  .nav-step-indicator {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--text-faint);
+  }
+
+  /* ---------- Review page ---------- */
+  .review-block {
+    background: var(--panel-alt);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+
+  .review-block h3 {
+    margin: 0 0 10px 0;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--yellow-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .review-row {
+    display: flex;
+    gap: 14px;
+    padding: 5px 0;
+    font-size: 0.88rem;
+    border-bottom: 1px dashed var(--border-soft);
+  }
+
+  .review-row:last-child { border-bottom: none; }
+  .review-row .k { flex: 0 0 190px; color: var(--text-faint); }
+  .review-row .v { color: var(--text); word-break: break-word; }
+  .review-row .v.empty { color: var(--text-faint); font-style: italic; }
+
+  .json-preview {
+    background: #151b24;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: #9fd8a0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 340px;
+    overflow-y: auto;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--panel-raised);
+    border: 1px solid var(--green);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s ease;
+    z-index: 50;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .toast.error { border-color: var(--danger); }
+
+  .done-screen {
+    text-align: center;
+    padding: 60px 20px;
+  }
+
+  .done-screen .check {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(76, 175, 125, 0.12);
+    border: 1px solid var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 1.8rem;
+    color: var(--green);
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15.9 2.4c-6.4 0-6 2.8-6 2.8v2.9h6.1v.9H7.4S3.6 8.6 3.6 15.1s3.3 6.3 3.3 6.3h2v-2.9s-.1-3.3 3.3-3.3h6.1s3.1.1 3.1-3v-5.7s.5-3.1-5.5-4.1zM12.4 4.6c.6 0 1 .5 1 1s-.5 1-1 1-1-.5-1-1 .5-1 1-1z" fill="#4B8BBE"/>
+        <path d="M16.1 29.6c6.4 0 6-2.8 6-2.8v-2.9H16v-.9h8.6s3.8.4 3.8-6.1-3.3-6.3-3.3-6.3h-2v2.9s.1 3.3-3.3 3.3h-6.1s-3.1-.1-3.1 3v5.7s-.5 3.1 5.5 4.1zm3.5-2.2c-.6 0-1-.5-1-1s.5-1 1-1 1 .5 1 1-.4 1-1 1z" fill="#FFD43B"/>
+      </svg>
+      <span class="brand-text">spec<span class="dot">.</span>json</span>
+    </div>
+    <p class="brand-sub">python project survey</p>
+
+    <div class="progress-wrap">
+      <div class="progress-label"><span id="progress-text">Step 1 of 10</span><span id="progress-pct">10%</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+
+    <ol class="steps-nav" id="steps-nav">
+      <li data-step="1"><span class="num">1</span><span>Overview</span></li>
+      <li data-step="2"><span class="num">2</span><span>Goals &amp; Metrics</span></li>
+      <li data-step="3"><span class="num">3</span><span>Scope</span></li>
+      <li data-step="4"><span class="num">4</span><span>Components</span></li>
+      <li data-step="5"><span class="num">5</span><span>Environment</span></li>
+      <li data-step="6"><span class="num">6</span><span>Interfaces</span></li>
+      <li data-step="7"><span class="num">7</span><span>Testing &amp; Quality</span></li>
+      <li data-step="8"><span class="num">8</span><span>Constraints</span></li>
+      <li data-step="9"><span class="num">9</span><span>Milestones</span></li>
+      <li data-step="10"><span class="num">10</span><span>Review &amp; Submit</span></li>
+    </ol>
+
+    <div class="sidebar-footer">$ python -m venv .venv<br>$ spec --edit</div>
+  </aside>
+
+  <main class="main">
+    <div class="main-scroll">
+      <form id="survey-form">
+
+        <!-- Step 1: Overview -->
+        <section class="step" data-step="1">
+          <p class="step-eyebrow">01 / project</p>
+          <h1>Project overview</h1>
+          <p class="desc">The basics: what this Python project is, and who it's for.</p>
+
+          <div class="field">
+            <label class="field-label" for="proj-name">Project name *</label>
+            <input type="text" id="proj-name" placeholder="e.g. httpbroom" required>
+          </div>
+          <div class="field">
+            <label class="field-label" for="proj-tagline">One-line pitch</label>
+            <input type="text" id="proj-tagline" placeholder="e.g. A tiny async HTTP client with sane retries">
+          </div>
+          <div class="field">
+            <label class="field-label" for="proj-problem">Problem statement / motivation</label>
+            <p class="hint">What's broken or missing today that this project addresses?</p>
+            <textarea id="proj-problem" placeholder="Describe the problem this project solves..."></textarea>
+          </div>
+          <div class="field">
+            <label class="field-label" for="proj-audience">Target users</label>
+            <input type="text" id="proj-audience" placeholder="e.g. backend engineers integrating third-party APIs">
+          </div>
+        </section>
+
+        <!-- Step 2: Goals -->
+        <section class="step" data-step="2">
+          <p class="step-eyebrow">02 / goals</p>
+          <h1>Goals &amp; success metrics</h1>
+          <p class="desc">What this project needs to achieve, and how you'll know it worked.</p>
+
+          <div class="field">
+            <label class="field-label">Primary goals</label>
+            <p class="hint">One outcome per line, most important first.</p>
+            <div class="list-rows" id="goals-list"></div>
+            <button type="button" class="add-btn" data-add="goals-list" data-placeholder="e.g. Cut integration boilerplate by 80%">+ add goal</button>
+          </div>
+          <div class="field">
+            <label class="field-label" for="success-metrics">Definition of done / success metrics</label>
+            <textarea id="success-metrics" placeholder="e.g. 90% test coverage, sub-100ms p95 latency, adopted by 2 internal services"></textarea>
+          </div>
+        </section>
+
+        <!-- Step 3: Scope -->
+        <section class="step" data-step="3">
+          <p class="step-eyebrow">03 / scope</p>
+          <h1>Scope</h1>
+          <p class="desc">Draw the boundary: what ships, and what explicitly doesn't.</p>
+
+          <div class="field">
+            <label class="field-label">In scope</label>
+            <div class="list-rows" id="in-scope-list"></div>
+            <button type="button" class="add-btn" data-add="in-scope-list" data-placeholder="e.g. Synchronous and async client APIs">+ add item</button>
+          </div>
+          <div class="field">
+            <label class="field-label">Out of scope</label>
+            <div class="list-rows" id="out-scope-list"></div>
+            <button type="button" class="add-btn" data-add="out-scope-list" data-placeholder="e.g. GraphQL support">+ add item</button>
+          </div>
+        </section>
+
+        <!-- Step 4: Components -->
+        <section class="step" data-step="4">
+          <p class="step-eyebrow">04 / architecture</p>
+          <h1>Key components</h1>
+          <p class="desc">The major modules or packages that make up the project.</p>
+
+          <div class="field">
+            <div id="components-list"></div>
+            <button type="button" class="add-btn" id="add-component">+ add component</button>
+          </div>
+          <div class="two-col">
+            <div class="field">
+              <label class="field-label" for="layout-style">Package layout</label>
+              <select id="layout-style">
+                <option value="">Not specified</option>
+                <option value="src-layout">src/ layout</option>
+                <option value="flat-layout">flat layout</option>
+                <option value="monorepo">monorepo (multiple packages)</option>
+                <option value="single-module">single module / script</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label class="field-label" for="layout-notes">Layout notes</label>
+            <textarea id="layout-notes" placeholder="Anything notable about how the code is organized..."></textarea>
+          </div>
+        </section>
+
+        <!-- Step 5: Environment -->
+        <section class="step" data-step="5">
+          <p class="step-eyebrow">05 / environment</p>
+          <h1>Python environment</h1>
+          <p class="desc">Interpreter, tooling, and dependencies.</p>
+
+          <div class="two-col">
+            <div class="field">
+              <label class="field-label" for="python-version">Minimum Python version</label>
+              <select id="python-version">
+                <option value="">Not specified</option>
+                <option>3.9</option>
+                <option>3.10</option>
+                <option>3.11</option>
+                <option selected>3.12</option>
+                <option>3.13</option>
+                <option>3.14</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label" for="venv-tool">Virtual environment</label>
+              <select id="venv-tool">
+                <option value="">Not specified</option>
+                <option>venv</option>
+                <option>virtualenv</option>
+                <option>conda</option>
+                <option>none (system / container)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Package manager</label>
+            <div class="radio-row" id="package-manager-group">
+              <label class="choice"><input type="radio" name="package-manager" value="pip"><span>pip + requirements.txt</span></label>
+              <label class="choice"><input type="radio" name="package-manager" value="poetry"><span>Poetry</span></label>
+              <label class="choice"><input type="radio" name="package-manager" value="uv"><span>uv</span></label>
+              <label class="choice"><input type="radio" name="package-manager" value="pdm"><span>PDM</span></label>
+              <label class="choice"><input type="radio" name="package-manager" value="conda"><span>conda</span></label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Key dependencies</label>
+            <p class="hint">Libraries this project relies on directly.</p>
+            <div class="list-rows" id="dependencies-list"></div>
+            <button type="button" class="add-btn" data-add="dependencies-list" data-placeholder="e.g. httpx, pydantic">+ add dependency</button>
+          </div>
+        </section>
+
+        <!-- Step 6: Interfaces -->
+        <section class="step" data-step="6">
+          <p class="step-eyebrow">06 / interfaces</p>
+          <h1>Interfaces &amp; distribution</h1>
+          <p class="desc">How the project is consumed and shipped.</p>
+
+          <div class="field">
+            <label class="field-label">Interface type(s)</label>
+            <div class="choice-grid" id="interface-types-group">
+              <label class="choice"><input type="checkbox" value="cli"><span>CLI tool</span></label>
+              <label class="choice"><input type="checkbox" value="library"><span>Library / API</span></label>
+              <label class="choice"><input type="checkbox" value="web-service"><span>Web service / HTTP API</span></label>
+              <label class="choice"><input type="checkbox" value="worker"><span>Background worker</span></label>
+              <label class="choice"><input type="checkbox" value="script"><span>Script / automation</span></label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="entry-point">Entry point(s)</label>
+            <p class="hint">e.g. console_scripts name, module:function, or a file to run.</p>
+            <input type="text" id="entry-point" placeholder="e.g. myapp = myapp.cli:main">
+          </div>
+
+          <div class="field">
+            <label class="field-label">Distribution</label>
+            <div class="choice-grid" id="distribution-group">
+              <label class="choice"><input type="checkbox" value="pypi"><span>Published to PyPI</span></label>
+              <label class="choice"><input type="checkbox" value="docker"><span>Docker image</span></label>
+              <label class="choice"><input type="checkbox" value="internal"><span>Internal / private index</span></label>
+              <label class="choice"><input type="checkbox" value="standalone"><span>Standalone executable</span></label>
+              <label class="choice"><input type="checkbox" value="none"><span>Not distributed</span></label>
+            </div>
+          </div>
+        </section>
+
+        <!-- Step 7: Testing & Quality -->
+        <section class="step" data-step="7">
+          <p class="step-eyebrow">07 / quality</p>
+          <h1>Testing &amp; quality</h1>
+          <p class="desc">How correctness and code quality are enforced.</p>
+
+          <div class="two-col">
+            <div class="field">
+              <label class="field-label" for="test-framework">Testing framework</label>
+              <select id="test-framework">
+                <option value="">Not specified</option>
+                <option selected>pytest</option>
+                <option>unittest</option>
+                <option>nose2</option>
+                <option>other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label class="field-label" for="coverage-target">Coverage target (%)</label>
+              <input type="number" id="coverage-target" min="0" max="100" placeholder="e.g. 85">
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label">Linting / formatting / typing tools</label>
+            <div class="choice-grid" id="lint-tools-group">
+              <label class="choice"><input type="checkbox" value="ruff"><span>ruff</span></label>
+              <label class="choice"><input type="checkbox" value="black"><span>black</span></label>
+              <label class="choice"><input type="checkbox" value="isort"><span>isort</span></label>
+              <label class="choice"><input type="checkbox" value="mypy"><span>mypy</span></label>
+              <label class="choice"><input type="checkbox" value="flake8"><span>flake8</span></label>
+              <label class="choice"><input type="checkbox" value="pylint"><span>pylint</span></label>
+              <label class="choice"><input type="checkbox" value="bandit"><span>bandit</span></label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="ci-provider">CI provider</label>
+            <select id="ci-provider">
+              <option value="">Not specified</option>
+              <option>GitHub Actions</option>
+              <option>GitLab CI</option>
+              <option>CircleCI</option>
+              <option>Jenkins</option>
+              <option>none</option>
+              <option>other</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- Step 8: Constraints -->
+        <section class="step" data-step="8">
+          <p class="step-eyebrow">08 / constraints</p>
+          <h1>Constraints &amp; non-functional requirements</h1>
+          <p class="desc">Boundaries the implementation must respect.</p>
+
+          <div class="field">
+            <label class="field-label">Supported operating systems</label>
+            <div class="choice-grid" id="os-group">
+              <label class="choice"><input type="checkbox" value="linux"><span>Linux</span></label>
+              <label class="choice"><input type="checkbox" value="macos"><span>macOS</span></label>
+              <label class="choice"><input type="checkbox" value="windows"><span>Windows</span></label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="performance-constraints">Performance constraints</label>
+            <textarea id="performance-constraints" placeholder="e.g. must handle 500 req/s, startup under 200ms"></textarea>
+          </div>
+          <div class="field">
+            <label class="field-label" for="security-constraints">Security / compliance constraints</label>
+            <textarea id="security-constraints" placeholder="e.g. no secrets in logs, SOC2-relevant data handling"></textarea>
+          </div>
+          <div class="field">
+            <label class="field-label" for="license">License</label>
+            <select id="license">
+              <option value="">Not specified</option>
+              <option>MIT</option>
+              <option>Apache-2.0</option>
+              <option>BSD-3-Clause</option>
+              <option>GPL-3.0</option>
+              <option>Proprietary</option>
+              <option>Unlicensed</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- Step 9: Milestones -->
+        <section class="step" data-step="9">
+          <p class="step-eyebrow">09 / timeline</p>
+          <h1>Milestones</h1>
+          <p class="desc">Optional. Rough checkpoints, if you have them.</p>
+
+          <div class="field">
+            <div id="milestones-list"></div>
+            <button type="button" class="add-btn" id="add-milestone">+ add milestone</button>
+          </div>
+        </section>
+
+        <!-- Step 10: Review -->
+        <section class="step" data-step="10">
+          <p class="step-eyebrow">10 / review</p>
+          <h1>Review &amp; submit</h1>
+          <p class="desc">Check everything below, then write it to <code>spec.json</code>.</p>
+
+          <div id="review-content"></div>
+
+          <div class="field">
+            <label class="field-label">Raw JSON preview</label>
+            <div class="json-preview" id="json-preview"></div>
+          </div>
+        </section>
+
+        <!-- Done screen (not part of numbered flow) -->
+        <section class="step" data-step="done">
+          <div class="done-screen">
+            <div class="check">&#10003;</div>
+            <h1>Saved</h1>
+            <p class="desc" style="margin:0 auto;">spec.json has been written. You can close this tab or keep editing.</p>
+          </div>
+        </section>
+
+      </form>
+    </div>
+
+    <div class="nav-bar">
+      <button type="button" class="btn" id="btn-back">&larr; Back</button>
+      <span class="nav-step-indicator" id="nav-step-indicator">Step 1 of 10</span>
+      <button type="button" class="btn btn-primary" id="btn-next">Next &rarr;</button>
+      <button type="button" class="btn btn-submit" id="btn-submit" style="display:none;">Write spec.json</button>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var TOTAL_STEPS = 10;
+  var current = 1;
+  var maxVisited = 1;
+
+  var stepEls = Array.prototype.slice.call(document.querySelectorAll(".step[data-step]"));
+  var navItems = Array.prototype.slice.call(document.querySelectorAll("#steps-nav li"));
+
+  function stepEl(n) {
+    return document.querySelector('.step[data-step="' + n + '"]');
+  }
+
+  // ---------- dynamic list helpers ----------
+  function makeListRow(containerId, value, placeholder) {
+    var row = document.createElement("div");
+    row.className = "list-row";
+    var input = document.createElement("input");
+    input.type = "text";
+    input.value = value || "";
+    input.placeholder = placeholder || "";
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "icon-btn";
+    btn.title = "Remove";
+    btn.textContent = "✕";
+    btn.addEventListener("click", function () { row.remove(); });
+    row.appendChild(input);
+    row.appendChild(btn);
+    document.getElementById(containerId).appendChild(row);
+    return input;
+  }
+
+  document.querySelectorAll(".add-btn[data-add]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      makeListRow(btn.getAttribute("data-add"), "", btn.getAttribute("data-placeholder"));
+    });
+  });
+
+  function collectList(containerId) {
+    var vals = [];
+    document.querySelectorAll("#" + containerId + " input").forEach(function (inp) {
+      var v = inp.value.trim();
+      if (v) vals.push(v);
+    });
+    return vals;
+  }
+
+  function clearContainer(id) {
+    document.getElementById(id).innerHTML = "";
+  }
+
+  // ---------- component rows ----------
+  function makeComponentRow(name, description) {
+    var row = document.createElement("div");
+    row.className = "component-row";
+    row.innerHTML =
+      '<div class="row-top">' +
+      '<input type="text" name="c-name" placeholder="Component name, e.g. myapp.core">' +
+      '<button type="button" class="icon-btn" title="Remove">✕</button>' +
+      "</div>" +
+      '<textarea name="c-desc" placeholder="What this component is responsible for..."></textarea>';
+    row.querySelector('[name="c-name"]').value = name || "";
+    row.querySelector('[name="c-desc"]').value = description || "";
+    row.querySelector(".icon-btn").addEventListener("click", function () { row.remove(); });
+    document.getElementById("components-list").appendChild(row);
+  }
+
+  document.getElementById("add-component").addEventListener("click", function () {
+    makeComponentRow("", "");
+  });
+
+  function collectComponents() {
+    var items = [];
+    document.querySelectorAll("#components-list .component-row").forEach(function (row) {
+      var name = row.querySelector('[name="c-name"]').value.trim();
+      var desc = row.querySelector('[name="c-desc"]').value.trim();
+      if (name || desc) items.push({ name: name, description: desc });
+    });
+    return items;
+  }
+
+  // ---------- milestone rows ----------
+  function makeMilestoneRow(name, date) {
+    var row = document.createElement("div");
+    row.className = "milestone-row";
+    row.innerHTML =
+      '<div class="row-top">' +
+      '<input type="text" name="m-name" placeholder="Milestone, e.g. First public release">' +
+      '<input type="date" name="m-date" style="max-width:170px;">' +
+      '<button type="button" class="icon-btn" title="Remove">✕</button>' +
+      "</div>";
+    row.querySelector('[name="m-name"]').value = name || "";
+    row.querySelector('[name="m-date"]').value = date || "";
+    row.querySelector(".icon-btn").addEventListener("click", function () { row.remove(); });
+    document.getElementById("milestones-list").appendChild(row);
+  }
+
+  document.getElementById("add-milestone").addEventListener("click", function () {
+    makeMilestoneRow("", "");
+  });
+
+  function collectMilestones() {
+    var items = [];
+    document.querySelectorAll("#milestones-list .milestone-row").forEach(function (row) {
+      var name = row.querySelector('[name="m-name"]').value.trim();
+      var date = row.querySelector('[name="m-date"]').value;
+      if (name || date) items.push({ name: name, date: date });
+    });
+    return items;
+  }
+
+  // ---------- checkbox / radio helpers ----------
+  document.querySelectorAll(".choice").forEach(function (label) {
+    var input = label.querySelector("input");
+    function sync() { label.classList.toggle("checked", input.checked); }
+    input.addEventListener("change", function () {
+      if (input.type === "radio") {
+        document.querySelectorAll('input[name="' + input.name + '"]').forEach(function (r) {
+          r.closest(".choice").classList.toggle("checked", r.checked);
+        });
+      } else {
+        sync();
+      }
+    });
+  });
+
+  function getChecked(containerId) {
+    var vals = [];
+    document.querySelectorAll("#" + containerId + ' input[type="checkbox"]:checked').forEach(function (c) {
+      vals.push(c.value);
+    });
+    return vals;
+  }
+
+  function setChecked(containerId, values) {
+    values = values || [];
+    document.querySelectorAll("#" + containerId + ' input[type="checkbox"]').forEach(function (c) {
+      c.checked = values.indexOf(c.value) !== -1;
+      c.closest(".choice").classList.toggle("checked", c.checked);
+    });
+  }
+
+  function getRadio(name) {
+    var el = document.querySelector('input[name="' + name + '"]:checked');
+    return el ? el.value : "";
+  }
+
+  function setRadio(name, value) {
+    document.querySelectorAll('input[name="' + name + '"]').forEach(function (r) {
+      r.checked = (r.value === value);
+      r.closest(".choice").classList.toggle("checked", r.checked);
+    });
+  }
+
+  // ---------- navigation ----------
+  function updateNav() {
+    stepEls.forEach(function (el) {
+      var s = el.getAttribute("data-step");
+      el.classList.toggle("active", s === String(current));
+    });
+
+    navItems.forEach(function (li) {
+      var n = parseInt(li.getAttribute("data-step"), 10);
+      li.classList.toggle("current", n === current);
+      li.classList.toggle("done", n < current);
+      li.classList.toggle("visited", n <= maxVisited);
+    });
+
+    var pct = Math.round((current / TOTAL_STEPS) * 100);
+    document.getElementById("progress-fill").style.width = (current <= TOTAL_STEPS ? pct : 100) + "%";
+    document.getElementById("progress-text").textContent = "Step " + Math.min(current, TOTAL_STEPS) + " of " + TOTAL_STEPS;
+    document.getElementById("progress-pct").textContent = (current <= TOTAL_STEPS ? pct : 100) + "%";
+    document.getElementById("nav-step-indicator").textContent = "Step " + Math.min(current, TOTAL_STEPS) + " of " + TOTAL_STEPS;
+
+    document.getElementById("btn-back").disabled = (current === 1);
+    document.getElementById("btn-next").style.display = (current < TOTAL_STEPS) ? "" : "none";
+    document.getElementById("btn-submit").style.display = (current === TOTAL_STEPS) ? "" : "none";
+
+    if (current === TOTAL_STEPS) renderReview();
+  }
+
+  function goTo(n) {
+    if (n < 1) n = 1;
+    if (n > TOTAL_STEPS) n = TOTAL_STEPS;
+    current = n;
+    if (current > maxVisited) maxVisited = current;
+    updateNav();
+    document.querySelector(".main-scroll").scrollTop = 0;
+  }
+
+  function validateCurrent() {
+    if (current === 1) {
+      var name = document.getElementById("proj-name");
+      if (!name.value.trim()) {
+        name.focus();
+        showToast("Project name is required.", true);
+        return false;
+      }
+    }
+    return true;
+  }
+
+  document.getElementById("btn-next").addEventListener("click", function () {
+    if (!validateCurrent()) return;
+    goTo(current + 1);
+  });
+  document.getElementById("btn-back").addEventListener("click", function () {
+    goTo(current - 1);
+  });
+  navItems.forEach(function (li) {
+    li.addEventListener("click", function () {
+      var n = parseInt(li.getAttribute("data-step"), 10);
+      if (n <= maxVisited) goTo(n);
+    });
+  });
+
+  // ---------- state <-> form ----------
+  function buildState() {
+    return {
+      meta: {
+        projectKind: "a python project",
+        generatedAt: new Date().toISOString()
+      },
+      overview: {
+        name: document.getElementById("proj-name").value.trim(),
+        tagline: document.getElementById("proj-tagline").value.trim(),
+        problem: document.getElementById("proj-problem").value.trim(),
+        audience: document.getElementById("proj-audience").value.trim()
+      },
+      goals: {
+        primary: collectList("goals-list"),
+        successMetrics: document.getElementById("success-metrics").value.trim()
+      },
+      scope: {
+        inScope: collectList("in-scope-list"),
+        outOfScope: collectList("out-scope-list")
+      },
+      components: {
+        items: collectComponents(),
+        layoutStyle: document.getElementById("layout-style").value,
+        layoutNotes: document.getElementById("layout-notes").value.trim()
+      },
+      environment: {
+        pythonVersion: document.getElementById("python-version").value,
+        venvTool: document.getElementById("venv-tool").value,
+        packageManager: getRadio("package-manager"),
+        dependencies: collectList("dependencies-list")
+      },
+      interfaces: {
+        types: getChecked("interface-types-group"),
+        entryPoint: document.getElementById("entry-point").value.trim(),
+        distribution: getChecked("distribution-group")
+      },
+      quality: {
+        testFramework: document.getElementById("test-framework").value,
+        coverageTarget: document.getElementById("coverage-target").value,
+        lintTools: getChecked("lint-tools-group"),
+        ci: document.getElementById("ci-provider").value
+      },
+      constraints: {
+        supportedOS: getChecked("os-group"),
+        performance: document.getElementById("performance-constraints").value.trim(),
+        security: document.getElementById("security-constraints").value.trim(),
+        license: document.getElementById("license").value
+      },
+      milestones: collectMilestones()
+    };
+  }
+
+  function applyState(s) {
+    if (!s || typeof s !== "object") return;
+    s.overview = s.overview || {};
+    document.getElementById("proj-name").value = s.overview.name || "";
+    document.getElementById("proj-tagline").value = s.overview.tagline || "";
+    document.getElementById("proj-problem").value = s.overview.problem || "";
+    document.getElementById("proj-audience").value = s.overview.audience || "";
+
+    s.goals = s.goals || {};
+    clearContainer("goals-list");
+    (s.goals.primary || []).forEach(function (v) { makeListRow("goals-list", v); });
+    document.getElementById("success-metrics").value = s.goals.successMetrics || "";
+
+    s.scope = s.scope || {};
+    clearContainer("in-scope-list");
+    (s.scope.inScope || []).forEach(function (v) { makeListRow("in-scope-list", v); });
+    clearContainer("out-scope-list");
+    (s.scope.outOfScope || []).forEach(function (v) { makeListRow("out-scope-list", v); });
+
+    s.components = s.components || {};
+    clearContainer("components-list");
+    (s.components.items || []).forEach(function (c) { makeComponentRow(c.name, c.description); });
+    document.getElementById("layout-style").value = s.components.layoutStyle || "";
+    document.getElementById("layout-notes").value = s.components.layoutNotes || "";
+
+    s.environment = s.environment || {};
+    document.getElementById("python-version").value = s.environment.pythonVersion || "3.12";
+    document.getElementById("venv-tool").value = s.environment.venvTool || "";
+    setRadio("package-manager", s.environment.packageManager || "");
+    clearContainer("dependencies-list");
+    (s.environment.dependencies || []).forEach(function (v) { makeListRow("dependencies-list", v); });
+
+    s.interfaces = s.interfaces || {};
+    setChecked("interface-types-group", s.interfaces.types);
+    document.getElementById("entry-point").value = s.interfaces.entryPoint || "";
+    setChecked("distribution-group", s.interfaces.distribution);
+
+    s.quality = s.quality || {};
+    document.getElementById("test-framework").value = s.quality.testFramework || "pytest";
+    document.getElementById("coverage-target").value = s.quality.coverageTarget || "";
+    setChecked("lint-tools-group", s.quality.lintTools);
+    document.getElementById("ci-provider").value = s.quality.ci || "";
+
+    s.constraints = s.constraints || {};
+    setChecked("os-group", s.constraints.supportedOS);
+    document.getElementById("performance-constraints").value = s.constraints.performance || "";
+    document.getElementById("security-constraints").value = s.constraints.security || "";
+    document.getElementById("license").value = s.constraints.license || "";
+
+    clearContainer("milestones-list");
+    (s.milestones || []).forEach(function (m) { makeMilestoneRow(m.name, m.date); });
+  }
+
+  function ensureAtLeastOneRow() {
+    ["goals-list", "in-scope-list", "out-scope-list", "dependencies-list"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el.children.length) {
+        var placeholders = {
+          "goals-list": "e.g. Cut integration boilerplate by 80%",
+          "in-scope-list": "e.g. Synchronous and async client APIs",
+          "out-scope-list": "e.g. GraphQL support",
+          "dependencies-list": "e.g. httpx, pydantic"
+        };
+        makeListRow(id, "", placeholders[id]);
+      }
+    });
+    if (!document.getElementById("components-list").children.length) makeComponentRow("", "");
+  }
+
+  // ---------- review ----------
+  function esc(s) {
+    var d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function reviewRow(k, v) {
+    var val = v;
+    var empty = false;
+    if (Array.isArray(val)) val = val.length ? val.join(", ") : "";
+    if (!val) { val = "not specified"; empty = true; }
+    return '<div class="review-row"><div class="k">' + esc(k) + '</div><div class="v' + (empty ? " empty" : "") + '">' + esc(String(val)) + "</div></div>";
+  }
+
+  function renderReview() {
+    var s = buildState();
+    var html = "";
+
+    html += '<div class="review-block"><h3>Overview</h3>' +
+      reviewRow("Name", s.overview.name) +
+      reviewRow("Tagline", s.overview.tagline) +
+      reviewRow("Problem", s.overview.problem) +
+      reviewRow("Audience", s.overview.audience) + "</div>";
+
+    html += '<div class="review-block"><h3>Goals</h3>' +
+      reviewRow("Primary goals", s.goals.primary) +
+      reviewRow("Success metrics", s.goals.successMetrics) + "</div>";
+
+    html += '<div class="review-block"><h3>Scope</h3>' +
+      reviewRow("In scope", s.scope.inScope) +
+      reviewRow("Out of scope", s.scope.outOfScope) + "</div>";
+
+    html += '<div class="review-block"><h3>Components</h3>' +
+      reviewRow("Components", s.components.items.map(function (c) { return c.name; })) +
+      reviewRow("Layout", s.components.layoutStyle) + "</div>";
+
+    html += '<div class="review-block"><h3>Environment</h3>' +
+      reviewRow("Python version", s.environment.pythonVersion) +
+      reviewRow("Package manager", s.environment.packageManager) +
+      reviewRow("Venv tool", s.environment.venvTool) +
+      reviewRow("Dependencies", s.environment.dependencies) + "</div>";
+
+    html += '<div class="review-block"><h3>Interfaces</h3>' +
+      reviewRow("Type(s)", s.interfaces.types) +
+      reviewRow("Entry point", s.interfaces.entryPoint) +
+      reviewRow("Distribution", s.interfaces.distribution) + "</div>";
+
+    html += '<div class="review-block"><h3>Testing &amp; quality</h3>' +
+      reviewRow("Framework", s.quality.testFramework) +
+      reviewRow("Coverage target", s.quality.coverageTarget ? s.quality.coverageTarget + "%" : "") +
+      reviewRow("Lint/format/type tools", s.quality.lintTools) +
+      reviewRow("CI", s.quality.ci) + "</div>";
+
+    html += '<div class="review-block"><h3>Constraints</h3>' +
+      reviewRow("Supported OS", s.constraints.supportedOS) +
+      reviewRow("Performance", s.constraints.performance) +
+      reviewRow("Security", s.constraints.security) +
+      reviewRow("License", s.constraints.license) + "</div>";
+
+    html += '<div class="review-block"><h3>Milestones</h3>' +
+      (s.milestones.length
+        ? s.milestones.map(function (m) { return reviewRow(m.name || "(unnamed)", m.date); }).join("")
+        : reviewRow("Milestones", "")) + "</div>";
+
+    document.getElementById("review-content").innerHTML = html;
+    document.getElementById("json-preview").textContent = JSON.stringify(s, null, 2);
+  }
+
+  // ---------- toast ----------
+  var toastTimer = null;
+  function showToast(msg, isError) {
+    var t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.toggle("error", !!isError);
+    t.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove("show"); }, 3200);
+  }
+
+  // ---------- submit ----------
+  document.getElementById("btn-submit").addEventListener("click", function () {
+    var s = buildState();
+    var btn = document.getElementById("btn-submit");
+    btn.disabled = true;
+    btn.textContent = "Writing...";
+    fetch("/api/spec", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(s)
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error("Server responded with " + res.status);
+        return res.json();
+      })
+      .then(function () {
+        showToast("spec.json saved.");
+        stepEls.forEach(function (el) { el.classList.toggle("active", el.getAttribute("data-step") === "done"); });
+        document.querySelector(".nav-bar").style.display = "none";
+      })
+      .catch(function (err) {
+        showToast("Failed to save: " + err.message, true);
+      })
+      .finally(function () {
+        btn.disabled = false;
+        btn.textContent = "Write spec.json";
+      });
+  });
+
+  // ---------- load existing state ----------
+  fetch("/api/spec")
+    .then(function (res) { return res.ok ? res.json() : {}; })
+    .then(function (data) {
+      applyState(data);
+      ensureAtLeastOneRow();
+      updateNav();
+    })
+    .catch(function () {
+      ensureAtLeastOneRow();
+      updateNav();
+    });
+
+  document.getElementById("survey-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+  });
+})();
+</script>
+</body>
+</html>
