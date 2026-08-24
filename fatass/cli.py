@@ -1,8 +1,8 @@
 import argparse
 import sys
 
-from ._import_tree import reload_all
-from ._logging import get_logger
+from ._internal.import_tree import reload_all
+from ._internal.logs import get_logger
 from .commands import ALL_COMMANDS
 
 

@@ -1,10 +1,9 @@
 import fatass
-from fatass.topology.examples.coding.spec import Node as Spec
 
 
-def build(spec: Spec, prompt: str = "a python project"):
+def build(prompt: str = "a python project"):
     fatass.free(
-        readable=[spec],
+        readable=[],
         prompt=(
             f"Generate two files in the current directory: `app.py` and "
             f"`index.html`, for a small local web app that lets a user "

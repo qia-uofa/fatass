@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from ..archive import retrieve_topology
+from ..topology_ops.archive import retrieve_topology
 from ..errors import TopologyValidationError
 from .base import Command
 

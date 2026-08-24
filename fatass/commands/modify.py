@@ -2,7 +2,7 @@ import argparse
 import sys
 
 from ..errors import FreeError, TopologyValidationError
-from ..scaffold import refine_node, refine_transform
+from ..topology_ops.scaffold import refine_node, refine_transform
 from ._targets import parse_maybe_at_target
 from .base import Command
 

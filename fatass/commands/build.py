@@ -2,7 +2,7 @@ import argparse
 import sys
 
 from ..errors import TopologyValidationError
-from ..transform import apply_transform
+from ..core.transform import apply_transform
 from ._targets import parse_kv_args, resolve_node_path
 from .base import Command
 

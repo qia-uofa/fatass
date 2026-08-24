@@ -2,7 +2,7 @@ import argparse
 import sys
 
 from ..errors import TopologyValidationError
-from ..scaffold import remove_node, remove_transform
+from ..topology_ops.scaffold import remove_node, remove_transform
 from ._targets import parse_maybe_at_target
 from .base import Command
 

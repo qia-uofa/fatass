@@ -1,9 +1,9 @@
 import argparse
 import sys
 
-from ..cwd import ROOT, expand, write_current_node
 from ..errors import TopologyValidationError
-from ..scaffold import _node_dir
+from ..resolve.cwd import ROOT, expand, write_current_node
+from ..topology_ops.scaffold import _node_dir
 from .base import Command
 
 

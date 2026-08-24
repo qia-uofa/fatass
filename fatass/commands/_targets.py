@@ -1,10 +1,10 @@
-from ..cwd import ROOT, expand
 from ..errors import TopologyValidationError
+from ..resolve.cwd import ROOT, expand
 
 
 def resolve_node_path(raw: str) -> str:
     """Expand a node-path expression relative to the current node (see
-    fatass.cwd.expand — FATASS_NODE from the dotenv file, "."/".."/"~"
+    fatass.resolve.cwd.expand — FATASS_NODE from the dotenv file, "."/".."/"~"
     navigation, etc.), rejecting ROOT: every command that takes a
     node.path needs an actual node, not the bare topology root."""
     node_path = expand(raw)

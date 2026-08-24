@@ -2,7 +2,7 @@ import argparse
 import sys
 
 from ..errors import TopologyValidationError
-from ..purge import purge_node
+from ..topology_ops.purge import purge_node
 from .base import Command
 
 

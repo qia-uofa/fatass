@@ -29,14 +29,14 @@ python -m fatass free <target> --prompt "..."                      # ad-hoc agen
 python -m fatass sh <target> <command...>                          # run a shell command, cwd resolved from target
 python -m fatass cd <expr>                                          # change the current node (FATASS_NODE)
 python -m fatass pwd                                                # print the current node (FATASS_NODE)
-python -m fatass graph [-o/--output ./graph.uml]                    # write a PlantUML diagram of node inclusion + transform dependencies
+python -m fatass graph [node.path] [-o/--output ...]                # write a PlantUML diagram of node inclusion + transform dependencies, rooted at node.path (default: whole topology)
 python -m fatass shell                                              # interactive REPL, one command per line
 ```
 
 Node/transform paths are `.`-separated, matching Python module addressing
 (`node1.node2`, `node1.node2.transforms.synthesize`).
 
-`sh` and `free` share one `<target>` grammar (`fatass.targets.resolve`):
+`sh` and `free` share one `<target>` grammar (`fatass.resolve.targets.resolve`):
 `node1.node2` (that node's own directory under `fatass/topology/`),
 `transform@node1.node2` (that transform file's directory, also under
 `fatass/topology/`), or `node1.node2:dir1/dir2/file.txt` (a path relative
@@ -47,10 +47,10 @@ directory itself; a file path resolves to its parent dir).
 
 Every `<node.path>` argument anywhere in the CLI is resolved relative to
 a **current node**, stored as `FATASS_NODE` in the dotenv file at
-`.fatass/.env` (`fatass.cwd`) — no file, or no `FATASS_NODE` in it,
+`.fatass/.env` (`fatass.resolve.cwd`) — no file, or no `FATASS_NODE` in it,
 defaults to `~` (the sentinel for "no current node", i.e. the true
 topology root). `cd` changes it, `pwd` prints it. One primitive,
-`fatass.cwd.expand`, backs all of it: `fatass.targets.resolve` runs it
+`fatass.resolve.cwd.expand`, backs all of it: `fatass.resolve.targets.resolve` runs it
 over the node-path portion of `sh`/`free` targets, and
 `fatass.commands._targets.resolve_node_path` runs it (rejecting the `~`
 sentinel — these all need a real node) for every node-path argument to
@@ -71,27 +71,46 @@ sentinel — these all need a real node) for every node-path argument to
 Every command that changes `fatass/topology/` itself
 (`create`/`modify`/`move`/`remove`/`archive`/`retrieve`) reloads the
 already-imported `fatass.topology` tree afterward (`cli.main()`, via
-`_import_tree.reload_all`) — needed because `import fatass` eagerly
+`fatass._internal.import_tree.reload_all`) — needed because `import fatass` eagerly
 imports the whole tree once, and a long-lived process (the `shell` REPL
 running several commands in a row) would otherwise keep seeing
 `sys.modules` entries from before that command ran.
 
 ### `graph`
 
-`fatass.graph.build_graph()` writes a PlantUML (`@startuml`/`@enduml`)
-diagram of the whole topology: nested `package` blocks mirror the
-inclusion relation (root package is `"topology"`), and one arrow per
-transform dependency — `dependency --> owner : transform_name` — draws
-the dependency relation, pointing from the dependency into the node
-whose transform reads it. A transform with no `Node`-typed dependency
-(not reachable via `transform.discover()` today, but handled anyway)
-draws from a special `"None"` node instead.
+`fatass.graph.build_graph(root=None)` writes a PlantUML
+(`@startuml`/`@enduml`) diagram: a flat `class` per node, each declared
+inside a `together` block with its inclusion siblings (so they render at
+the same layout level) and linked to its parent by a dotted
+`child .up.> parent` arrow — this draws the inclusion relation. One arrow
+per transform dependency — `dependency --> owner : transform_name`, bold
+for the `build` transform, unlabeled when the transform is named `build`
+(every node has one, so the label is redundant) — draws the dependency
+relation, pointing from the dependency into the node whose transform
+reads it; an edge between
+tree-unrelated nodes gets a `right` direction hint so it doesn't disturb
+the inclusion layout. A transform with no `Node`-typed dependency draws
+from a special `"None"` node instead.
+
+With no `root` (`graph` with no node argument), the whole topology is
+drawn and the root class is `"topology"`. With `root` given (`graph
+<node.path>`, resolved relative to the current node like any other
+node-path argument), only that node and its descendants are drawn — the
+root class is labeled with its full dotted path instead of just its last
+segment, since it has no rendered parent to make that path implicit — and
+a transform dependency on a node *outside* that subtree is drawn as a
+single flat class labeled with its own full path (like the `"None"`
+node), rather than pulling in that node's ancestry too.
+
+`write_graph(output, root=None)` writes to `output` if given, else to
+`./<root>.puml` (or `./topology.puml` when `root` is `None`) in the
+current working directory.
 
 ### Logging
 
 Every CLI command dispatch appends one line to `./log` at the repo root
 (the command line plus its exit code), via the stdlib `logging` module
-(`fatass._logging.get_logger()`, a `FileHandler` configured once per
+(`fatass._internal.logs.get_logger()`, a `FileHandler` configured once per
 process). `_invoke_claude` (the single subprocess choke point behind
 `free()`, `free_topology()`, and `fatass free`) additionally logs its
 `cwd`, `add_dirs`, and the full `prompt` text before each call, and the

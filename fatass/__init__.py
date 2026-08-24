@@ -1,18 +1,11 @@
-from .adhoc import free_at
-from .archive import archive_topology, retrieve_topology
+from .core.adhoc import free_at
+from .core.free import free, free_topology
+from .core.node import Node
+from .core.transform import apply_transform, discover, run_transform
 from .errors import FreeCoercionError, FreeError, TopologyValidationError
-
-# `from .free import free` rebinds this package's `free` attribute to the
-# function, shadowing the `fatass.free` *submodule* for any attribute-based
-# access to it (`import fatass.free as x`, `fatass.free.<anything>`) —
-# `importlib.import_module("fatass.free")` still gets the module. Same
-# reasoning ruled out naming anything else in fatass/*.py after its own
-# public re-export (see archive_topology/retrieve_topology below) — `free`
-# is grandfathered in since it's the whole point of the package's name.
-from .free import free, free_topology
-from .node import Node
-from .purge import purge_node
-from .scaffold import (
+from .topology_ops.archive import archive_topology, retrieve_topology
+from .topology_ops.purge import purge_node
+from .topology_ops.scaffold import (
     copy_node,
     create_node,
     create_transform,
@@ -22,7 +15,6 @@ from .scaffold import (
     remove_node,
     remove_transform,
 )
-from .transform import apply_transform, discover, run_transform
 
 # Imported last: node.py files under topology/ do `import fatass` and
 # subclass `fatass.Node`, so Node (and free, etc.) must already be defined

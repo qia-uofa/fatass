@@ -2,7 +2,7 @@ import argparse
 import sys
 
 from ..errors import TopologyValidationError
-from ..transform import run_transform
+from ..core.transform import run_transform
 from ._targets import parse_node_path
 from .base import Command
 

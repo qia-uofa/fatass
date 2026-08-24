@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from ..adhoc import free_at
+from ..core.adhoc import free_at
 from ..errors import FreeError, TopologyValidationError
 from .base import Command
 

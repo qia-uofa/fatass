@@ -1,6 +1,6 @@
 import argparse
 
-from ..cwd import read_current_node
+from ..resolve.cwd import read_current_node
 from .base import Command
 
 

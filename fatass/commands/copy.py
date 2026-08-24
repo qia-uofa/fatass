@@ -2,7 +2,7 @@ import argparse
 import sys
 
 from ..errors import TopologyValidationError
-from ..scaffold import copy_node
+from ..topology_ops.scaffold import copy_node
 from ._targets import resolve_node_path
 from .base import Command
 

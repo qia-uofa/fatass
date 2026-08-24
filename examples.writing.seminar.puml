@@ -1,0 +1,65 @@
+@startuml
+class "examples.writing.seminar" as n_examples_writing_seminar
+together {
+  class "analysis" as n_examples_writing_seminar_analysis
+  class "drafting" as n_examples_writing_seminar_drafting
+  class "materials" as n_examples_writing_seminar_materials
+  class "skeleton" as n_examples_writing_seminar_skeleton
+  class "style" as n_examples_writing_seminar_style
+}
+n_examples_writing_seminar_analysis .up.> n_examples_writing_seminar
+together {
+  class "references" as n_examples_writing_seminar_analysis_references
+  class "subject" as n_examples_writing_seminar_analysis_subject
+  class "task" as n_examples_writing_seminar_analysis_task
+}
+n_examples_writing_seminar_analysis_references .up.> n_examples_writing_seminar_analysis
+n_examples_writing_seminar_analysis_subject .up.> n_examples_writing_seminar_analysis
+n_examples_writing_seminar_analysis_task .up.> n_examples_writing_seminar_analysis
+n_examples_writing_seminar_drafting .up.> n_examples_writing_seminar
+together {
+  class "annotation" as n_examples_writing_seminar_drafting_annotation
+  class "draft" as n_examples_writing_seminar_drafting_draft
+}
+n_examples_writing_seminar_drafting_annotation .up.> n_examples_writing_seminar_drafting
+n_examples_writing_seminar_drafting_draft .up.> n_examples_writing_seminar_drafting
+n_examples_writing_seminar_materials .up.> n_examples_writing_seminar
+together {
+  class "papers" as n_examples_writing_seminar_materials_papers
+  class "task" as n_examples_writing_seminar_materials_task
+}
+n_examples_writing_seminar_materials_papers .up.> n_examples_writing_seminar_materials
+together {
+  class "references" as n_examples_writing_seminar_materials_papers_references
+  class "subject" as n_examples_writing_seminar_materials_papers_subject
+}
+n_examples_writing_seminar_materials_papers_references .up.> n_examples_writing_seminar_materials_papers
+n_examples_writing_seminar_materials_papers_subject .up.> n_examples_writing_seminar_materials_papers
+n_examples_writing_seminar_materials_task .up.> n_examples_writing_seminar_materials
+n_examples_writing_seminar_skeleton .up.> n_examples_writing_seminar
+n_examples_writing_seminar_style .up.> n_examples_writing_seminar
+together {
+  class "ai_pattern" as n_examples_writing_seminar_style_ai_pattern
+  class "voice" as n_examples_writing_seminar_style_voice
+}
+n_examples_writing_seminar_style_ai_pattern .up.> n_examples_writing_seminar_style
+n_examples_writing_seminar_style_voice .up.> n_examples_writing_seminar_style
+together {
+  class "narrative" as n_examples_writing_seminar_style_voice_narrative
+  class "tone" as n_examples_writing_seminar_style_voice_tone
+}
+n_examples_writing_seminar_style_voice_narrative .up.> n_examples_writing_seminar_style_voice
+n_examples_writing_seminar_style_voice_tone .up.> n_examples_writing_seminar_style_voice
+
+class "None" as none_node
+
+n_examples_writing_seminar_materials_papers -[bold]right-> n_examples_writing_seminar_analysis_references
+n_examples_writing_seminar_materials_papers_subject -[bold]right-> n_examples_writing_seminar_analysis_subject
+n_examples_writing_seminar_materials_task -[bold]right-> n_examples_writing_seminar_analysis_task
+n_examples_writing_seminar_drafting_draft -[bold]right-> n_examples_writing_seminar_drafting_annotation
+n_examples_writing_seminar_style_ai_pattern -[bold]right-> n_examples_writing_seminar_drafting_annotation
+n_examples_writing_seminar_skeleton -[bold]right-> n_examples_writing_seminar_drafting_draft
+n_examples_writing_seminar_style -[bold]right-> n_examples_writing_seminar_drafting_draft
+n_examples_writing_seminar_materials -[bold]right-> n_examples_writing_seminar_drafting_draft
+n_examples_writing_seminar_analysis -[bold]right-> n_examples_writing_seminar_skeleton
+@enduml

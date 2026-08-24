@@ -3,7 +3,7 @@ import subprocess
 import sys
 
 from ..errors import TopologyValidationError
-from ..targets import resolve as resolve_target
+from ..resolve.targets import resolve as resolve_target
 from .base import Command
 
 
