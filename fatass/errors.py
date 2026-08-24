@@ -1,5 +1,5 @@
 class TopologyValidationError(Exception):
-    """Raised when nodes/ doesn't correspond to fatass/topology/."""
+    """Raised when home/ doesn't correspond to fatass/topology/."""
 
 
 class FreeError(Exception):

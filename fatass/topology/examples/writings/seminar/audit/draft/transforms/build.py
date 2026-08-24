@@ -9,6 +9,9 @@ from fatass.topology.examples.writings.seminar.drafting.draft import (
 
 def build(draft: Draft, annotation: Annotation):
     fatass.free(
+        silent=True,
+        model="sonnet",
+        tools="Read,Write,Edit,Glob,Grep",
         readable=[draft, annotation],
         prompt=(
             f"Read every file in the readable directory for this node's "

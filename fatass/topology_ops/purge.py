@@ -54,7 +54,7 @@ def _closure(start: str, *, via_subnodes: bool, via_dependencies: bool) -> set[s
 
 
 def _content_entries(node_path: str) -> list[Path]:
-    """Entries directly under nodes/<node_path>/ that are this node's own
+    """Entries directly under home/<node_path>/ that are this node's own
     content — anything that isn't a directory belonging to a nested
     subnode (those are a separate node's content, not this one's)."""
     assets_dir = _assets_dir(node_path)
@@ -83,8 +83,8 @@ def _purge_one(node_path: str) -> int:
 def purge_node(
     node_path: str, *, rs: bool = False, rd: bool = False, rsd: bool = False
 ) -> dict[str, int]:
-    """Delete a node's own content from nodes/ — any file or directory
-    under nodes/<node_path>/ that isn't itself a nested subnode's
+    """Delete a node's own content from home/ — any file or directory
+    under home/<node_path>/ that isn't itself a nested subnode's
     directory. Doesn't touch fatass/topology/.
 
     Which other nodes get the same treatment depends on the flags:

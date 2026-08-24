@@ -8,6 +8,9 @@ from fatass.topology.examples.phd_application.profile.documents import (
 
 def build(shortlist: Shortlist, profile: Profile, documents: Documents):
     fatass.free(
+        silent=True,
+        model="opus",
+        tools="Read,Write,Edit,Glob,Grep,Bash",  # Bash: the CV/transcripts/publications under `documents` are likely PDFs, else Read misreads them as password-protected
         readable=[shortlist, profile, documents],
         prompt=(
             f"Read `shortlist.json` in the readable directory for this "

@@ -5,7 +5,7 @@
 fatass synthesizes and manages files in a project using the Claude CLI as
 an agent. A project is modeled as a graph of **nodes**. Each node has a
 Python definition under `fatass/topology/` and an asset directory under
-`nodes/` at the same relative path. A node's `transforms/` submodule holds
+`home/` at the same relative path. A node's `transforms/` submodule holds
 plain Python functions whose `Node`-typed parameters declare dependencies
 on other nodes; running a transform invokes a Claude CLI agent that reads
 its dependencies' asset directories and writes into the node's own.
@@ -82,7 +82,7 @@ fatass resolves its own paths relative to the installed package (see
 from anywhere once installed:
 
 - `fatass/topology/` — node/transform Python definitions
-- `nodes/` — node asset directories (transform inputs/outputs)
+- `home/` — node asset directories (transform inputs/outputs)
 - `.fatass/.env` — local state (e.g. `FATASS_NODE`, the `cd`-like current
   node used by `sh`/`free`/`cd` target expressions); safe to delete, and
   already covered by `.gitignore`
@@ -120,16 +120,16 @@ setup.
 | --- | --- |
 | `run <node.path>[.transforms.<name>] [--force]` | Run one or all of a node's transforms, cache-aware. |
 | `apply <transform>@<node.path> [key=value ...]` | Run one transform with explicit args, ignoring cache. |
-| `create <node.path \| transform@node.path> [--prompt ""]` | Scaffold a node or transform if it doesn't exist yet. |
-| `modify <node.path \| transform@node.path> --prompt ""` | Edit an existing node/transform file with an agent. |
+| `create <node.path \| transform@node.path> [--prompt ""] [--silent] [--permission-mode M] [--model M]` | Scaffold a node or transform if it doesn't exist yet. |
+| `modify <node.path \| transform@node.path> --prompt "" [--silent] [--permission-mode M] [--model M]` | Edit an existing node/transform file with an agent. |
 | `move <old.node.path> <new.node.path>` | Move/rename a node, rewriting references to it. |
 | `copy <old.node.path> <new.node.path>` | Copy a node, rewriting the copy's internal references to itself. |
 | `remove <node.path \| transform@node.path>` | Remove a node (and nested nodes) or a single transform. |
-| `purge <node.path> [-rs] [-rd] [-rsd]` | Empty a node's own `nodes/` content; flags reach subnodes/dependencies too. |
-| `archive [name]` | Move the whole topology/nodes trees under `./archive/`, start fresh. |
-| `retrieve [name]` | Restore an archived topology/nodes snapshot. |
+| `purge <node.path> [-rs] [-rd] [-rsd]` | Empty a node's own `home/` content; flags reach subnodes/dependencies too. |
+| `archive [name] [--node <node.path>]` | Move the whole topology/home trees under `./archive/`, start fresh — or, with `--node`, archive just that node's subtree in place. |
+| `retrieve [name] [--node <node.path>]` | Restore an archived topology/home snapshot — or, with `--node` (requires a named archive), just that node back to its original path. |
 | `build <node.path> [key=value ...]` | Shorthand for `apply build@<node.path>`. |
-| `free <nodes\|topology>.<path> --prompt ""` | Ad-hoc agent call scoped to one directory. |
+| `free <target> --prompt "" [--silent] [--permission-mode M] [--model M]` | Ad-hoc agent call scoped to one resolved target directory. |
 | `shell` | Interactive REPL — one command per line. |
 
 Node and transform paths are `.`-separated, matching Python module

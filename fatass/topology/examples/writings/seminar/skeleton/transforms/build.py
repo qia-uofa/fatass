@@ -4,6 +4,9 @@ from fatass.topology.examples.writings.seminar.analysis import Node as Analysis
 
 def build(analysis: Analysis):
     fatass.free(
+        silent=True,
+        model="sonnet",
+        tools="Read,Write,Edit,Glob,Grep,Bash",  # Bash: the subject/reference PDFs nested under `analysis` need it, else Read misreads them as password-protected
         readable=[analysis],
         prompt=(
             f"Read every file in the readable directory for this node's "

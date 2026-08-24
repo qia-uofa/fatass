@@ -6,6 +6,9 @@ from fatass.topology.examples.writings.seminar.materials.task import (
 
 def build(task: Task):
     fatass.free(
+        silent=True,
+        model="sonnet",
+        tools="Read,Write,Edit,Glob,Grep",
         readable=[task],
         prompt=(
             f"Read every file in the readable directory for this node's "

@@ -5,6 +5,13 @@ from fatass.topology.examples.phd_application.outreach.review import Node as Rev
 
 def build(emails: Emails, review: Review):
     fatass.free(
+        # not silent: this is the transform that prepares outbound-email
+        # sending machinery (dry-run by default, but still the highest
+        # real-world-consequence step in this topology) — a human should
+        # watch it run rather than let it go unattended.
+        silent=False,
+        model="opus",
+        tools="Read,Write,Edit,Glob,Grep",
         readable=[emails, review],
         prompt=(
             f"Read `emails/index.json` in the readable directory for this "

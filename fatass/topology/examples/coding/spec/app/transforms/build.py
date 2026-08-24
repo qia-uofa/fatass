@@ -3,6 +3,9 @@ import fatass
 
 def build(prompt: str = "a python project"):
     fatass.free(
+        silent=True,
+        model="sonnet",
+        tools="Read,Write,Edit,Glob,Grep",
         readable=[],
         prompt=(
             f"Generate two files in the current directory: `app.py` and "

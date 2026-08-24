@@ -3,7 +3,7 @@
 fatass synthesizes and manages project files using the Claude CLI as an
 agent. A project is a graph of **nodes**: each has a Python definition
 under `fatass/topology/` (a `Node` subclass in `node.py`) mirrored by an
-asset directory under `nodes/`. A node's `transforms/` submodule holds
+asset directory under `home/`. A node's `transforms/` submodule holds
 functions whose `Node`-typed parameters declare dependencies on other
 nodes; calling one invokes `fatass.free(...)`, which runs the Claude CLI as
 a subprocess, reading dependency nodes' directories and writing into the
@@ -16,16 +16,16 @@ Full design docs: [blueprint/](blueprint/README.md).
 ```
 python -m fatass run <node.path>[.transforms.<name>] [--force]   # run transform(s), cache-aware
 python -m fatass apply <transform>@<node.path> [key=value ...]    # run one transform with explicit args, ignoring cache
-python -m fatass create <node.path | transform@node.path> [--prompt "..."]  # scaffold if missing
-python -m fatass modify <node.path | transform@node.path> --prompt "..."    # edit an existing node/transform file
+python -m fatass create <node.path | transform@node.path> [--prompt "..."] [--silent] [--permission-mode M] [--model M]  # scaffold if missing
+python -m fatass modify <node.path | transform@node.path> --prompt "..." [--silent] [--permission-mode M] [--model M]    # edit an existing node/transform file
 python -m fatass move <node.path> <new.node.path>                 # move/rename a node, rewriting references
 python -m fatass copy <node.path> <new.node.path>                 # copy a node, rewriting the copy's internal references
 python -m fatass remove <node.path | transform@node.path>         # remove a node (and nested nodes) or one transform
-python -m fatass purge <node.path> [-rs] [-rd] [-rsd]              # empty a node's nodes/ content (see command docs for flags)
-python -m fatass archive [name]                                    # move topology/nodes under ./archive/, start fresh
-python -m fatass retrieve [name]                                   # restore an archived topology/nodes snapshot
+python -m fatass purge <node.path> [-rs] [-rd] [-rsd]              # empty a node's home/ content (see command docs for flags)
+python -m fatass archive [name] [--node <node.path>]                # move topology/home under ./archive/ and start fresh, or (with --node) archive just that node's subtree in place
+python -m fatass retrieve [name] [--node <node.path>]               # restore an archived topology/home snapshot, or (with --node, requires a named archive) just that node back to its original path
 python -m fatass build <node.path> [key=value ...]                 # shorthand for `apply build@<node.path>`
-python -m fatass free <target> --prompt "..."                      # ad-hoc agent call scoped to a resolved target's directory
+python -m fatass free <target> --prompt "..." [--silent] [--permission-mode M] [--model M]  # ad-hoc agent call scoped to a resolved target's directory
 python -m fatass sh <target> <command...>                          # run a shell command, cwd resolved from target
 python -m fatass cd <expr>                                          # change the current node (FATASS_NODE)
 python -m fatass pwd                                                # print the current node (FATASS_NODE)
@@ -40,7 +40,7 @@ Node/transform paths are `.`-separated, matching Python module addressing
 `node1.node2` (that node's own directory under `fatass/topology/`),
 `transform@node1.node2` (that transform file's directory, also under
 `fatass/topology/`), or `node1.node2:dir1/dir2/file.txt` (a path relative
-to the node's `nodes/` assets directory — `node1.node2:./` names that
+to the node's `home/` assets directory — `node1.node2:./` names that
 directory itself; a file path resolves to its parent dir).
 
 ### Current node (`FATASS_NODE`)
@@ -106,16 +106,72 @@ node), rather than pulling in that node's ancestry too.
 `./<root>.puml` (or `./topology.puml` when `root` is `None`) in the
 current working directory.
 
+### Agent calls: silent vs. interactive, permission mode, system prompts
+
+`_invoke_claude` (`fatass/core/free.py`) is the single subprocess choke
+point behind `fatass.free()`, `free_topology()` (`create`/`modify`), and
+`free_at()` (`fatass free`) — every path that actually shells out to the
+real `claude` CLI goes through it, and it takes four orthogonal knobs:
+
+- **`silent`** (default `False`): when false, opens a real, human-visible
+  `claude` conversation — the agent's normal interactive session, seeded
+  with the call's prompt as the first message — in its own terminal
+  window (Windows: `cmd /c start /wait`), and blocks until that window is
+  closed. When `True`, runs headlessly instead (`-p --output-format
+  json`, output captured, no window, exits on its own). Every existing
+  example transform under `fatass/topology/examples/` passes
+  `silent=True` explicitly, since an unattended pipeline run (e.g. a
+  `populate.sh`-style batch script) can't wait on a human to close a
+  window; a caller using `returns=...` needs `silent=True` for the same
+  reason — `free()` reads `.fatass-result.json` back immediately after
+  the call returns, so nothing can be waiting on a human to get there.
+- **`permission_mode`** (default `"acceptEdits"`, `fatass.core.free.DEFAULT_PERMISSION_MODE`):
+  passed straight through as `--permission-mode`. `acceptEdits` is safer
+  than the old blanket `bypassPermissions` default — file edits
+  (Read/Write/Edit) are auto-accepted so headless runs don't stall
+  waiting for approval, but Claude Code's own finer-grained safety checks
+  (e.g. on risky Bash commands) still apply rather than being skipped
+  outright. Pass `permission_mode="bypassPermissions"` explicitly for a
+  call whose prompt genuinely needs unattended shell access.
+- **`system_prompt`**: appended (via `--append-system-prompt`, never
+  `--system-prompt`, so Claude Code's own baseline system prompt is kept
+  rather than replaced) on top of whatever the call already sends. Loaded
+  per command from `fatass/prompts/<name>.md` via
+  `fatass._internal.prompts.load_system_prompt` — `create.md`, `modify.md`,
+  and `free.md` back the three CLI commands that call the agent directly,
+  and `transform.md` backs every `fatass.free()` call made from inside a
+  running transform (i.e. what `run`/`apply`/`build` trigger indirectly,
+  through whatever transform code they execute — they don't call the
+  agent directly themselves). A missing prompt file is fine; it just
+  means no extra guidance is appended.
+- **`model`** (default `None`): passed straight through as `--model` when
+  given (an alias like `"opus"`/`"sonnet"`, or a full model name) —
+  omitted entirely when `None`, so every existing call keeps using
+  whatever the `claude` CLI is already configured/defaulted to. Unlike
+  `permission_mode`, this has no fatass-side default of its own.
+
+`create`, `modify`, and `free` all expose `--silent`, `--permission-mode`,
+and `--model` on the CLI; a transform's own `fatass.free(...)` call sets
+these as ordinary keyword arguments.
+
 ### Logging
 
 Every CLI command dispatch appends one line to `./log` at the repo root
 (the command line plus its exit code), via the stdlib `logging` module
 (`fatass._internal.logs.get_logger()`, a `FileHandler` configured once per
-process). `_invoke_claude` (the single subprocess choke point behind
-`free()`, `free_topology()`, and `fatass free`) additionally logs its
-`cwd`, `add_dirs`, and the full `prompt` text before each call, and the
-resulting exit code after — so every real agent invocation's exact
-arguments are recoverable from `./log` afterward.
+process — tracked by its own module-level reference rather than "does the
+logger have any handlers at all", since something else sharing the same
+named logger, e.g. a test runner's own log-capture handler, would
+otherwise be mistaken for "already configured" and silently suppress our
+FileHandler entirely). `_invoke_claude` additionally logs its `cwd`,
+`add_dirs`, `silent`, `permission_mode`, `model`, and the full `prompt`
+text before each call, and the resulting exit code after — so every real agent
+invocation's exact arguments are recoverable from `./log` afterward. For a
+`silent=True` call, it also parses the captured `-p --output-format json`
+stdout and logs the `usage` object (token counts) and `total_cost_usd` if
+present — best-effort, since that JSON shape is Claude Code's own, not a
+contract fatass controls. Token usage isn't available for `silent=False`
+(interactive) calls: nothing is captured from a real, inherited terminal.
 
 **Every `run`/`apply`/`build`/`create --prompt`/`modify`/`free` invocation
 that reaches `fatass.free()` actually shells out to the real `claude`

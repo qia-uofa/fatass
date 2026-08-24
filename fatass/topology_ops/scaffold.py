@@ -2,9 +2,9 @@ import re
 import shutil
 from pathlib import Path
 
-from .._internal.paths import NODES_ROOT as _NODES_ROOT
+from .._internal.paths import HOME_ROOT as _HOME_ROOT
 from .._internal.paths import TOPOLOGY_ROOT as _TOPOLOGY_ROOT
-from ..core.free import free_topology
+from ..core.free import DEFAULT_ALLOWED_TOOLS, DEFAULT_PERMISSION_MODE, free_topology
 from ..errors import TopologyValidationError
 
 _NODE_PY = """import fatass
@@ -34,7 +34,7 @@ def _node_dir(node_path: str) -> Path:
 
 
 def _assets_dir(node_path: str) -> Path:
-    return _NODES_ROOT / node_path.replace(".", "/")
+    return _HOME_ROOT / node_path.replace(".", "/")
 
 
 def _all_node_paths() -> list[str]:
@@ -57,7 +57,7 @@ def _reference_pattern(node_path: str) -> re.Pattern:
 
 def create_node(node_path: str) -> bool:
     """Scaffold a node's topology package (node.py + __init__.py) and its
-    nodes/ assets directory. Doesn't call free(). Returns True if it
+    home/ assets directory. Doesn't call free(). Returns True if it
     created something, False if the node already existed."""
     node_dir = _node_dir(node_path)
     if node_dir.is_dir():
@@ -74,7 +74,7 @@ def create_node(node_path: str) -> bool:
     (node_dir / "node.py").write_text(_NODE_PY)
     (node_dir / "__init__.py").write_text(_NODE_INIT_PY)
 
-    assets_dir = _NODES_ROOT / node_path.replace(".", "/")
+    assets_dir = _HOME_ROOT / node_path.replace(".", "/")
     assets_dir.mkdir(parents=True, exist_ok=True)
     if not any(assets_dir.iterdir()):
         (assets_dir / ".gitkeep").write_text("")
@@ -105,7 +105,7 @@ def create_transform(node_path: str, transform_name: str) -> bool:
 
 def move_node(old_path: str, new_path: str) -> int:
     """Move a node (and any nested nodes under it) from `old_path` to
-    `new_path`, both under fatass/topology/ and nodes/, then rewrite
+    `new_path`, both under fatass/topology/ and home/, then rewrite
     `fatass.topology.<old_path>` references elsewhere in the topology tree
     to point at `new_path` — other transforms depend on a node by that
     dotted path (see node.py's `_topology_path`), and a move must keep them
@@ -127,8 +127,8 @@ def move_node(old_path: str, new_path: str) -> int:
         raise TopologyValidationError(f"no node at {old_path!r}")
     if not old_assets_dir.is_dir():
         raise TopologyValidationError(
-            f"{old_path!r} has no corresponding nodes/ directory "
-            f"(expected {old_assets_dir}) — topology and nodes/ have "
+            f"{old_path!r} has no corresponding home/ directory "
+            f"(expected {old_assets_dir}) — topology and home/ have "
             f"already diverged, refusing to move"
         )
 
@@ -156,7 +156,7 @@ def move_node(old_path: str, new_path: str) -> int:
 
 def copy_node(old_path: str, new_path: str) -> int:
     """Copy a node (and any nodes nested under it) from `old_path` to
-    `new_path`, both under fatass/topology/ and nodes/, leaving the
+    `new_path`, both under fatass/topology/ and home/, leaving the
     original untouched. Only files inside the *copy* are touched
     afterward: any `fatass.topology.<old_path>` reference found there —
     i.e. a dependency between the copied node's own subnodes — is
@@ -183,8 +183,8 @@ def copy_node(old_path: str, new_path: str) -> int:
         raise TopologyValidationError(f"no node at {old_path!r}")
     if not old_assets_dir.is_dir():
         raise TopologyValidationError(
-            f"{old_path!r} has no corresponding nodes/ directory "
-            f"(expected {old_assets_dir}) — topology and nodes/ have "
+            f"{old_path!r} has no corresponding home/ directory "
+            f"(expected {old_assets_dir}) — topology and home/ have "
             f"already diverged, refusing to copy"
         )
 
@@ -236,7 +236,7 @@ def _rewrite_references(old_path: str, new_path: str, root: Path | None = None) 
 
 def remove_node(node_path: str) -> None:
     """Remove a node and any nodes nested under it, from both
-    fatass/topology/ and nodes/. Refuses if any transform outside the
+    fatass/topology/ and home/. Refuses if any transform outside the
     removed subtree still references one of the removed nodes as a
     dependency (via `fatass.topology.<removed path>`) — that transform
     would be left unable to resolve the import. Doesn't call free()."""
@@ -276,7 +276,7 @@ def remove_node(node_path: str) -> None:
 def remove_transform(node_path: str, transform_name: str) -> None:
     """Remove a single transform file from a node's transforms/. Doesn't
     call free(). Nothing else in the topology tree can depend on a
-    transform (only on a node's nodes/ directory), so unlike remove_node
+    transform (only on a node's home/ directory), so unlike remove_node
     there's no cross-file check to make here."""
     transform_file = _node_dir(node_path) / "transforms" / f"{transform_name}.py"
     if not transform_file.is_file():
@@ -286,24 +286,51 @@ def remove_transform(node_path: str, transform_name: str) -> None:
     transform_file.unlink()
 
 
-def refine_node(node_path: str, prompt: str) -> None:
+def refine_node(
+    node_path: str,
+    prompt: str,
+    *,
+    system_prompt: str | None = None,
+    permission_mode: str = DEFAULT_PERMISSION_MODE,
+    silent: bool = False,
+    model: str | None = None,
+    tools: str = DEFAULT_ALLOWED_TOOLS,
+) -> None:
     """Use the Claude CLI to edit node.py per `prompt` — either right after
     create_node(), or standalone (`fatass modify`) against an already-
     existing node. Can't go through fatass.free() — that always writes into
-    a node's nodes/ directory, but this is editing the topology definition
+    a node's home/ directory, but this is editing the topology definition
     itself, under fatass/topology/."""
     node_dir = _node_dir(node_path)
     if not (node_dir / "node.py").is_file():
         raise TopologyValidationError(f"no node at {node_path!r}")
     full_prompt = f"Edit node.py in the current directory according to: {prompt}"
-    free_topology(cwd=node_dir, prompt=full_prompt)
+    free_topology(
+        cwd=node_dir,
+        prompt=full_prompt,
+        system_prompt=system_prompt,
+        permission_mode=permission_mode,
+        silent=silent,
+        model=model,
+        tools=tools,
+    )
 
 
-def refine_transform(node_path: str, transform_name: str, prompt: str) -> None:
+def refine_transform(
+    node_path: str,
+    transform_name: str,
+    prompt: str,
+    *,
+    system_prompt: str | None = None,
+    permission_mode: str = DEFAULT_PERMISSION_MODE,
+    silent: bool = False,
+    model: str | None = None,
+    tools: str = DEFAULT_ALLOWED_TOOLS,
+) -> None:
     """Use the Claude CLI to edit a transform file per `prompt` — either
     right after create_transform(), or standalone (`fatass modify`) against
     an already-existing transform (same reasoning as refine_node — this
-    writes into fatass/topology/, not nodes/, so it can't use free())."""
+    writes into fatass/topology/, not home/, so it can't use free())."""
     transforms_dir = _node_dir(node_path) / "transforms"
     if not (transforms_dir / f"{transform_name}.py").is_file():
         raise TopologyValidationError(
@@ -318,4 +345,12 @@ def refine_transform(node_path: str, transform_name: str, prompt: str) -> None:
         f"for examples of the convention. A transform with no such "
         f"parameters is also valid (it declares no dependencies)."
     )
-    free_topology(cwd=transforms_dir, prompt=full_prompt)
+    free_topology(
+        cwd=transforms_dir,
+        prompt=full_prompt,
+        system_prompt=system_prompt,
+        permission_mode=permission_mode,
+        silent=silent,
+        model=model,
+        tools=tools,
+    )

@@ -16,7 +16,7 @@ def resolve(target: str) -> Path:
       (its node.py, __init__.py, transforms/ submodule, ...).
     - "transform@node1.node2" -> that transform's transforms/ directory,
       also under fatass/topology/.
-    - "node1.node2:rel/path" -> a path under the node's nodes/ assets
+    - "node1.node2:rel/path" -> a path under the node's home/ assets
       directory ("./" or "" for the assets directory itself); a path
       naming a file resolves to that file's parent directory, so the
       file itself can be referenced bare wherever the resolved directory
@@ -27,7 +27,7 @@ def resolve(target: str) -> Path:
     file is prefixed on, "." /".."/etc. navigate from it, and a leading
     "~" ignores it for an absolute path. A node-path portion that expands
     to ROOT ("~", the true topology root — no FATASS_NODE set, or an
-    explicit "~") maps to the topology/nodes root directory itself for
+    explicit "~") maps to the topology/home root directory itself for
     the plain and ":" forms; "transform@~..." is rejected, since the
     root isn't a node and has no transforms of its own.
     """
@@ -35,7 +35,7 @@ def resolve(target: str) -> Path:
         node_expr, rel = target.split(":", 1)
         node_path = expand(node_expr)
         if node_path == ROOT:
-            base = scaffold._NODES_ROOT
+            base = scaffold._HOME_ROOT
         else:
             if not _node_dir(node_path).is_dir():
                 raise TopologyValidationError(f"no node at {node_path!r}")

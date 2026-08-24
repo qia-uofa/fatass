@@ -6,6 +6,9 @@ from fatass.topology.examples.writings.seminar.materials.papers import (
 
 def build(papers: Papers):
     fatass.free(
+        silent=True,
+        model="sonnet",
+        tools="Read,Write,Edit,Glob,Grep,Bash",  # Bash: reading the reference PDFs needs it, else Read misreads them as password-protected
         readable=[papers],
         prompt=(
             f"Read every file in the readable directory for this node's "

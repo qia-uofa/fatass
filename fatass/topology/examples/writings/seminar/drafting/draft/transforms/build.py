@@ -6,6 +6,9 @@ from fatass.topology.examples.writings.seminar.style import Node as Style
 
 def build(skeleton: Skeleton, style: Style, materials: Materials):
     plan = fatass.free(
+        silent=True,
+        model="sonnet",
+        tools="Read,Write,Edit,Glob,Grep",
         readable=[skeleton],
         prompt=(
             f"Read `skeleton.md` in the readable directory for this node's "
@@ -50,6 +53,9 @@ def build(skeleton: Skeleton, style: Style, materials: Materials):
             )
 
         fatass.free(
+            silent=True,
+            model="opus",
+            tools="Read,Write,Edit,Glob,Grep,Bash",  # Bash: the subject/reference PDFs under `materials` need it, else Read misreads them as password-protected
             readable=[style, materials],
             prompt=(
                 f"{continuity_note}\n\n"

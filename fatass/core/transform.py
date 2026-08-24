@@ -51,7 +51,7 @@ def validate_node(node_cls: type[Node]) -> None:
     assets_dir = node_cls._assets_dir()
     if not assets_dir.is_dir():
         raise TopologyValidationError(
-            f"{node_cls._topology_path()} has no corresponding nodes/ "
+            f"{node_cls._topology_path()} has no corresponding home/ "
             f"directory (expected {assets_dir})"
         )
 

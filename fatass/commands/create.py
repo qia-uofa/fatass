@@ -1,6 +1,8 @@
 import argparse
 import sys
 
+from .._internal.prompts import load_system_prompt
+from ..core.free import DEFAULT_ALLOWED_TOOLS, DEFAULT_PERMISSION_MODE
 from ..errors import FreeError, TopologyValidationError
 from ..topology_ops.scaffold import create_node, create_transform, refine_node, refine_transform
 from ._targets import parse_maybe_at_target
@@ -19,6 +21,26 @@ class CreateCommand(Command):
         parser.add_argument(
             "--prompt", help="after creating, use the Claude CLI to flesh it out"
         )
+        parser.add_argument(
+            "--silent",
+            action="store_true",
+            help="run the agent call headlessly instead of opening a live conversation",
+        )
+        parser.add_argument(
+            "--permission-mode",
+            default=DEFAULT_PERMISSION_MODE,
+            help=f"Claude CLI --permission-mode to use (default: {DEFAULT_PERMISSION_MODE})",
+        )
+        parser.add_argument(
+            "--model",
+            default=None,
+            help="Claude CLI --model to use (default: whatever `claude` is already configured with)",
+        )
+        parser.add_argument(
+            "--tools",
+            default=DEFAULT_ALLOWED_TOOLS,
+            help=f"Claude CLI --allowedTools to use (default: {DEFAULT_ALLOWED_TOOLS})",
+        )
 
     def run(self, args: argparse.Namespace) -> int:
         try:
@@ -27,12 +49,29 @@ class CreateCommand(Command):
                 created = create_transform(node_path, transform_name)
                 label = f"{node_path}.transforms.{transform_name}"
                 if created and args.prompt:
-                    refine_transform(node_path, transform_name, args.prompt)
+                    refine_transform(
+                        node_path,
+                        transform_name,
+                        args.prompt,
+                        system_prompt=load_system_prompt("create"),
+                        permission_mode=args.permission_mode,
+                        silent=args.silent,
+                        model=args.model,
+                        tools=args.tools,
+                    )
             else:
                 created = create_node(node_path)
                 label = node_path
                 if created and args.prompt:
-                    refine_node(node_path, args.prompt)
+                    refine_node(
+                        node_path,
+                        args.prompt,
+                        system_prompt=load_system_prompt("create"),
+                        permission_mode=args.permission_mode,
+                        silent=args.silent,
+                        model=args.model,
+                        tools=args.tools,
+                    )
         except (TopologyValidationError, FreeError, ValueError) as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1

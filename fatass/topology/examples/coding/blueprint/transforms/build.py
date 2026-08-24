@@ -6,6 +6,9 @@ def build(spec: Spec, side_note: str = ""):
     note = f"\n\nAdditional note to take into account: {side_note}\n" if side_note else ""
 
     plan = fatass.free(
+        silent=True,
+        model="sonnet",
+        tools="Read,Write,Edit,Glob,Grep",
         readable=[spec],
         prompt=(
             f"Read `spec.json` in the readable directory for this node's "
@@ -63,6 +66,9 @@ def build(spec: Spec, side_note: str = ""):
         )
 
         fatass.free(
+            silent=True,
+            model="sonnet",
+            tools="Read,Write,Edit,Glob,Grep",
             readable=[spec],
             prompt=(
                 f"Read `spec.json` in the readable directory for this "
@@ -86,6 +92,9 @@ def build(spec: Spec, side_note: str = ""):
         )
 
         fatass.free(
+            silent=True,
+            model="sonnet",
+            tools="Read,Write,Edit,Glob,Grep",
             readable=[spec],
             prompt=(
                 f"Read `{filename}` in the current directory, which you (or "
@@ -110,6 +119,9 @@ def build(spec: Spec, side_note: str = ""):
     if len(files) > 1:
         all_files = ", ".join(filenames)
         fatass.free(
+            silent=True,
+            model="sonnet",
+            tools="Read,Write,Edit,Glob,Grep",
             readable=[spec],
             prompt=(
                 f"Read every one of these blueprint files in the current "

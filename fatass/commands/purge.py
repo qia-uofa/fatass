@@ -8,7 +8,7 @@ from .base import Command
 
 class PurgeCommand(Command):
     name = "purge"
-    help = "remove a node's own content from nodes/ (not its subnode directories)"
+    help = "remove a node's own content from home/ (not its subnode directories)"
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument("node_path", help="node.path")

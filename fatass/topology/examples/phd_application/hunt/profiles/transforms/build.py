@@ -5,6 +5,9 @@ from fatass.topology.examples.phd_application.profile import Node as Profile
 
 def build(landscape: Landscape, profile: Profile):
     fatass.free(
+        silent=True,
+        model="sonnet",
+        tools="Read,Write,Edit,Glob,Grep,WebSearch,WebFetch",
         readable=[landscape, profile],
         prompt=(
             f"Read `landscape.json` in the readable directory for this "

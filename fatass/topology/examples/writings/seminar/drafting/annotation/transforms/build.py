@@ -9,6 +9,9 @@ from fatass.topology.examples.writings.seminar.style.ai_pattern import (
 
 def build(draft: Draft, ai_pattern: AiPattern):
     fatass.free(
+        silent=True,
+        model="opus",
+        tools="Read,Write,Edit,Glob,Grep",
         readable=[draft, ai_pattern],
         prompt=(
             f"Read every file in the readable directory for this node's "

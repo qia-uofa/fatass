@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from .._internal.paths import NODES_ROOT
+from .._internal.paths import HOME_ROOT
 
 _TOPOLOGY_PREFIX = "fatass.topology."
 
@@ -32,4 +32,4 @@ class Node:
     @classmethod
     def _assets_dir(cls) -> Path:
         relative = cls._topology_path().replace(".", "/")
-        return NODES_ROOT / relative
+        return HOME_ROOT / relative

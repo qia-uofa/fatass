@@ -4,6 +4,9 @@ from fatass.topology.examples.phd_application.profile import Node as Profile
 
 def build(profile: Profile):
     fatass.free(
+        silent=True,
+        model="sonnet",
+        tools="Read,Write,Edit,Glob,Grep,WebSearch,WebFetch",
         readable=[profile],
         prompt=(
             f"Read `preferences.json` in the readable directory for this "

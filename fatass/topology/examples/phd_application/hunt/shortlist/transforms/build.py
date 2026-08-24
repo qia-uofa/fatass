@@ -5,6 +5,9 @@ from fatass.topology.examples.phd_application.profile import Node as Profile
 
 def build(profiles: Profiles, profile: Profile):
     fatass.free(
+        silent=True,
+        model="opus",
+        tools="Read,Write,Edit,Glob,Grep",
         readable=[profiles, profile],
         prompt=(
             f"Read `profiles.json` in the readable directory for this "
