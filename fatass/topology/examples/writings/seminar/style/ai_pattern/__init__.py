@@ -1,3 +1,3 @@
-from .node import Node
+from .ai_pattern import AiPattern
 
-__all__ = ["Node"]
+__all__ = ["AiPattern"]

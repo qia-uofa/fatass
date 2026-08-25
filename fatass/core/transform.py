@@ -3,16 +3,21 @@ import hashlib
 import importlib
 import inspect
 import json
+import re
 import typing
 from pathlib import Path
 from typing import Any, Callable
 
+from .._internal.naming import pascal_case
 from .._internal.paths import REPO_ROOT
 from ..errors import TopologyValidationError
 from .free import _current_node
 from .node import Node
+from .node_list import NodeList
 
 _CACHE_PATH = REPO_ROOT / ".fatass" / "cache.json"
+
+_INDEX_SEGMENT = re.compile(r"^(\w+)\[(\d+)\]$")
 
 
 @dataclasses.dataclass
@@ -39,10 +44,11 @@ def _import_node(node_path: str) -> type[Node]:
         raise TopologyValidationError(
             f"no node at {node_path!r} (no such module {module_name})"
         ) from exc
-    node_cls = getattr(module, "Node", None)
+    class_name = pascal_case(node_path.rsplit(".", 1)[-1])
+    node_cls = getattr(module, class_name, None)
     if node_cls is None:
         raise TopologyValidationError(
-            f"{module.__name__} does not define a Node class"
+            f"{module.__name__} does not define a {class_name} class"
         )
     return node_cls
 
@@ -56,28 +62,90 @@ def validate_node(node_cls: type[Node]) -> None:
         )
 
 
+def _split_index(node_path: str) -> tuple[str, int | None, str]:
+    """Split a node path with at most one `name[N]` segment (e.g.
+    "members[2].info") into (list_node_path, index, suffix) — here
+    ("members", 2, "info"). No bracket anywhere returns (node_path, None,
+    "") unchanged. More than one indexed segment isn't supported (nested
+    NodeLists aren't part of this design)."""
+    parts = node_path.split(".")
+    matches = [(i, m) for i, part in enumerate(parts) if (m := _INDEX_SEGMENT.match(part))]
+    if not matches:
+        return node_path, None, ""
+    if len(matches) > 1:
+        raise ValueError(f"{node_path!r} has more than one indexed segment")
+
+    i, m = matches[0]
+    list_node_path = ".".join(parts[: i] + [m.group(1)])
+    index = int(m.group(2))
+    suffix = ".".join(parts[i + 1 :])
+    return list_node_path, index, suffix
+
+
+def _resolve_owning_node(node_path: str) -> tuple[type[Node], str, str]:
+    """(owning_node_class, discovery_path, cache_key_prefix) for
+    `node_path` — plain (no `[N]`) or indexed into a `NodeList`.
+
+    `discovery_path` is always the *real* topology path (e.g.
+    "members.info"), since `discover()` reflects on that node's own real
+    package directory, which is the same regardless of which item is
+    being addressed. `cache_key_prefix` bakes the index in
+    ("members[2].info") so different items never share a cache entry.
+    `owning_node_class` is the class actually passed to `_call()` — for
+    an indexed target this is the dynamically-derived, depth-scoped class
+    from `NodeList.__getitem__`/`_NodeListItem.__getattr__`, not the
+    literal (dummy-head) schema class `_import_node` would otherwise
+    return."""
+    list_node_path, index, suffix = _split_index(node_path)
+    if index is None:
+        return _import_node(node_path), node_path, node_path
+
+    list_cls = _import_node(list_node_path)
+    if not issubclass(list_cls, NodeList):
+        raise TopologyValidationError(
+            f"{list_node_path!r} is not a NodeList, can't be indexed"
+        )
+
+    item = list_cls()[index]  # bounds-checked, raises TopologyValidationError
+    if not suffix:
+        raise TopologyValidationError(
+            f"{list_node_path}[{index}] needs a schema child, e.g. "
+            f"{list_node_path}[{index}].<name> — the list node itself has "
+            f"no transforms of its own"
+        )
+
+    node_cls = item
+    for name in suffix.split("."):
+        node_cls = getattr(node_cls, name)  # first hop: NodeListItem.__getattr__
+
+    discovery_path = f"{list_node_path}.{suffix}"
+    cache_key_prefix = f"{list_node_path}[{index}].{suffix}"
+    return node_cls, discovery_path, cache_key_prefix
+
+
 def _load_transform_function(node_path: str, stem: str):
-    module_name = f"{_module_name(node_path)}.transforms.{stem}"
+    module_name = f"{_module_name(node_path)}.{stem}"
     module = importlib.import_module(module_name)
     return getattr(module, stem, None)
 
 
 def discover(node_path: str) -> list[TransformSpec]:
-    """Every transform under node_path/transforms/ — one function per file,
-    named the same as its module stem. A transform needs no Node-typed
-    parameter: a function with none still counts, just with an empty
-    `dependencies` dict (see build_graph()'s "None" node for how that's
-    drawn)."""
-    transforms_pkg_name = f"{_module_name(node_path)}.transforms"
+    """Every transform sitting directly in node_path's own package
+    directory — one function per file, named the same as its module stem.
+    A transform needs no Node-typed parameter: a function with none still
+    counts, just with an empty `dependencies` dict (see build_graph()'s
+    "None" node for how that's drawn)."""
+    module_name = _module_name(node_path)
     try:
-        transforms_pkg = importlib.import_module(transforms_pkg_name)
+        package = importlib.import_module(module_name)
     except ModuleNotFoundError:
         return []
 
+    own_file_stem = node_path.rsplit(".", 1)[-1]
     specs = []
-    for path in transforms_pkg.__path__:
+    for path in package.__path__:
         for file in sorted(Path(path).glob("*.py")):
-            if file.stem == "__init__":
+            if file.stem in ("__init__", own_file_stem):
                 continue
             func = _load_transform_function(node_path, file.stem)
             if func is None or not callable(func):
@@ -121,12 +189,12 @@ def _input_hash(spec: TransformSpec) -> str:
 def _load_cache() -> dict:
     if not _CACHE_PATH.exists():
         return {}
-    return json.loads(_CACHE_PATH.read_text())
+    return json.loads(_CACHE_PATH.read_text(encoding="utf-8"))
 
 
 def _save_cache(cache: dict) -> None:
     _CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    _CACHE_PATH.write_text(json.dumps(cache, indent=2))
+    _CACHE_PATH.write_text(json.dumps(cache, indent=2), encoding="utf-8")
 
 
 def _call(owning_node: type[Node], spec: TransformSpec, context: dict[str, Any]) -> None:
@@ -143,8 +211,8 @@ def _call(owning_node: type[Node], spec: TransformSpec, context: dict[str, Any])
         _current_node.reset(token)
 
 
-def _run_one(node_path: str, owning_node: type[Node], spec: TransformSpec, force: bool) -> bool:
-    cache_key = f"{node_path}.transforms.{spec.name}"
+def _run_one(cache_key_prefix: str, owning_node: type[Node], spec: TransformSpec, force: bool) -> bool:
+    cache_key = f"{cache_key_prefix}.transforms.{spec.name}"
     input_hash = _input_hash(spec)
     cache = _load_cache()
     if not force and cache.get(cache_key) == input_hash:
@@ -159,11 +227,13 @@ def _run_one(node_path: str, owning_node: type[Node], spec: TransformSpec, force
 
 def run_transform(node_path: str, transform_name: str | None = None, *, force: bool = False) -> dict[str, bool]:
     """Run one transform (if `transform_name` is given) or every transform
-    discovered under `node_path`. Returns {transform_name: ran_bool}."""
-    owning_node = _import_node(node_path)
+    discovered under `node_path`. `node_path` may be a plain node path or
+    one indexed into a `NodeList` (e.g. "members[2].info") — see
+    `_resolve_owning_node`. Returns {transform_name: ran_bool}."""
+    owning_node, discovery_path, cache_key_prefix = _resolve_owning_node(node_path)
     validate_node(owning_node)
 
-    specs = discover(node_path)
+    specs = discover(discovery_path)
     if transform_name is not None:
         specs = [s for s in specs if s.name == transform_name]
         if not specs:
@@ -171,7 +241,9 @@ def run_transform(node_path: str, transform_name: str | None = None, *, force: b
                 f"no transform named {transform_name!r} under {node_path}"
             )
 
-    return {spec.name: _run_one(node_path, owning_node, spec, force) for spec in specs}
+    return {
+        spec.name: _run_one(cache_key_prefix, owning_node, spec, force) for spec in specs
+    }
 
 
 _CONTEXT_COERCERS = {
@@ -204,11 +276,13 @@ def apply_transform(node_path: str, transform_name: str, context: dict[str, str]
     """Run one transform with explicit context arguments, unconditionally
     (no cache check, no cache write — the cache only represents the
     default-arguments `run_transform` flow; a custom-argument `apply` call
-    isn't comparable to it)."""
-    owning_node = _import_node(node_path)
+    isn't comparable to it). `node_path` may be a plain node path or one
+    indexed into a `NodeList` (e.g. "members[2].info") — see
+    `_resolve_owning_node`."""
+    owning_node, discovery_path, _cache_key_prefix = _resolve_owning_node(node_path)
     validate_node(owning_node)
 
-    specs = [s for s in discover(node_path) if s.name == transform_name]
+    specs = [s for s in discover(discovery_path) if s.name == transform_name]
     if not specs:
         raise ValueError(f"no transform named {transform_name!r} under {node_path}")
     spec = specs[0]

@@ -1,3 +1,3 @@
-from .node import Node
+from .voice import Voice
 
-__all__ = ["Node"]
+__all__ = ["Voice"]

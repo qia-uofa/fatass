@@ -1,3 +1,3 @@
-from .node import Node
+from .shortlist import Shortlist
 
-__all__ = ["Node"]
+__all__ = ["Shortlist"]

@@ -1,3 +1,3 @@
-from .node import Node
+from .writing_sample import WritingSample
 
-__all__ = ["Node"]
+__all__ = ["WritingSample"]

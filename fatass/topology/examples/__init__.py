@@ -1,3 +1,3 @@
-from .node import Node
+from .examples import Examples
 
-__all__ = ["Node"]
+__all__ = ["Examples"]

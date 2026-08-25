@@ -1,3 +1,3 @@
-from .node import Node
+from .landscape import Landscape
 
-__all__ = ["Node"]
+__all__ = ["Landscape"]

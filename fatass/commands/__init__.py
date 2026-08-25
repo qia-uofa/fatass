@@ -1,11 +1,13 @@
 from .apply import ApplyCommand
 from .archive import ArchiveCommand
+from .bind import BindCommand
 from .build import BuildCommand
 from .cd import CdCommand
 from .copy import CopyCommand
 from .create import CreateCommand
 from .free import FreeCommand
 from .graph import GraphCommand
+from .ls import LsCommand
 from .modify import ModifyCommand
 from .move import MoveCommand
 from .purge import PurgeCommand
@@ -15,6 +17,7 @@ from .retrieve import RetrieveCommand
 from .run import RunCommand
 from .sh import ShCommand
 from .shell import ShellCommand
+from .unbind import UnbindCommand
 
 ALL_COMMANDS = [
     RunCommand(),
@@ -33,6 +36,9 @@ ALL_COMMANDS = [
     CdCommand(),
     PwdCommand(),
     GraphCommand(),
+    LsCommand(),
+    BindCommand(),
+    UnbindCommand(),
     ShellCommand(),
 ]
 

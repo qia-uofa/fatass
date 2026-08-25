@@ -1,8 +1,38 @@
 @startuml
 class "topology" as topology
 together {
+  class "cv" as n_cv
   class "examples" as n_examples
 }
+n_cv .up.> topology
+together {
+  class "audit" as n_cv_audit
+  class "current_cv" as n_cv_current_cv
+  class "draft" as n_cv_draft
+  class "materials" as n_cv_materials
+  class "preferences" as n_cv_preferences
+}
+n_cv_audit .up.> n_cv
+n_cv_current_cv .up.> n_cv
+n_cv_draft .up.> n_cv
+n_cv_materials .up.> n_cv
+together {
+  class "education" as n_cv_materials_education
+  class "funding_and_honors" as n_cv_materials_funding_and_honors
+  class "personal_projects" as n_cv_materials_personal_projects
+  class "positions" as n_cv_materials_positions
+  class "publications_and_presentations" as n_cv_materials_publications_and_presentations
+  class "references" as n_cv_materials_references
+  class "teaching_and_service" as n_cv_materials_teaching_and_service
+}
+n_cv_materials_education .up.> n_cv_materials
+n_cv_materials_funding_and_honors .up.> n_cv_materials
+n_cv_materials_personal_projects .up.> n_cv_materials
+n_cv_materials_positions .up.> n_cv_materials
+n_cv_materials_publications_and_presentations .up.> n_cv_materials
+n_cv_materials_references .up.> n_cv_materials
+n_cv_materials_teaching_and_service .up.> n_cv_materials
+n_cv_preferences .up.> n_cv
 n_examples .up.> topology
 together {
   class "coding" as n_examples_coding
@@ -66,7 +96,6 @@ n_examples_phd_application_profile_questionnaire .up.> n_examples_phd_applicatio
 n_examples_writings .up.> n_examples
 together {
   class "seminar" as n_examples_writings_seminar
-  class "thesis" as n_examples_writings_thesis
 }
 n_examples_writings_seminar .up.> n_examples_writings
 together {
@@ -129,124 +158,22 @@ together {
 }
 n_examples_writings_seminar_style_voice_narrative .up.> n_examples_writings_seminar_style_voice
 n_examples_writings_seminar_style_voice_tone .up.> n_examples_writings_seminar_style_voice
-n_examples_writings_thesis .up.> n_examples_writings
-together {
-  class "audit" as n_examples_writings_thesis_audit
-  class "defense" as n_examples_writings_thesis_defense
-  class "design" as n_examples_writings_thesis_design
-  class "drafting" as n_examples_writings_thesis_drafting
-  class "experiments" as n_examples_writings_thesis_experiments
-  class "materials" as n_examples_writings_thesis_materials
-  class "review" as n_examples_writings_thesis_review
-  class "style" as n_examples_writings_thesis_style
-}
-n_examples_writings_thesis_audit .up.> n_examples_writings_thesis
-together {
-  class "consistency" as n_examples_writings_thesis_audit_consistency
-  class "draft" as n_examples_writings_thesis_audit_draft
-  class "draft_star" as n_examples_writings_thesis_audit_draft_star
-  class "issues" as n_examples_writings_thesis_audit_issues
-}
-n_examples_writings_thesis_audit_consistency .up.> n_examples_writings_thesis_audit
-n_examples_writings_thesis_audit_draft .up.> n_examples_writings_thesis_audit
-n_examples_writings_thesis_audit_draft_star .up.> n_examples_writings_thesis_audit
-n_examples_writings_thesis_audit_issues .up.> n_examples_writings_thesis_audit
-n_examples_writings_thesis_defense .up.> n_examples_writings_thesis
-together {
-  class "qa_prep" as n_examples_writings_thesis_defense_qa_prep
-  class "slides" as n_examples_writings_thesis_defense_slides
-}
-n_examples_writings_thesis_defense_qa_prep .up.> n_examples_writings_thesis_defense
-n_examples_writings_thesis_defense_slides .up.> n_examples_writings_thesis_defense
-n_examples_writings_thesis_design .up.> n_examples_writings_thesis
-together {
-  class "method" as n_examples_writings_thesis_design_method
-  class "protocol" as n_examples_writings_thesis_design_protocol
-  class "questions" as n_examples_writings_thesis_design_questions
-}
-n_examples_writings_thesis_design_method .up.> n_examples_writings_thesis_design
-n_examples_writings_thesis_design_protocol .up.> n_examples_writings_thesis_design
-n_examples_writings_thesis_design_questions .up.> n_examples_writings_thesis_design
-n_examples_writings_thesis_drafting .up.> n_examples_writings_thesis
-together {
-  class "annotation" as n_examples_writings_thesis_drafting_annotation
-  class "assembly" as n_examples_writings_thesis_drafting_assembly
-  class "chapters" as n_examples_writings_thesis_drafting_chapters
-  class "outline" as n_examples_writings_thesis_drafting_outline
-}
-n_examples_writings_thesis_drafting_annotation .up.> n_examples_writings_thesis_drafting
-n_examples_writings_thesis_drafting_assembly .up.> n_examples_writings_thesis_drafting
-n_examples_writings_thesis_drafting_chapters .up.> n_examples_writings_thesis_drafting
-together {
-  class "conclusion" as n_examples_writings_thesis_drafting_chapters_conclusion
-  class "discussion" as n_examples_writings_thesis_drafting_chapters_discussion
-  class "introduction" as n_examples_writings_thesis_drafting_chapters_introduction
-  class "methodology" as n_examples_writings_thesis_drafting_chapters_methodology
-  class "related_work" as n_examples_writings_thesis_drafting_chapters_related_work
-  class "results" as n_examples_writings_thesis_drafting_chapters_results
-}
-n_examples_writings_thesis_drafting_chapters_conclusion .up.> n_examples_writings_thesis_drafting_chapters
-n_examples_writings_thesis_drafting_chapters_discussion .up.> n_examples_writings_thesis_drafting_chapters
-n_examples_writings_thesis_drafting_chapters_introduction .up.> n_examples_writings_thesis_drafting_chapters
-n_examples_writings_thesis_drafting_chapters_methodology .up.> n_examples_writings_thesis_drafting_chapters
-n_examples_writings_thesis_drafting_chapters_related_work .up.> n_examples_writings_thesis_drafting_chapters
-n_examples_writings_thesis_drafting_chapters_results .up.> n_examples_writings_thesis_drafting_chapters
-n_examples_writings_thesis_drafting_outline .up.> n_examples_writings_thesis_drafting
-n_examples_writings_thesis_experiments .up.> n_examples_writings_thesis
-together {
-  class "ablations" as n_examples_writings_thesis_experiments_ablations
-  class "analysis" as n_examples_writings_thesis_experiments_analysis
-  class "harness" as n_examples_writings_thesis_experiments_harness
-  class "main_run" as n_examples_writings_thesis_experiments_main_run
-  class "pilot" as n_examples_writings_thesis_experiments_pilot
-}
-n_examples_writings_thesis_experiments_ablations .up.> n_examples_writings_thesis_experiments
-n_examples_writings_thesis_experiments_analysis .up.> n_examples_writings_thesis_experiments
-n_examples_writings_thesis_experiments_harness .up.> n_examples_writings_thesis_experiments
-n_examples_writings_thesis_experiments_main_run .up.> n_examples_writings_thesis_experiments
-n_examples_writings_thesis_experiments_pilot .up.> n_examples_writings_thesis_experiments
-n_examples_writings_thesis_materials .up.> n_examples_writings_thesis
-together {
-  class "advisor_feedback" as n_examples_writings_thesis_materials_advisor_feedback
-  class "dataset" as n_examples_writings_thesis_materials_dataset
-  class "literature" as n_examples_writings_thesis_materials_literature
-  class "proposal" as n_examples_writings_thesis_materials_proposal
-}
-n_examples_writings_thesis_materials_advisor_feedback .up.> n_examples_writings_thesis_materials
-n_examples_writings_thesis_materials_dataset .up.> n_examples_writings_thesis_materials
-n_examples_writings_thesis_materials_literature .up.> n_examples_writings_thesis_materials
-together {
-  class "corpus" as n_examples_writings_thesis_materials_literature_corpus
-  class "notes" as n_examples_writings_thesis_materials_literature_notes
-}
-n_examples_writings_thesis_materials_literature_corpus .up.> n_examples_writings_thesis_materials_literature
-n_examples_writings_thesis_materials_literature_notes .up.> n_examples_writings_thesis_materials_literature
-n_examples_writings_thesis_materials_proposal .up.> n_examples_writings_thesis_materials
-n_examples_writings_thesis_review .up.> n_examples_writings_thesis
-together {
-  class "gap" as n_examples_writings_thesis_review_gap
-  class "related_work_plan" as n_examples_writings_thesis_review_related_work_plan
-  class "synthesis" as n_examples_writings_thesis_review_synthesis
-}
-n_examples_writings_thesis_review_gap .up.> n_examples_writings_thesis_review
-n_examples_writings_thesis_review_related_work_plan .up.> n_examples_writings_thesis_review
-n_examples_writings_thesis_review_synthesis .up.> n_examples_writings_thesis_review
-n_examples_writings_thesis_style .up.> n_examples_writings_thesis
-together {
-  class "ai_pattern" as n_examples_writings_thesis_style_ai_pattern
-  class "voice" as n_examples_writings_thesis_style_voice
-}
-n_examples_writings_thesis_style_ai_pattern .up.> n_examples_writings_thesis_style
-n_examples_writings_thesis_style_voice .up.> n_examples_writings_thesis_style
-together {
-  class "convention" as n_examples_writings_thesis_style_voice_convention
-  class "register" as n_examples_writings_thesis_style_voice_register
-}
-n_examples_writings_thesis_style_voice_convention .up.> n_examples_writings_thesis_style_voice
-n_examples_writings_thesis_style_voice_register .up.> n_examples_writings_thesis_style_voice
 
 class "None" as none_node
 
+n_cv_draft -[bold]right-> n_cv_audit
+n_cv_materials -[bold]right-> n_cv_audit
+n_cv_preferences -[bold]right-> n_cv_audit
+n_cv_materials -[bold]right-> n_cv_draft
+n_cv_preferences -[bold]right-> n_cv_draft
+n_cv_current_cv -[bold]right-> n_cv_materials_education
+n_cv_current_cv -[bold]right-> n_cv_materials_funding_and_honors
+n_cv_current_cv -[bold]right-> n_cv_materials_personal_projects
+n_cv_current_cv -[bold]right-> n_cv_materials_positions
+n_cv_current_cv -[bold]right-> n_cv_materials_publications_and_presentations
+n_cv_current_cv -[bold]right-> n_cv_materials_references
+n_cv_current_cv -[bold]right-> n_cv_materials_teaching_and_service
+none_node -[bold]-> n_cv_preferences
 n_examples_coding_spec -[bold]right-> n_examples_coding_blueprint
 none_node -[bold]-> n_examples_coding_spec_app
 n_examples_phd_application_profile -[bold]right-> n_examples_phd_application_hunt_landscape
@@ -273,29 +200,4 @@ n_examples_writings_seminar_skeleton -[bold]right-> n_examples_writings_seminar_
 n_examples_writings_seminar_style -[bold]right-> n_examples_writings_seminar_drafting_draft
 n_examples_writings_seminar_materials -[bold]right-> n_examples_writings_seminar_drafting_draft
 n_examples_writings_seminar_analysis -[bold]right-> n_examples_writings_seminar_skeleton
-none_node -[bold]-> n_examples_writings_thesis_audit_consistency
-none_node -[bold]-> n_examples_writings_thesis_audit_draft
-none_node -[bold]-> n_examples_writings_thesis_audit_draft_star
-none_node -[bold]-> n_examples_writings_thesis_defense_qa_prep
-none_node -[bold]-> n_examples_writings_thesis_defense_slides
-none_node -[bold]-> n_examples_writings_thesis_design_method
-none_node -[bold]-> n_examples_writings_thesis_design_protocol
-none_node -[bold]-> n_examples_writings_thesis_design_questions
-none_node -[bold]-> n_examples_writings_thesis_drafting_annotation
-none_node -[bold]-> n_examples_writings_thesis_drafting_assembly
-none_node -[bold]-> n_examples_writings_thesis_drafting_chapters_conclusion
-none_node -[bold]-> n_examples_writings_thesis_drafting_chapters_discussion
-none_node -[bold]-> n_examples_writings_thesis_drafting_chapters_introduction
-none_node -[bold]-> n_examples_writings_thesis_drafting_chapters_methodology
-none_node -[bold]-> n_examples_writings_thesis_drafting_chapters_related_work
-none_node -[bold]-> n_examples_writings_thesis_drafting_chapters_results
-none_node -[bold]-> n_examples_writings_thesis_drafting_outline
-none_node -[bold]-> n_examples_writings_thesis_experiments_ablations
-none_node -[bold]-> n_examples_writings_thesis_experiments_analysis
-none_node -[bold]-> n_examples_writings_thesis_experiments_harness
-none_node -[bold]-> n_examples_writings_thesis_experiments_main_run
-none_node -[bold]-> n_examples_writings_thesis_experiments_pilot
-none_node -[bold]-> n_examples_writings_thesis_review_gap
-none_node -[bold]-> n_examples_writings_thesis_review_related_work_plan
-none_node -[bold]-> n_examples_writings_thesis_review_synthesis
 @enduml

@@ -1,3 +1,3 @@
-from .node import Node
+from .analysis import Analysis
 
-__all__ = ["Node"]
+__all__ = ["Analysis"]

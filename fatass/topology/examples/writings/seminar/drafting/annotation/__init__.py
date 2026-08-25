@@ -1,3 +1,3 @@
-from .node import Node
+from .annotation import Annotation
 
-__all__ = ["Node"]
+__all__ = ["Annotation"]

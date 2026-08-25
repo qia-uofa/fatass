@@ -11,7 +11,7 @@ def read(path: Path) -> dict[str, str]:
         return {}
 
     values = {}
-    for line in path.read_text().splitlines():
+    for line in path.read_text(encoding="utf-8").splitlines():
         stripped = line.strip()
         if not stripped or stripped.startswith("#") or "=" not in stripped:
             continue
@@ -29,7 +29,7 @@ def write_var(path: Path, key: str, value: str) -> None:
     that key in place, or appending a new one. Other lines (including
     comments) are left untouched. Creates the file (and its parent dir)
     if it doesn't exist yet."""
-    lines = path.read_text().splitlines() if path.is_file() else []
+    lines = path.read_text(encoding="utf-8").splitlines() if path.is_file() else []
     new_line = f"{key}={value}"
 
     for i, line in enumerate(lines):
@@ -43,4 +43,4 @@ def write_var(path: Path, key: str, value: str) -> None:
         lines.append(new_line)
 
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(lines) + "\n")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")

@@ -152,5 +152,5 @@ def write_graph(output: Path | None, root: str | None = None) -> Path:
     if output is None:
         output = Path(f"./{root if root is not None else 'topology'}.puml")
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(build_graph(root))
+    output.write_text(build_graph(root), encoding="utf-8")
     return output

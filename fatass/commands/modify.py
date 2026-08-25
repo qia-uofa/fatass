@@ -1,8 +1,9 @@
 import argparse
 import sys
 
-from .._internal.prompts import load_system_prompt
+from .._internal.prompts import load_topology_edit_system_prompt
 from ..core.free import DEFAULT_ALLOWED_TOOLS, DEFAULT_PERMISSION_MODE
+from ..core.transform import _import_node
 from ..errors import FreeError, TopologyValidationError
 from ..topology_ops.scaffold import refine_node, refine_transform
 from ._targets import parse_maybe_at_target
@@ -48,7 +49,7 @@ class ModifyCommand(Command):
                     node_path,
                     transform_name,
                     args.prompt,
-                    system_prompt=load_system_prompt("modify"),
+                    system_prompt=load_topology_edit_system_prompt("modify"),
                     permission_mode=args.permission_mode,
                     silent=args.silent,
                     model=args.model,
@@ -56,10 +57,19 @@ class ModifyCommand(Command):
                 )
                 label = f"{node_path}.transforms.{transform_name}"
             else:
+                try:
+                    # Best-effort: the node's own file might currently be
+                    # broken (e.g. the very thing this modify call is
+                    # meant to fix), in which case importing it for its
+                    # class-specific prompt hook isn't worth failing the
+                    # command over.
+                    extra = _import_node(node_path).modify_sys_prompt()
+                except Exception:
+                    extra = None
                 refine_node(
                     node_path,
                     args.prompt,
-                    system_prompt=load_system_prompt("modify"),
+                    system_prompt=load_topology_edit_system_prompt("modify", extra=extra),
                     permission_mode=args.permission_mode,
                     silent=args.silent,
                     model=args.model,

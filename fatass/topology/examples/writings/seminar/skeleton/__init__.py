@@ -1,3 +1,3 @@
-from .node import Node
+from .skeleton import Skeleton
 
-__all__ = ["Node"]
+__all__ = ["Skeleton"]

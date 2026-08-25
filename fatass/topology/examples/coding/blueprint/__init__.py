@@ -1,3 +1,3 @@
-from .node import Node
+from .blueprint import Blueprint
 
-__all__ = ["Node"]
+__all__ = ["Blueprint"]

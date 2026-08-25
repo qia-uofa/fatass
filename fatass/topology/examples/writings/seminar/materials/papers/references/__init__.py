@@ -1,3 +1,3 @@
-from .node import Node
+from .references import References
 
-__all__ = ["Node"]
+__all__ = ["References"]

@@ -1,3 +1,3 @@
-from .node import Node
+from .phd_application import PhdApplication
 
-__all__ = ["Node"]
+__all__ = ["PhdApplication"]

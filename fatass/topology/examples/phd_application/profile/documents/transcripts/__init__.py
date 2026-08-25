@@ -1,3 +1,3 @@
-from .node import Node
+from .transcripts import Transcripts
 
-__all__ = ["Node"]
+__all__ = ["Transcripts"]

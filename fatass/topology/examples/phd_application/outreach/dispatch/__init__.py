@@ -1,3 +1,3 @@
-from .node import Node
+from .dispatch import Dispatch
 
-__all__ = ["Node"]
+__all__ = ["Dispatch"]

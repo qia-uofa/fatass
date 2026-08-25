@@ -1,5 +1,9 @@
+import re
+
 from ..errors import TopologyValidationError
 from ..resolve.cwd import ROOT, expand
+
+_BASE_CLASS_SUFFIX = re.compile(r"\(([A-Za-z_][A-Za-z0-9_]*)\)$")
 
 
 def resolve_node_path(raw: str) -> str:
@@ -44,6 +48,25 @@ def parse_maybe_at_target(target: str) -> tuple[str, str | None]:
         transform_name, node_path = target.split("@", 1)
         return resolve_node_path(node_path), transform_name
     return resolve_node_path(target), None
+
+
+def parse_create_target(target: str) -> tuple[str, str | None, str]:
+    """Same as parse_maybe_at_target, but also accepts a trailing
+    "(NodeSubclass)" on the target — e.g. "members(NodeList)" or
+    "build@members(NodeList)" — naming the `fatass.<NodeSubclass>` base
+    class a newly-created node should subclass instead of the default
+    `fatass.Node`. Returns (node_path, transform_name, base_class); the
+    suffix is only meaningful for creating a node, so it's stripped
+    before the rest of the target is parsed as usual. Only used by
+    `create` — every other command's targets don't create nodes."""
+    match = _BASE_CLASS_SUFFIX.search(target)
+    if match:
+        base_class = match.group(1)
+        target = target[: match.start()]
+    else:
+        base_class = "Node"
+    node_path, transform_name = parse_maybe_at_target(target)
+    return node_path, transform_name, base_class
 
 
 def parse_kv_args(pairs: list[str]) -> dict[str, str]:

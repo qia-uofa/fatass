@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any
 
 from .._internal.logs import get_logger
-from .._internal.paths import TOPOLOGY_ROOT
 from .._internal.prompts import load_system_prompt
 from ..errors import FreeCoercionError, FreeError
 from .node import Node
@@ -220,7 +219,7 @@ def free(
             f"write one"
         )
     try:
-        raw = json.loads(sentinel_path.read_text())
+        raw = json.loads(sentinel_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise FreeCoercionError(f"{_RESULT_SENTINEL} is not valid JSON") from exc
     finally:
@@ -240,22 +239,32 @@ def free_topology(
     tools: str = DEFAULT_ALLOWED_TOOLS,
 ) -> None:
     """Invoke the Claude CLI to write under fatass/topology/ itself — a
-    node's node.py, a transform file, or anything else there.
+    node's own file, a transform file, or anything else there.
 
     `free()` can't do this: it always writes into the *currently running
     transform's* owning node's `home/` directory, resolved from context,
     and topology/ isn't that. This has no such restriction — `cwd` says
     directly where to write, callable any time, not only from inside a
-    transform. The whole topology tree is passed as readable context
-    (not just `cwd`), since scaffolding one node's file often needs to see
-    another's — e.g. importing a dependency's `Node` class by path.
+    transform.
+
+    No other directory is granted (`add_dirs=[]`) — deliberately not the
+    whole topology tree: on a topology with several populated example
+    pipelines, that meant every single-function edit paid to read
+    hundreds of thousands of tokens' worth of unrelated nodes just to
+    infer the file conventions by example. Those conventions are static
+    and now live in the `create`/`modify` system prompts
+    (`fatass/prompts/conventions.md`) instead, so the agent doesn't need
+    read access to other nodes to follow them — it just can't see or
+    depend on their actual file layout or content anymore, which a
+    prompt author should keep in mind when writing --prompt text that
+    references "see how X does it".
 
     Used by `fatass.topology_ops.scaffold` (behind the `create`/`modify` CLI commands)
     to flesh out or edit a node/transform file with a prompt.
     """
     result = _invoke_claude(
         cwd=cwd,
-        add_dirs=[TOPOLOGY_ROOT],
+        add_dirs=[],
         prompt=prompt,
         permission_mode=permission_mode,
         silent=silent,

@@ -1,6 +1,7 @@
 from .core.adhoc import free_at
 from .core.free import free, free_topology
 from .core.node import Node
+from .core.node_list import NodeList
 from .core.transform import apply_transform, discover, run_transform
 from .errors import FreeCoercionError, FreeError, TopologyValidationError
 from .topology_ops.archive import archive_topology, retrieve_topology
@@ -16,13 +17,14 @@ from .topology_ops.scaffold import (
     remove_transform,
 )
 
-# Imported last: node.py files under topology/ do `import fatass` and
-# subclass `fatass.Node`, so Node (and free, etc.) must already be defined
-# on this module by the time topology/ is imported.
+# Imported last: each node's own file under topology/ does `import fatass`
+# and subclasses `fatass.Node`, so Node (and free, etc.) must already be
+# defined on this module by the time topology/ is imported.
 from . import topology
 
 __all__ = [
     "Node",
+    "NodeList",
     "free",
     "free_topology",
     "run_transform",

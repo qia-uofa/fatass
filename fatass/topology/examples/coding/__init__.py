@@ -1,3 +1,3 @@
-from .node import Node
+from .coding import Coding
 
-__all__ = ["Node"]
+__all__ = ["Coding"]

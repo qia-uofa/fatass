@@ -13,9 +13,11 @@ def resolve(target: str) -> Path:
     directory:
 
     - "node1.node2" -> the node's own directory under fatass/topology/
-      (its node.py, __init__.py, transforms/ submodule, ...).
-    - "transform@node1.node2" -> that transform's transforms/ directory,
-      also under fatass/topology/.
+      (its own <name>.py, __init__.py, transform files, ...).
+    - "transform@node1.node2" -> that node's own directory too, since a
+      transform file now sits directly in it (no separate transforms/
+      subdirectory) — the agent sees the whole node, not an isolated
+      transform-only view.
     - "node1.node2:rel/path" -> a path under the node's home/ assets
       directory ("./" or "" for the assets directory itself); a path
       naming a file resolves to that file's parent directory, so the
@@ -50,12 +52,12 @@ def resolve(target: str) -> Path:
             raise TopologyValidationError(
                 "'~' (the topology root) isn't a node and has no transforms"
             )
-        transforms_dir = _node_dir(node_path) / "transforms"
-        if not (transforms_dir / f"{transform_name}.py").is_file():
+        node_dir = _node_dir(node_path)
+        if not (node_dir / f"{transform_name}.py").is_file():
             raise TopologyValidationError(
                 f"no transform named {transform_name!r} under {node_path!r}"
             )
-        return transforms_dir
+        return node_dir
 
     node_path = expand(target)
     if node_path == ROOT:

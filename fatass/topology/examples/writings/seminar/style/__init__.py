@@ -1,3 +1,3 @@
-from .node import Node
+from .style import Style
 
-__all__ = ["Node"]
+__all__ = ["Style"]

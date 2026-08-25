@@ -1,3 +1,3 @@
-from .node import Node
+from .tone import Tone
 
-__all__ = ["Node"]
+__all__ = ["Tone"]

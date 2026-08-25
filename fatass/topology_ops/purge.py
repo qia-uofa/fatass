@@ -7,19 +7,20 @@ from .scaffold import _assets_dir, _node_dir
 
 
 def _is_node(node_path: str) -> bool:
-    return (_node_dir(node_path) / "node.py").is_file()
+    node_dir = _node_dir(node_path)
+    return (node_dir / f"{node_dir.name}.py").is_file()
 
 
 def _direct_subnodes(node_path: str) -> list[str]:
     """Immediate nested nodes — node_path's own topology dir contains
-    <name>/node.py — per inclusion (see blueprint/concepts/relations.md)."""
+    <name>/<name>.py — per inclusion (see blueprint/concepts/relations.md)."""
     node_dir = _node_dir(node_path)
     if not node_dir.is_dir():
         return []
     return [
         f"{node_path}.{child.name}"
         for child in node_dir.iterdir()
-        if child.is_dir() and child.name != "__pycache__" and (child / "node.py").is_file()
+        if child.is_dir() and child.name != "__pycache__" and (child / f"{child.name}.py").is_file()
     ]
 
 

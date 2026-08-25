@@ -1,3 +1,3 @@
-from .node import Node
+from .draft_star import DraftStar
 
-__all__ = ["Node"]
+__all__ = ["DraftStar"]

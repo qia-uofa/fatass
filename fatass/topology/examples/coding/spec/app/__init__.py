@@ -1,3 +1,3 @@
-from .node import Node
+from .app import App
 
-__all__ = ["Node"]
+__all__ = ["App"]

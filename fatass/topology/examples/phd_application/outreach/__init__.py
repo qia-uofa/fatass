@@ -1,3 +1,3 @@
-from .node import Node
+from .outreach import Outreach
 
-__all__ = ["Node"]
+__all__ = ["Outreach"]

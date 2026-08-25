@@ -54,15 +54,20 @@ def _latest_named(name: str) -> Path | None:
     return max(candidates, key=lambda p: p.name, default=None)
 
 
+def _is_node_dir(node_dir: Path) -> bool:
+    return (node_dir / "__init__.py").is_file() and (node_dir / f"{node_dir.name}.py").is_file()
+
+
 def _all_node_paths() -> list[str]:
     """Every node path under fatass/topology/ (dirs with their own
-    node.py) — a local copy of scaffold._all_node_paths that reads through
-    *this* module's own TOPOLOGY_ROOT binding, since tests monkeypatch
-    `archive.TOPOLOGY_ROOT` specifically (not scaffold's)."""
-    return [
-        ".".join(node_py.parent.relative_to(TOPOLOGY_ROOT).parts)
-        for node_py in TOPOLOGY_ROOT.rglob("node.py")
-    ]
+    <dirname>.py) — a local copy of scaffold._all_node_paths that reads
+    through *this* module's own TOPOLOGY_ROOT binding, since tests
+    monkeypatch `archive.TOPOLOGY_ROOT` specifically (not scaffold's)."""
+    paths = []
+    for candidate in TOPOLOGY_ROOT.rglob("*"):
+        if candidate.is_dir() and candidate.name != "__pycache__" and _is_node_dir(candidate):
+            paths.append(".".join(candidate.relative_to(TOPOLOGY_ROOT).parts))
+    return paths
 
 
 def _reference_pattern(node_path: str) -> re.Pattern:
@@ -85,7 +90,7 @@ def _dependents_outside(node_path: str, node_dir: Path) -> list[str]:
     for file in TOPOLOGY_ROOT.rglob("*.py"):
         if node_dir in file.parents:
             continue
-        text = file.read_text()
+        text = file.read_text(encoding="utf-8")
         for dep_path, pattern in patterns.items():
             if pattern.search(text):
                 dependents.append(
@@ -150,7 +155,7 @@ def archive_topology(name: str | None = None, node_path: str | None = None) -> s
 
     shutil.move(str(TOPOLOGY_ROOT), str(dest / "topology"))
     TOPOLOGY_ROOT.mkdir()
-    (TOPOLOGY_ROOT / "__init__.py").write_text(_TOPOLOGY_INIT_PY)
+    (TOPOLOGY_ROOT / "__init__.py").write_text(_TOPOLOGY_INIT_PY, encoding="utf-8")
 
     if HOME_ROOT.is_dir():
         shutil.move(str(HOME_ROOT), str(dest / "home"))

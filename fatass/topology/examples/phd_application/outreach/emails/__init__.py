@@ -1,3 +1,3 @@
-from .node import Node
+from .emails import Emails
 
-__all__ = ["Node"]
+__all__ = ["Emails"]

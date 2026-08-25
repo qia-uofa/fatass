@@ -2,12 +2,12 @@
 
 fatass synthesizes and manages project files using the Claude CLI as an
 agent. A project is a graph of **nodes**: each has a Python definition
-under `fatass/topology/` (a `Node` subclass in `node.py`) mirrored by an
-asset directory under `home/`. A node's `transforms/` submodule holds
-functions whose `Node`-typed parameters declare dependencies on other
-nodes; calling one invokes `fatass.free(...)`, which runs the Claude CLI as
-a subprocess, reading dependency nodes' directories and writing into the
-node's own.
+under `fatass/topology/` (a `Node` subclass, named after the node itself,
+in `<name>.py`) mirrored by an asset directory under `home/`. Transform
+files sit directly alongside it in the same directory — plain functions
+whose `Node`-typed parameters declare dependencies on other nodes; calling
+one invokes `fatass.free(...)`, which runs the Claude CLI as a subprocess,
+reading dependency nodes' directories and writing into the node's own.
 
 Full design docs: [blueprint/](blueprint/README.md).
 
@@ -16,7 +16,7 @@ Full design docs: [blueprint/](blueprint/README.md).
 ```
 python -m fatass run <node.path>[.transforms.<name>] [--force]   # run transform(s), cache-aware
 python -m fatass apply <transform>@<node.path> [key=value ...]    # run one transform with explicit args, ignoring cache
-python -m fatass create <node.path | transform@node.path> [--prompt "..."] [--silent] [--permission-mode M] [--model M]  # scaffold if missing
+python -m fatass create <node.path | transform@node.path>[(NodeSubclass)] [--prompt "..."] [--silent] [--permission-mode M] [--model M]  # scaffold if missing; e.g. members(NodeList) subclasses fatass.NodeList instead of fatass.Node
 python -m fatass modify <node.path | transform@node.path> --prompt "..." [--silent] [--permission-mode M] [--model M]    # edit an existing node/transform file
 python -m fatass move <node.path> <new.node.path>                 # move/rename a node, rewriting references
 python -m fatass copy <node.path> <new.node.path>                 # copy a node, rewriting the copy's internal references
@@ -30,18 +30,107 @@ python -m fatass sh <target> <command...>                          # run a shell
 python -m fatass cd <expr>                                          # change the current node (FATASS_NODE)
 python -m fatass pwd                                                # print the current node (FATASS_NODE)
 python -m fatass graph [node.path] [-o/--output ...]                # write a PlantUML diagram of node inclusion + transform dependencies, rooted at node.path (default: whole topology)
+python -m fatass ls <node.path | node.path:rel/path | transform@node.path>  # list a node's subnodes + transforms (with input node), or a raw directory listing for a ':'/'@' target
+python -m fatass bind <transform>@<node.path> <dep.path> [dep.path ...]    # add nodes as declared Node-typed dependencies on a transform (no agent call)
+python -m fatass unbind <transform>@<node.path> <dep.path> [dep.path ...]  # remove nodes from a transform's declared dependencies (no agent call)
 python -m fatass shell                                              # interactive REPL, one command per line
 ```
 
 Node/transform paths are `.`-separated, matching Python module addressing
 (`node1.node2`, `node1.node2.transforms.synthesize`).
 
-`sh` and `free` share one `<target>` grammar (`fatass.resolve.targets.resolve`):
-`node1.node2` (that node's own directory under `fatass/topology/`),
-`transform@node1.node2` (that transform file's directory, also under
-`fatass/topology/`), or `node1.node2:dir1/dir2/file.txt` (a path relative
-to the node's `home/` assets directory — `node1.node2:./` names that
-directory itself; a file path resolves to its parent dir).
+`sh`, `free`, and `ls`'s `:`/`@` targets share one `<target>` grammar
+(`fatass.resolve.targets.resolve`): `node1.node2` (that node's own
+directory under `fatass/topology/`), `transform@node1.node2` (that same
+node directory too — a transform file sits directly in it, no separate
+subdirectory), or `node1.node2:dir1/dir2/file.txt` (a path relative to the node's `home/`
+assets directory — `node1.node2:./` names that directory itself; a file
+path resolves to its parent dir). `ls`'s bare `node1.node2` form (no `:`
+or `@`) doesn't resolve through this — it takes the fast path in
+`fatass/ls.py:list_node`, listing direct subnodes (from
+`fatass.topology_ops.scaffold._all_node_paths`) and the node's own
+transforms (from `fatass.core.transform.discover`, each with its
+`Node`-typed dependencies' paths) instead of a raw directory listing.
+
+### `NodeList`
+
+`fatass.NodeList` (`fatass/core/node_list.py`) represents a dynamically-
+sized, homogeneous sequence without creating a new topology node per
+item — the topology stays fully static (still one `<name>.py` per real
+node, still discoverable by walking the filesystem before any code
+runs). One real node (`class Members(fatass.NodeList): pass`) declares
+the per-item schema as its own ordinary children (e.g. `members.info`,
+`members.contribution` — real nodes, can have their own `build()`); every
+actual item then lives inside `members`'s own `home/` directory as a
+recursive `.next` chain:
+
+```
+members/
+  info/            <- dummy head: mirrors the schema, content always ignored
+  contribution/
+  .next/           <- reserved name, never a topology node; presence means length >= 1
+    info/          <- members[0].info
+    contribution/  <- members[0].contribution
+    .next/         <- presence means length >= 2
+      ...
+```
+
+- `Members.extend()` adds one more `.next` level at the current tail — a
+  pure `home/`-directory operation (`mkdir`), never touching
+  `fatass/topology/`.
+- `Members.length()` counts existing `.next` levels (0 = empty).
+- `members_instance[i]` (`NodeList.__getitem__`) raises
+  `TopologyValidationError` naming the current length if `i` is out of
+  range — growing only ever happens via an explicit `.extend()`, never as
+  a side effect of indexing or reading.
+- `members[i].info` resolves to a dynamically derived subclass of the
+  real `Info` node class, with `_assets_dir()` overridden to the depth-`i`
+  path — `free()`'s `readable=[...]`, `validate_node`, and caching all
+  keep working unmodified, since they only ever call `._assets_dir()`,
+  duck-typed.
+- `run`/`apply`/`build` accept an indexed target directly, e.g. `fatass
+  run "members[2].info"` (quote it — `[`/`]` are shell-glob characters in
+  some shells) — `core/transform.py`'s `_split_index`/`_resolve_owning_node`
+  parse the bracket, resolve the item, and cache the result independently
+  per index (`discover()` itself still reflects on the *real*,
+  index-independent node's own package directory). `sh`/`free`/`create`/
+  `modify`/`move`/`remove`/`graph` don't understand indexed targets — only
+  `run`/`apply`/`build` do.
+- Not supported: a schema child depending on a sibling schema child in
+  the same item (e.g. `contribution` reading the same item's `info`) does
+  not auto-resolve to the same index — schema-node dependencies should
+  point outside their own list.
+
+### `bind`/`unbind`
+
+The deterministic (no agent call) alternative to `modify --prompt "add a
+dependency on X"` for the purely mechanical part of that edit —
+`fatass.topology_ops.bind.bind_transform`/`unbind_transform`. Given
+`<transform>@<node.path>` and one or more dependency `node.path`
+arguments, they add/remove the matching `Node`-typed parameter and its
+`from fatass.topology.<path> import <Alias> as <Alias>` import on the
+transform's function, using `ast` only to *locate* exact source
+positions and then splicing text at just those positions — every other
+byte of the file (in particular a transform's large f-string prompt) is
+left untouched, unlike a naive `ast.parse` -> modify -> `ast.unparse`
+round-trip, which would reformat the whole file.
+
+- `bind` is idempotent (silently skips a dependency that's already
+  bound) and validates every requested binding up front — a parameter-
+  name collision against an existing, different-node parameter raises
+  before anything is written, so one bad argument in a multi-node call
+  never leaves the file half-edited. New parameters are inserted before
+  any existing defaulted parameter (Python requires non-default
+  parameters first), not blindly appended at the end.
+- `unbind` raises if the dependency isn't currently bound, or if its
+  parameter name is still referenced anywhere in the function body (e.g.
+  still sitting in a `readable=[...]` list) — mirroring `remove_node`'s
+  "still depended on" refusal, at the parameter level — and removes the
+  import too if nothing else in the file still uses it.
+- Neither touches a `fatass.free(...)` call's `readable=[...]` or the
+  prompt text — actually wiring a newly bound parameter into a specific
+  call and explaining why in the prompt is semantic content, left to a
+  human or a follow-up `modify --prompt`.
 
 ### Current node (`FATASS_NODE`)
 
@@ -137,13 +226,28 @@ real `claude` CLI goes through it, and it takes four orthogonal knobs:
   `--system-prompt`, so Claude Code's own baseline system prompt is kept
   rather than replaced) on top of whatever the call already sends. Loaded
   per command from `fatass/prompts/<name>.md` via
-  `fatass._internal.prompts.load_system_prompt` — `create.md`, `modify.md`,
-  and `free.md` back the three CLI commands that call the agent directly,
-  and `transform.md` backs every `fatass.free()` call made from inside a
-  running transform (i.e. what `run`/`apply`/`build` trigger indirectly,
-  through whatever transform code they execute — they don't call the
-  agent directly themselves). A missing prompt file is fine; it just
-  means no extra guidance is appended.
+  `fatass._internal.prompts.load_system_prompt` — `free.md` backs `fatass
+  free`, and `transform.md` backs every `fatass.free()` call made from
+  inside a running transform (i.e. what `run`/`apply`/`build` trigger
+  indirectly, through whatever transform code they execute — they don't
+  call the agent directly themselves). `create` and `modify` instead go
+  through `fatass._internal.prompts.load_topology_edit_system_prompt`,
+  which prepends `conventions.md` (the static node/transform/
+  `fatass.free()` reference — how to declare a dependency, the
+  `readable=[...]`/`silent`/`model`/`tools` conventions, etc.) ahead of
+  `create.md`/`modify.md`'s own command-specific framing; see why under
+  `free_topology` below. A missing prompt file is fine; it just means no
+  extra guidance is appended. On top of that, `create`/`modify` append a
+  third, class-specific block: `Node.create_sys_prompt()`/
+  `Node.modify_sys_prompt()` are classmethods returning `str | None`
+  (`None` on `Node` itself), called on the node's actual class — for
+  `create`, whichever class the `(NodeSubclass)` target suffix names (see
+  below); for `modify`, the existing node's real class, imported for this
+  purpose alone (best-effort: import failure — e.g. the node's own file
+  being fixed is currently broken — just means no extra block, not a
+  command failure). `NodeList` overrides both to teach the `.next`-chain
+  conventions only when the node being created/modified is actually one,
+  instead of paying for that guidance on every plain-`Node` edit.
 - **`model`** (default `None`): passed straight through as `--model` when
   given (an alias like `"opus"`/`"sonnet"`, or a full model name) —
   omitted entirely when `None`, so every existing call keeps using
@@ -153,6 +257,18 @@ real `claude` CLI goes through it, and it takes four orthogonal knobs:
 `create`, `modify`, and `free` all expose `--silent`, `--permission-mode`,
 and `--model` on the CLI; a transform's own `fatass.free(...)` call sets
 these as ordinary keyword arguments.
+
+`free_topology` (behind `create`/`modify`) grants **no directory besides
+its own `cwd`** — not the whole topology tree, unlike an earlier version.
+On a topology with several populated example pipelines, passing the whole
+tree meant every single-function edit paid to read hundreds of thousands
+of cache tokens' worth of unrelated nodes just to infer file conventions
+by example (see a real run's numbers in `./log`, `2026-08-25 00:1x`).
+Those conventions are static now, so they moved into `conventions.md`
+(prepended to `create.md`/`modify.md` via
+`load_topology_edit_system_prompt`, see above) instead of being taught by
+letting the agent browse sibling/dependency nodes it has no real need to
+read.
 
 ### Logging
 
@@ -216,12 +332,12 @@ Strip the `>> ` prefix from each line and run the resulting script as-is.
 
 Example — this:
 ```
->> node = fatass.topology.example_a.Node()
+>> node = fatass.topology.roster.entry.Entry()
 >> print(node._assets_dir())
 ```
 runs as:
 ```python
 import fatass
-node = fatass.topology.example_a.Node()
+node = fatass.topology.roster.entry.Entry()
 print(node._assets_dir())
 ```

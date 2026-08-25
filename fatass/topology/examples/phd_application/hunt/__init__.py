@@ -1,3 +1,3 @@
-from .node import Node
+from .hunt import Hunt
 
-__all__ = ["Node"]
+__all__ = ["Hunt"]

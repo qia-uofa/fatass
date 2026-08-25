@@ -2,6 +2,7 @@ import re
 import shutil
 from pathlib import Path
 
+from .._internal.naming import pascal_case
 from .._internal.paths import HOME_ROOT as _HOME_ROOT
 from .._internal.paths import TOPOLOGY_ROOT as _TOPOLOGY_ROOT
 from ..core.free import DEFAULT_ALLOWED_TOOLS, DEFAULT_PERMISSION_MODE, free_topology
@@ -10,18 +11,13 @@ from ..errors import TopologyValidationError
 _NODE_PY = """import fatass
 
 
-class Node(fatass.Node):
+class {class_name}(fatass.{base_class}):
     pass
 """
 
-_NODE_INIT_PY = """from .node import Node
+_NODE_INIT_PY = """from .{file_stem} import {class_name}
 
-__all__ = ["Node"]
-"""
-
-_TRANSFORMS_INIT_PY = """from fatass._internal.import_tree import import_transforms
-
-import_transforms(__name__)
+__all__ = ["{class_name}"]
 """
 
 _TRANSFORM_STUB = '''def {name}():
@@ -37,15 +33,23 @@ def _assets_dir(node_path: str) -> Path:
     return _HOME_ROOT / node_path.replace(".", "/")
 
 
+def _is_node_dir(node_dir: Path) -> bool:
+    """A node directory has its own `__init__.py` and a same-named
+    `<dirname>.py` sitting next to it — no more fixed "node.py" filename to
+    check for, so this is structural rather than a single glob pattern."""
+    return (node_dir / "__init__.py").is_file() and (node_dir / f"{node_dir.name}.py").is_file()
+
+
 def _all_node_paths() -> list[str]:
     """Every node path under fatass/topology/ (dirs with their own
-    node.py), found from the filesystem rather than by importing —
+    <dirname>.py), found from the filesystem rather than by importing —
     consistent with the rest of this module, and works against a
     monkeypatched _TOPOLOGY_ROOT in tests."""
-    return [
-        ".".join(node_py.parent.relative_to(_TOPOLOGY_ROOT).parts)
-        for node_py in _TOPOLOGY_ROOT.rglob("node.py")
-    ]
+    paths = []
+    for candidate in _TOPOLOGY_ROOT.rglob("*"):
+        if candidate.is_dir() and candidate.name != "__pycache__" and _is_node_dir(candidate):
+            paths.append(".".join(candidate.relative_to(_TOPOLOGY_ROOT).parts))
+    return paths
 
 
 def _reference_pattern(node_path: str) -> re.Pattern:
@@ -55,9 +59,12 @@ def _reference_pattern(node_path: str) -> re.Pattern:
     return re.compile(r"(?<!\w)fatass\.topology\." + re.escape(node_path) + r"(?!\w)")
 
 
-def create_node(node_path: str) -> bool:
-    """Scaffold a node's topology package (node.py + __init__.py) and its
-    home/ assets directory. Doesn't call free(). Returns True if it
+def create_node(node_path: str, base_class: str = "Node") -> bool:
+    """Scaffold a node's topology package (<name>.py + __init__.py) and its
+    home/ assets directory. `base_class` names the `fatass.<base_class>`
+    class the new node subclasses — "Node" (the default) for an
+    ordinary node, or e.g. "NodeList" for a dynamically-sized list node
+    (see NodeList in CLAUDE.md). Doesn't call free(). Returns True if it
     created something, False if the node already existed."""
     node_dir = _node_dir(node_path)
     if node_dir.is_dir():
@@ -70,37 +77,76 @@ def create_node(node_path: str) -> bool:
             f"create it first"
         )
 
+    file_stem = node_path.rsplit(".", 1)[-1]
+    class_name = pascal_case(file_stem)
+
     node_dir.mkdir()
-    (node_dir / "node.py").write_text(_NODE_PY)
-    (node_dir / "__init__.py").write_text(_NODE_INIT_PY)
+    (node_dir / f"{file_stem}.py").write_text(
+        _NODE_PY.format(class_name=class_name, base_class=base_class), encoding="utf-8"
+    )
+    (node_dir / "__init__.py").write_text(
+        _NODE_INIT_PY.format(file_stem=file_stem, class_name=class_name), encoding="utf-8"
+    )
 
     assets_dir = _HOME_ROOT / node_path.replace(".", "/")
     assets_dir.mkdir(parents=True, exist_ok=True)
     if not any(assets_dir.iterdir()):
-        (assets_dir / ".gitkeep").write_text("")
+        (assets_dir / ".gitkeep").write_text("", encoding="utf-8")
 
     return True
 
 
 def create_transform(node_path: str, transform_name: str) -> bool:
-    """Scaffold a transform stub under a node's transforms/. Doesn't call
-    free(). Returns True if it created something, False if the transform
-    file already existed."""
+    """Scaffold a transform stub directly in a node's own directory.
+    Doesn't call free(). Returns True if it created something, False if the
+    transform file already existed."""
     node_dir = _node_dir(node_path)
     if not node_dir.is_dir():
         raise TopologyValidationError(f"no node at {node_path!r}")
 
-    transforms_dir = node_dir / "transforms"
-    transform_file = transforms_dir / f"{transform_name}.py"
+    file_stem = node_path.rsplit(".", 1)[-1]
+    if transform_name in (file_stem, "__init__"):
+        raise TopologyValidationError(
+            f"transform name {transform_name!r} collides with {node_path!r}'s "
+            f"own file"
+        )
+
+    transform_file = node_dir / f"{transform_name}.py"
     if transform_file.exists():
         return False
 
-    if not transforms_dir.is_dir():
-        transforms_dir.mkdir()
-        (transforms_dir / "__init__.py").write_text(_TRANSFORMS_INIT_PY)
-
-    transform_file.write_text(_TRANSFORM_STUB.format(name=transform_name))
+    transform_file.write_text(_TRANSFORM_STUB.format(name=transform_name), encoding="utf-8")
     return True
+
+
+def _rename_own_file(node_dir: Path, old_path: str, new_path: str) -> None:
+    """After `move_node`/`copy_node` place a node at `node_dir`, its own
+    file/class are still named after `old_path`'s last segment — fine if
+    that segment didn't change (e.g. moving "a.b" to "c.b"), but if it did
+    (e.g. "parent" -> "renamed") the node's own <name>.py/class/__init__.py
+    need renaming too. `_rewrite_references` only fixes *external*
+    references to this node; this is the node's own identity."""
+    old_stem = old_path.rsplit(".", 1)[-1]
+    new_stem = new_path.rsplit(".", 1)[-1]
+    if old_stem == new_stem:
+        return
+
+    old_class = pascal_case(old_stem)
+    new_class = pascal_case(new_stem)
+
+    old_file = node_dir / f"{old_stem}.py"
+    source = old_file.read_text(encoding="utf-8")
+    old_file.unlink()
+    (node_dir / f"{new_stem}.py").write_text(
+        source.replace(f"class {old_class}(", f"class {new_class}(", 1), encoding="utf-8"
+    )
+
+    init_file = node_dir / "__init__.py"
+    init_source = init_file.read_text(encoding="utf-8")
+    init_source = init_source.replace(
+        f"from .{old_stem} import {old_class}", f"from .{new_stem} import {new_class}"
+    ).replace(f'__all__ = ["{old_class}"]', f'__all__ = ["{new_class}"]')
+    init_file.write_text(init_source, encoding="utf-8")
 
 
 def move_node(old_path: str, new_path: str) -> int:
@@ -108,7 +154,7 @@ def move_node(old_path: str, new_path: str) -> int:
     `new_path`, both under fatass/topology/ and home/, then rewrite
     `fatass.topology.<old_path>` references elsewhere in the topology tree
     to point at `new_path` — other transforms depend on a node by that
-    dotted path (see node.py's `_topology_path`), and a move must keep them
+    dotted path (see `Node._topology_path`), and a move must keep them
     resolvable. Doesn't call free(). Returns the number of files whose
     references were rewritten."""
     if new_path == old_path:
@@ -147,6 +193,7 @@ def move_node(old_path: str, new_path: str) -> int:
         )
 
     shutil.move(str(old_node_dir), str(new_node_dir))
+    _rename_own_file(new_node_dir, old_path, new_path)
 
     new_assets_dir.parent.mkdir(parents=True, exist_ok=True)
     shutil.move(str(old_assets_dir), str(new_assets_dir))
@@ -203,6 +250,7 @@ def copy_node(old_path: str, new_path: str) -> int:
         )
 
     shutil.copytree(str(old_node_dir), str(new_node_dir))
+    _rename_own_file(new_node_dir, old_path, new_path)
 
     new_assets_dir.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(str(old_assets_dir), str(new_assets_dir))
@@ -226,10 +274,10 @@ def _rewrite_references(old_path: str, new_path: str, root: Path | None = None) 
 
     updated = 0
     for file in root.rglob("*.py"):
-        text = file.read_text()
+        text = file.read_text(encoding="utf-8")
         new_text = pattern.sub(replacement, text)
         if new_text != text:
-            file.write_text(new_text)
+            file.write_text(new_text, encoding="utf-8")
             updated += 1
     return updated
 
@@ -253,7 +301,7 @@ def remove_node(node_path: str) -> None:
     for file in _TOPOLOGY_ROOT.rglob("*.py"):
         if node_dir in file.parents:
             continue  # a file inside the subtree being removed
-        text = file.read_text()
+        text = file.read_text(encoding="utf-8")
         for dep_path, pattern in patterns.items():
             if pattern.search(text):
                 dependents.append(
@@ -274,11 +322,17 @@ def remove_node(node_path: str) -> None:
 
 
 def remove_transform(node_path: str, transform_name: str) -> None:
-    """Remove a single transform file from a node's transforms/. Doesn't
+    """Remove a single transform file from a node's own directory. Doesn't
     call free(). Nothing else in the topology tree can depend on a
     transform (only on a node's home/ directory), so unlike remove_node
     there's no cross-file check to make here."""
-    transform_file = _node_dir(node_path) / "transforms" / f"{transform_name}.py"
+    node_dir = _node_dir(node_path)
+    file_stem = node_path.rsplit(".", 1)[-1]
+    if transform_name in (file_stem, "__init__"):
+        raise TopologyValidationError(
+            f"{transform_name!r} is {node_path!r}'s own file, not a transform"
+        )
+    transform_file = node_dir / f"{transform_name}.py"
     if not transform_file.is_file():
         raise TopologyValidationError(
             f"no transform named {transform_name!r} under {node_path!r}"
@@ -296,15 +350,16 @@ def refine_node(
     model: str | None = None,
     tools: str = DEFAULT_ALLOWED_TOOLS,
 ) -> None:
-    """Use the Claude CLI to edit node.py per `prompt` — either right after
-    create_node(), or standalone (`fatass modify`) against an already-
-    existing node. Can't go through fatass.free() — that always writes into
-    a node's home/ directory, but this is editing the topology definition
-    itself, under fatass/topology/."""
+    """Use the Claude CLI to edit a node's own file per `prompt` — either
+    right after create_node(), or standalone (`fatass modify`) against an
+    already-existing node. Can't go through fatass.free() — that always
+    writes into a node's home/ directory, but this is editing the topology
+    definition itself, under fatass/topology/."""
     node_dir = _node_dir(node_path)
-    if not (node_dir / "node.py").is_file():
+    file_stem = node_path.rsplit(".", 1)[-1]
+    if not (node_dir / f"{file_stem}.py").is_file():
         raise TopologyValidationError(f"no node at {node_path!r}")
-    full_prompt = f"Edit node.py in the current directory according to: {prompt}"
+    full_prompt = f"Edit {file_stem}.py in the current directory according to: {prompt}"
     free_topology(
         cwd=node_dir,
         prompt=full_prompt,
@@ -331,8 +386,8 @@ def refine_transform(
     right after create_transform(), or standalone (`fatass modify`) against
     an already-existing transform (same reasoning as refine_node — this
     writes into fatass/topology/, not home/, so it can't use free())."""
-    transforms_dir = _node_dir(node_path) / "transforms"
-    if not (transforms_dir / f"{transform_name}.py").is_file():
+    node_dir = _node_dir(node_path)
+    if not (node_dir / f"{transform_name}.py").is_file():
         raise TopologyValidationError(
             f"no transform named {transform_name!r} under {node_path!r}"
         )
@@ -341,12 +396,13 @@ def refine_transform(
         f"{prompt}. It must define a function named {transform_name}. Any "
         f"parameter type-annotated with a Node subclass imported from "
         f"fatass.topology.<dependency node path> declares a dependency on "
-        f"that node — see other nodes under the provided topology directory "
-        f"for examples of the convention. A transform with no such "
-        f"parameters is also valid (it declares no dependencies)."
+        f"that node — follow the convention described in your system "
+        f"prompt (you don't have read access to other nodes to check by "
+        f"example). A transform with no such parameters is also valid "
+        f"(it declares no dependencies)."
     )
     free_topology(
-        cwd=transforms_dir,
+        cwd=node_dir,
         prompt=full_prompt,
         system_prompt=system_prompt,
         permission_mode=permission_mode,

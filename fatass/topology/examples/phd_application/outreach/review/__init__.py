@@ -1,3 +1,3 @@
-from .node import Node
+from .review import Review
 
-__all__ = ["Node"]
+__all__ = ["Review"]
