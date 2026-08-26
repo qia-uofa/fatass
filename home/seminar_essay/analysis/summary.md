@@ -1,0 +1,17 @@
+- **Paper: "ChatGPT's Ontological Landscape" (William L. Benzon)**
+  - Explores how ChatGPT organizes concepts along ontological lines: physical objects vs. living things vs. animals vs. humans, echoing Aristotle's "Great Chain of Being."
+  - Distinguishes concrete, common-sense concepts (e.g. "salt") from abstract, scientific ones (e.g. "NaCl"), arguing this concrete/abstract split is pervasive across disciplines.
+  - Probes ChatGPT with open prompts ("give me 20 things") and finds it defaults to physical objects, suggesting an uneven, non-random "landscape" of salience — likened to Waddington's epigenetic landscape metaphor.
+  - Tests whether ChatGPT can define abstract concepts (hope, success, freedom) via physical analogies/metaphors, and has it generate stories and metaphors demonstrating this grounding.
+  - Uses the parlor game "20 Questions" (animal/vegetable/mineral variant) as a structured probe of ChatGPT's category knowledge, playing two rounds each on six targets (bicycle, squid, justice, apple, evolution, truth).
+  - Finds ChatGPT performs better guessing abstract targets than concrete ones, needing more hints/questions for concrete targets — attributed to abstract/concrete being an efficient early splitting question given English's abstract-word/concrete-word distribution.
+  - Includes an appendix of related papers on cognitive ontology.
+
+- **Student sidenote (Qi An)**
+  - Notes the original presentation slides were lost; the sidenote is a brief written recap of the presentation's key points instead.
+  - Recreates the "give me 20 things" experiment: ChatGPT, prompted with "butterfly, dragonfly, ...," repeats the "xxx-fly" pattern, then drifts to flying bugs, general bugs, and flying mammals; asking for "50 more" causes the list to collapse into general mammals.
+  - Proposes a hypothesis about the 20 Questions game: ChatGPT's first question tends to be abstract/concrete because English has fewer abstract words, so that split narrows the search faster.
+  - Draws a general takeaway: a forced A-or-B question tends to favor whichever option is less frequent in the underlying distribution.
+  - Flags an issue with the original test: the concrete/abstract word distribution used didn't match the actual distribution in the English dictionary.
+  - Describes a fixed experiment: sample equally from a curated dictionary with balanced concrete/abstract words and tell ChatGPT the keyword comes from that list.
+  - Reports the fixed experiment's result: no significant bias toward either concrete or abstract options.

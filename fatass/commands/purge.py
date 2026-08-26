@@ -3,6 +3,7 @@ import sys
 
 from ..errors import TopologyValidationError
 from ..topology_ops.purge import purge_node
+from ._targets import resolve_node_path
 from .base import Command
 
 
@@ -32,7 +33,8 @@ class PurgeCommand(Command):
 
     def run(self, args: argparse.Namespace) -> int:
         try:
-            result = purge_node(args.node_path, rs=args.rs, rd=args.rd, rsd=args.rsd)
+            node_path = resolve_node_path(args.node_path)
+            result = purge_node(node_path, rs=args.rs, rd=args.rd, rsd=args.rsd)
         except TopologyValidationError as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1

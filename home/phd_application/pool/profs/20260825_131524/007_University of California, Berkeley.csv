@@ -1,0 +1,9 @@
+name,department,program,research_area,faculty_page,email
+Michael I. Jordan,EECS and Statistics,Machine Learning,"Machine learning, statistical learning theory",https://people.eecs.berkeley.edu/~jordan/,
+Stuart Russell,Computer Science,Artificial Intelligence,"Artificial intelligence, AI safety, human-compatible AI",https://people.eecs.berkeley.edu/~russell/,
+Pieter Abbeel,EECS,Robotics and Machine Learning,"Robotics, reinforcement learning, robot learning",https://people.eecs.berkeley.edu/~pabbeel/,
+Sergey Levine,EECS,Machine Learning,"Robotics, reinforcement learning, deep learning",https://people.eecs.berkeley.edu/~svlevine/,
+Jitendra Malik,EECS,Computer Vision,"Computer vision, visual recognition, 3D vision",https://people.eecs.berkeley.edu/~malik/,
+Alexei Efros,EECS,Computer Vision,"Computer vision, visual learning, generative models",https://people.eecs.berkeley.edu/~efros/,
+Maya L. Petersen,Biostatistics and Epidemiology,Statistics,"Causal inference, targeted machine learning",,
+Mark van der Laan,Biostatistics and Statistics,Statistics,"Causal inference, machine learning, statistical theory",,

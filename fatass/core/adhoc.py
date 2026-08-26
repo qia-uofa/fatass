@@ -12,6 +12,7 @@ def free_at(
     silent: bool = False,
     model: str | None = None,
     tools: str = DEFAULT_ALLOWED_TOOLS,
+    effort: str | None = None,
 ) -> None:
     """`fatass free` — invoke the Claude CLI with cwd set directly to a
     resolved target directory (see fatass.resolve.targets.resolve), bypassing the
@@ -28,6 +29,7 @@ def free_at(
         system_prompt=load_system_prompt("free"),
         model=model,
         tools=tools,
+        effort=effort,
     )
     if result.returncode != 0:
         raise FreeError(f"claude CLI exited with {result.returncode}: {result.stderr}")

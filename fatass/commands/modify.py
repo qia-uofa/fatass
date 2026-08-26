@@ -19,7 +19,11 @@ class ModifyCommand(Command):
         parser.add_argument(
             "target", help="node.path, or <transform>@<node.path> to target a transform file"
         )
-        parser.add_argument("--prompt", required=True, help="what the agent should do")
+        parser.add_argument(
+            "prompt",
+            help="what the agent should do; an empty string is passed through as "
+            "the literal text '<empty string>', since the agent needs some message",
+        )
         parser.add_argument(
             "--silent",
             action="store_true",
@@ -42,13 +46,14 @@ class ModifyCommand(Command):
         )
 
     def run(self, args: argparse.Namespace) -> int:
+        prompt = args.prompt if args.prompt else "<empty string>"
         try:
             node_path, transform_name = parse_maybe_at_target(args.target)
             if transform_name is not None:
                 refine_transform(
                     node_path,
                     transform_name,
-                    args.prompt,
+                    prompt,
                     system_prompt=load_topology_edit_system_prompt("modify"),
                     permission_mode=args.permission_mode,
                     silent=args.silent,
@@ -68,7 +73,7 @@ class ModifyCommand(Command):
                     extra = None
                 refine_node(
                     node_path,
-                    args.prompt,
+                    prompt,
                     system_prompt=load_topology_edit_system_prompt("modify", extra=extra),
                     permission_mode=args.permission_mode,
                     silent=args.silent,

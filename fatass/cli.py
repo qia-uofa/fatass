@@ -4,6 +4,7 @@ import sys
 from ._internal.import_tree import reload_all
 from ._internal.logs import get_logger
 from .commands import ALL_COMMANDS
+from .resolve.cwd import display_current_node
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -18,9 +19,13 @@ def main(argv: list[str] | None = None) -> int:
         sub.set_defaults(_command=command)
 
     args = parser.parse_args(argv)
+    # Read before dispatch, so a `cd` command's own line still logs the
+    # node it ran *from* — matching what the `shell` prompt showed the
+    # user right before they typed it, not the node it just changed to.
+    current = display_current_node()
     exit_code = args._command.run(args)
 
-    get_logger().info("%s -> exit %s", " ".join(effective_argv), exit_code)
+    get_logger().info("%s %s -> exit %s", current, " ".join(effective_argv), exit_code)
 
     if args._command.mutates_topology:
         # Within one interpreter (notably the `shell` REPL) sys.modules

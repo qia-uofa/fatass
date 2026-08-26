@@ -1,0 +1,101 @@
+rank,university,city,state,type,website
+1,Carnegie Mellon University,Pittsburgh,PA,Private,https://www.cmu.edu/
+2,University of Illinois Urbana-Champaign,Urbana,IL,Public,https://illinois.edu/
+3,"University of California, San Diego",La Jolla,CA,Public,https://www.ucsd.edu/
+4,Georgia Institute of Technology,Atlanta,GA,Public,https://www.gatech.edu/
+5,Massachusetts Institute of Technology,Cambridge,MA,Private,https://web.mit.edu/
+6,University of Washington,Seattle,WA,Public,https://www.washington.edu/
+7,"University of California, Berkeley",Berkeley,CA,Public,https://www.berkeley.edu/
+8,Cornell University,Ithaca,NY,Private,https://www.cornell.edu/
+9,"University of Maryland, College Park",College Park,MD,Public,https://www.umd.edu/
+10,University of Michigan,Ann Arbor,MI,Public,https://www.umich.edu/
+11,Stanford University,Stanford,CA,Private,https://www.stanford.edu/
+12,Northeastern University,Boston,MA,Private,https://www.northeastern.edu/
+13,Purdue University,West Lafayette,IN,Public,https://www.purdue.edu/
+14,University of Wisconsin-Madison,Madison,WI,Public,https://www.wisc.edu/
+15,University of Texas at Austin,Austin,TX,Public,https://www.utexas.edu/
+16,New York University,New York,NY,Private,https://www.nyu.edu/
+17,Princeton University,Princeton,NJ,Private,https://www.princeton.edu/
+18,University of Pennsylvania,Philadelphia,PA,Private,https://www.upenn.edu/
+19,Columbia University,New York,NY,Private,https://www.columbia.edu/
+20,"University of California, Los Angeles",Los Angeles,CA,Public,https://www.ucla.edu/
+21,University of Southern California,Los Angeles,CA,Private,https://www.usc.edu/
+22,"University of California, Irvine",Irvine,CA,Public,https://uci.edu/
+23,University of Massachusetts Amherst,Amherst,MA,Public,https://www.umass.edu/
+24,Stony Brook University,Stony Brook,NY,Public,https://www.stonybrook.edu/
+25,University of Chicago,Chicago,IL,Private,https://www.uchicago.edu/
+26,Northwestern University,Evanston,IL,Private,https://www.northwestern.edu/
+27,"University of California, Riverside",Riverside,CA,Public,https://www.ucr.edu/
+28,University of Virginia,Charlottesville,VA,Public,https://www.virginia.edu/
+29,Rutgers University-New Brunswick,New Brunswick,NJ,Public,https://www.rutgers.edu/
+30,University of Utah,Salt Lake City,UT,Public,https://www.utah.edu/
+31,Duke University,Durham,NC,Private,https://www.duke.edu/
+32,Pennsylvania State University,University Park,PA,Public,https://www.psu.edu/
+33,George Mason University,Fairfax,VA,Public,https://www.gmu.edu/
+34,"University of California, Santa Barbara",Santa Barbara,CA,Public,https://www.ucsb.edu/
+35,Texas A&M University,College Station,TX,Public,https://www.tamu.edu/
+36,Boston University,Boston,MA,Private,https://www.bu.edu/
+37,Virginia Tech,Blacksburg,VA,Public,https://www.vt.edu/
+38,"University of California, Santa Cruz",Santa Cruz,CA,Public,https://www.ucsc.edu/
+39,Arizona State University,Tempe,AZ,Public,https://www.asu.edu/
+40,Harvard University,Cambridge,MA,Private,https://www.harvard.edu/
+41,Johns Hopkins University,Baltimore,MD,Private,https://www.jhu.edu/
+42,University of Illinois Chicago,Chicago,IL,Public,https://www.uic.edu/
+43,University of North Carolina at Chapel Hill,Chapel Hill,NC,Public,https://www.unc.edu/
+44,Yale University,New Haven,CT,Private,https://www.yale.edu/
+45,North Carolina State University,Raleigh,NC,Public,https://www.ncsu.edu/
+46,Rice University,Houston,TX,Private,https://www.rice.edu/
+47,University of Colorado Boulder,Boulder,CO,Public,https://www.colorado.edu/
+48,Ohio State University,Columbus,OH,Public,https://www.osu.edu/
+49,University at Buffalo,Buffalo,NY,Public,https://www.buffalo.edu/
+50,"University of California, Davis",Davis,CA,Public,https://www.ucdavis.edu/
+51,University of Minnesota,Minneapolis,MN,Public,https://twin-cities.umn.edu/
+52,Brown University,Providence,RI,Private,https://www.brown.edu/
+53,University of Central Florida,Orlando,FL,Public,https://www.ucf.edu/
+54,Oregon State University,Corvallis,OR,Public,https://oregonstate.edu/
+55,Indiana University Bloomington,Bloomington,IN,Public,https://www.indiana.edu/
+56,University of Texas at Dallas,Richardson,TX,Public,https://www.utdallas.edu/
+57,Rochester Institute of Technology,Rochester,NY,Private,https://www.rit.edu/
+58,Washington University in St. Louis,St. Louis,MO,Private,https://wustl.edu/
+59,University of Texas at Arlington,Arlington,TX,Public,https://www.uta.edu/
+60,University of Notre Dame,Notre Dame,IN,Private,https://www.nd.edu/
+61,University of Rochester,Rochester,NY,Private,https://www.rochester.edu/
+62,University of Florida,Gainesville,FL,Public,https://www.ufl.edu/
+63,New Jersey Institute of Technology,Newark,NJ,Public,https://www.njit.edu/
+64,Dartmouth College,Hanover,NH,Private,https://home.dartmouth.edu/
+65,University of Connecticut,Storrs,CT,Public,https://uconn.edu/
+66,Michigan State University,East Lansing,MI,Public,https://msu.edu/
+67,University of Pittsburgh,Pittsburgh,PA,Public,https://www.pitt.edu/
+68,College of William & Mary,Williamsburg,VA,Public,https://www.wm.edu/
+69,Florida State University,Tallahassee,FL,Public,https://www.fsu.edu/
+70,Vanderbilt University,Nashville,TN,Private,https://www.vanderbilt.edu/
+71,Tufts University,Medford,MA,Private,https://www.tufts.edu/
+72,Binghamton University,Binghamton,NY,Public,https://www.binghamton.edu/
+73,Stevens Institute of Technology,Hoboken,NJ,Private,https://www.stevens.edu/
+74,University of Delaware,Newark,DE,Public,https://www.udel.edu/
+75,University of North Carolina at Charlotte,Charlotte,NC,Public,https://www.charlotte.edu/
+76,Clemson University,Clemson,SC,Public,https://www.clemson.edu/
+77,"University of California, Merced",Merced,CA,Public,https://www.ucmerced.edu/
+78,University of South Florida,Tampa,FL,Public,https://www.usf.edu/
+79,Worcester Polytechnic Institute,Worcester,MA,Private,https://www.wpi.edu/
+80,University of Georgia,Athens,GA,Public,https://www.uga.edu/
+81,California Institute of Technology,Pasadena,CA,Private,https://www.caltech.edu/
+82,Iowa State University,Ames,IA,Public,https://www.iastate.edu/
+83,University of Arizona,Tucson,AZ,Public,https://www.arizona.edu/
+84,Emory University,Atlanta,GA,Private,https://www.emory.edu/
+85,Tulane University,New Orleans,LA,Private,https://tulane.edu/
+86,Washington State University,Pullman,WA,Public,https://wsu.edu/
+87,Wayne State University,Detroit,MI,Public,https://wayne.edu/
+88,Drexel University,Philadelphia,PA,Private,https://www.drexel.edu/
+89,Florida International University,Miami,FL,Public,https://www.fiu.edu/
+90,Toyota Technological Institute at Chicago,Chicago,IL,Private,https://www.ttic.edu/
+91,Georgetown University,Washington,DC,Private,https://www.georgetown.edu/
+92,Temple University,Philadelphia,PA,Public,https://www.temple.edu/
+93,Rensselaer Polytechnic Institute,Troy,NY,Private,https://www.rpi.edu/
+94,"University of Maryland, Baltimore County",Baltimore,MD,Public,https://www.umbc.edu/
+95,"City University of New York, Graduate Center",New York,NY,Public,https://www.gc.cuny.edu/
+96,George Washington University,Washington,DC,Private,https://www.gwu.edu/
+97,University of Massachusetts Lowell,Lowell,MA,Public,https://www.uml.edu/
+98,"University of Tennessee, Knoxville",Knoxville,TN,Public,https://www.utk.edu/
+99,University of Oregon,Eugene,OR,Public,https://www.uoregon.edu/
+100,University of North Texas,Denton,TX,Public,https://www.unt.edu/

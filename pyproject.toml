@@ -7,6 +7,7 @@ name = "fatass"
 version = "0.1.0"
 description = "Functional Agent for Topological Asset System Synthesization"
 requires-python = ">=3.10"
+dependencies = ["prompt_toolkit>=3"]
 
 [project.scripts]
 fatass = "fatass.cli:main"

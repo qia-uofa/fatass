@@ -1,0 +1,12 @@
+{
+  "paper_title": "ChatGPT's Ontological Landscape",
+  "paper_author": "William L. Benzon",
+  "paper_main_claim": "LLM word associations reveal implicit concept hierarchy",
+  "paper_method": "prompting ChatGPT with open-ended list/guessing tasks",
+  "paper_key_result": "lists drift from specific pattern to broader categories",
+  "student_name": "Qi An",
+  "student_experiment": "20 things starting with butterfly, dragonfly, etc.",
+  "student_experiment_2": "20 Questions abstract vs concrete guessing",
+  "student_takeaway": "binary questions favor less frequent option",
+  "student_followup": "controlled dictionary test found no significant bias"
+}

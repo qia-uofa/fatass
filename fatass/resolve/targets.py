@@ -66,3 +66,56 @@ def resolve(target: str) -> Path:
     if not node_dir.is_dir():
         raise TopologyValidationError(f"no node at {node_path!r}")
     return node_dir
+
+
+def resolve_file(target: str) -> Path:
+    """Resolve a CLI target string — for `vim` — to an actual openable
+    file, using the same "node1.node2" / "transform@node1.node2" /
+    "node1.node2:rel/path" grammar as `resolve()` above. `resolve()` always
+    returns a directory (a cwd for `sh`/`free`), collapsing a ":" file
+    target to its parent; this instead keeps the file itself:
+
+    - "node1.node2" -> the node's own <name>.py class file.
+    - "transform@node1.node2" -> that transform's own .py file.
+    - "node1.node2:rel/path" -> that path under the node's home/ assets
+      directory ("./" or "" names the assets directory itself, opened
+      as-is — vim browses a directory fine). Unlike the plain/"@" forms,
+      the file need not already exist here: vim creates it on save, same
+      as running `vim newfile.txt` at a shell.
+    """
+    if ":" in target:
+        node_expr, rel = target.split(":", 1)
+        node_path = expand(node_expr)
+        if node_path == ROOT:
+            base = scaffold._HOME_ROOT
+        else:
+            if not _node_dir(node_path).is_dir():
+                raise TopologyValidationError(f"no node at {node_path!r}")
+            base = _assets_dir(node_path)
+        return base if rel in _ASSETS_ROOT_MARKERS else base / rel
+
+    if "@" in target:
+        transform_name, node_expr = target.split("@", 1)
+        node_path = expand(node_expr)
+        if node_path == ROOT:
+            raise TopologyValidationError(
+                "'~' (the topology root) isn't a node and has no transforms"
+            )
+        node_dir = _node_dir(node_path)
+        transform_file = node_dir / f"{transform_name}.py"
+        if not transform_file.is_file():
+            raise TopologyValidationError(
+                f"no transform named {transform_name!r} under {node_path!r}"
+            )
+        return transform_file
+
+    node_path = expand(target)
+    if node_path == ROOT:
+        raise TopologyValidationError(
+            "'~' (the topology root) isn't a node and has no class file"
+        )
+    node_dir = _node_dir(node_path)
+    if not node_dir.is_dir():
+        raise TopologyValidationError(f"no node at {node_path!r}")
+    file_stem = node_path.rsplit(".", 1)[-1]
+    return node_dir / f"{file_stem}.py"

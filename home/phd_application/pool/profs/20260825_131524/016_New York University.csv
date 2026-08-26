@@ -1,0 +1,9 @@
+name,department,program,research_area,faculty_page,email
+Yann LeCun,"Computer Science, Data Science, Neural Science, Electrical & Computer Engineering",Computer Science & AI,"Machine learning, computer vision, autonomous robotics",http://yann.lecun.com,
+Joan Bruna,Computer Science & Data Science,Computer Science,"Machine learning, high-dimensional statistics, computer vision",http://cims.nyu.edu/~bruna,
+Kyunghyun Cho,Computer Science & Data Science,Computer Science,"Machine learning, natural language processing, machine translation",http://kyunghyuncho.me/,
+Rob Fergus,Computer Science,Computer Science,Machine learning and computer vision,http://cs.nyu.edu/~fergus/,
+Samuel Bowman,Linguistics & Data Science,Linguistics / NLP,"Natural language processing, computational linguistics",https://www.nyu.edu/projects/bowman/,
+David Fouhey,Computer Science & Electrical & Computer Engineering,Computer Science,"Computer vision, deep learning, AI",https://cs.nyu.edu/~fouhey/,
+Saining Xie,Computer Science,Computer Science,"Deep learning, computer vision",http://sainingxie.com,
+Mehryar Mohri,Computer Science,Computer Science,"Machine learning, theory and applications",http://cs.nyu.edu/cs/faculty/mohri/,

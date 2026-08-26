@@ -1,0 +1,9 @@
+{
+  "paper_main_claim": "ChatGPT's stories may be generated from a nested hierarchy of probability distributions (story/segment/sentence/token)",
+  "paper_method": "Prompt ChatGPT with a story, ask for retelling with changed protagonist/antagonist, compare old vs new",
+  "paper_key_result": "Changes propagate locally, proportional to character difference; some story segments (e.g. Disturbance) stay stable, others change",
+  "paper_conclusion": "ChatGPT's behavior must be analyzed on three levels: surface behavior, middle-level probability hierarchy, bottom-level transformer machine",
+  "student_takeaway": "Benzon's black-box narrative probing parallels Haralick-Ramesh performance characterization; both perturb inputs and measure what's preserved",
+  "student_contribution": "Ran a mini replication of Benzon's character-substitution experiments and a quantitative analogue using Markov sequences with bit-flip noise",
+  "student_critique": "Benzon's approach is qualitative/single-example and lacks controls (session history, model version); proposes making it rigorous via multiple trials, controlled parameters, and statistical testing"
+}

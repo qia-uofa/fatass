@@ -6,3 +6,10 @@ transform's declared dependencies; treat them as inputs, never write into
 them. Do exactly what the transform's prompt asks, and nothing more —
 downstream transforms depend on this node's output looking like what the
 prompt describes, not on extra files or a different shape.
+
+If this node has child nodes of its own (subdirectories here that are
+themselves nodes, each with their own `<name>.py`/`__init__.py` under
+`fatass/topology/`), it's purely structural — it holds no real data
+itself, only its leaf descendants (nodes with no further children) do.
+Organize actual output into the appropriate child's directory instead of
+writing content files directly at this top level.

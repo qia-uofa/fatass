@@ -37,6 +37,12 @@ class FreeCommand(Command):
             default=DEFAULT_ALLOWED_TOOLS,
             help=f"Claude CLI --allowedTools to use (default: {DEFAULT_ALLOWED_TOOLS})",
         )
+        parser.add_argument(
+            "--effort",
+            default=None,
+            choices=["low", "medium", "high", "xhigh", "max"],
+            help="Claude CLI --effort to use (default: whatever `claude` is already configured with)",
+        )
 
     def run(self, args: argparse.Namespace) -> int:
         try:
@@ -47,6 +53,7 @@ class FreeCommand(Command):
                 silent=args.silent,
                 model=args.model,
                 tools=args.tools,
+                effort=args.effort,
             )
         except (TopologyValidationError, FreeError) as exc:
             print(f"error: {exc}", file=sys.stderr)

@@ -1,203 +1,181 @@
 @startuml
 class "topology" as topology
 together {
-  class "cv" as n_cv
-  class "examples" as n_examples
+  class "archive" as n_archive
+  class "phd_application" as n_phd_application
+  class "seminar_essay" as n_seminar_essay
+  class "thesis" as n_thesis
 }
-n_cv .up.> topology
+n_archive .up.> topology
 together {
-  class "audit" as n_cv_audit
-  class "current_cv" as n_cv_current_cv
-  class "draft" as n_cv_draft
-  class "materials" as n_cv_materials
-  class "preferences" as n_cv_preferences
+  class "coding" as n_archive_coding
+  class "seminar_essay" as n_archive_seminar_essay
 }
-n_cv_audit .up.> n_cv
-n_cv_current_cv .up.> n_cv
-n_cv_draft .up.> n_cv
-n_cv_materials .up.> n_cv
+n_archive_coding .up.> n_archive
 together {
-  class "education" as n_cv_materials_education
-  class "funding_and_honors" as n_cv_materials_funding_and_honors
-  class "personal_projects" as n_cv_materials_personal_projects
-  class "positions" as n_cv_materials_positions
-  class "publications_and_presentations" as n_cv_materials_publications_and_presentations
-  class "references" as n_cv_materials_references
-  class "teaching_and_service" as n_cv_materials_teaching_and_service
+  class "blueprint" as n_archive_coding_blueprint
+  class "spec" as n_archive_coding_spec
 }
-n_cv_materials_education .up.> n_cv_materials
-n_cv_materials_funding_and_honors .up.> n_cv_materials
-n_cv_materials_personal_projects .up.> n_cv_materials
-n_cv_materials_positions .up.> n_cv_materials
-n_cv_materials_publications_and_presentations .up.> n_cv_materials
-n_cv_materials_references .up.> n_cv_materials
-n_cv_materials_teaching_and_service .up.> n_cv_materials
-n_cv_preferences .up.> n_cv
-n_examples .up.> topology
+n_archive_coding_blueprint .up.> n_archive_coding
+n_archive_coding_spec .up.> n_archive_coding
 together {
-  class "coding" as n_examples_coding
-  class "phd_application" as n_examples_phd_application
-  class "writings" as n_examples_writings
+  class "app" as n_archive_coding_spec_app
 }
-n_examples_coding .up.> n_examples
+n_archive_coding_spec_app .up.> n_archive_coding_spec
+n_archive_seminar_essay .up.> n_archive
 together {
-  class "blueprint" as n_examples_coding_blueprint
-  class "spec" as n_examples_coding_spec
+  class "analysis" as n_archive_seminar_essay_analysis
+  class "audit" as n_archive_seminar_essay_audit
+  class "drafting" as n_archive_seminar_essay_drafting
+  class "materials" as n_archive_seminar_essay_materials
+  class "skeleton" as n_archive_seminar_essay_skeleton
+  class "style" as n_archive_seminar_essay_style
 }
-n_examples_coding_blueprint .up.> n_examples_coding
-n_examples_coding_spec .up.> n_examples_coding
+n_archive_seminar_essay_analysis .up.> n_archive_seminar_essay
 together {
-  class "app" as n_examples_coding_spec_app
+  class "references" as n_archive_seminar_essay_analysis_references
+  class "subject" as n_archive_seminar_essay_analysis_subject
+  class "task" as n_archive_seminar_essay_analysis_task
 }
-n_examples_coding_spec_app .up.> n_examples_coding_spec
-n_examples_phd_application .up.> n_examples
+n_archive_seminar_essay_analysis_references .up.> n_archive_seminar_essay_analysis
+n_archive_seminar_essay_analysis_subject .up.> n_archive_seminar_essay_analysis
+n_archive_seminar_essay_analysis_task .up.> n_archive_seminar_essay_analysis
+n_archive_seminar_essay_audit .up.> n_archive_seminar_essay
 together {
-  class "hunt" as n_examples_phd_application_hunt
-  class "outreach" as n_examples_phd_application_outreach
-  class "profile" as n_examples_phd_application_profile
+  class "draft" as n_archive_seminar_essay_audit_draft
+  class "draft_star" as n_archive_seminar_essay_audit_draft_star
+  class "issues" as n_archive_seminar_essay_audit_issues
 }
-n_examples_phd_application_hunt .up.> n_examples_phd_application
+n_archive_seminar_essay_audit_draft .up.> n_archive_seminar_essay_audit
+n_archive_seminar_essay_audit_draft_star .up.> n_archive_seminar_essay_audit
+n_archive_seminar_essay_audit_issues .up.> n_archive_seminar_essay_audit
+n_archive_seminar_essay_drafting .up.> n_archive_seminar_essay
 together {
-  class "landscape" as n_examples_phd_application_hunt_landscape
-  class "profiles" as n_examples_phd_application_hunt_profiles
-  class "shortlist" as n_examples_phd_application_hunt_shortlist
+  class "annotation" as n_archive_seminar_essay_drafting_annotation
+  class "draft" as n_archive_seminar_essay_drafting_draft
 }
-n_examples_phd_application_hunt_landscape .up.> n_examples_phd_application_hunt
-n_examples_phd_application_hunt_profiles .up.> n_examples_phd_application_hunt
-n_examples_phd_application_hunt_shortlist .up.> n_examples_phd_application_hunt
-n_examples_phd_application_outreach .up.> n_examples_phd_application
+n_archive_seminar_essay_drafting_annotation .up.> n_archive_seminar_essay_drafting
+n_archive_seminar_essay_drafting_draft .up.> n_archive_seminar_essay_drafting
+n_archive_seminar_essay_materials .up.> n_archive_seminar_essay
 together {
-  class "dispatch" as n_examples_phd_application_outreach_dispatch
-  class "emails" as n_examples_phd_application_outreach_emails
-  class "review" as n_examples_phd_application_outreach_review
+  class "papers" as n_archive_seminar_essay_materials_papers
+  class "task" as n_archive_seminar_essay_materials_task
 }
-n_examples_phd_application_outreach_dispatch .up.> n_examples_phd_application_outreach
-n_examples_phd_application_outreach_emails .up.> n_examples_phd_application_outreach
-n_examples_phd_application_outreach_review .up.> n_examples_phd_application_outreach
-n_examples_phd_application_profile .up.> n_examples_phd_application
+n_archive_seminar_essay_materials_papers .up.> n_archive_seminar_essay_materials
 together {
-  class "documents" as n_examples_phd_application_profile_documents
-  class "questionnaire" as n_examples_phd_application_profile_questionnaire
+  class "references" as n_archive_seminar_essay_materials_papers_references
+  class "subject" as n_archive_seminar_essay_materials_papers_subject
 }
-n_examples_phd_application_profile_documents .up.> n_examples_phd_application_profile
+n_archive_seminar_essay_materials_papers_references .up.> n_archive_seminar_essay_materials_papers
+n_archive_seminar_essay_materials_papers_subject .up.> n_archive_seminar_essay_materials_papers
+n_archive_seminar_essay_materials_task .up.> n_archive_seminar_essay_materials
+n_archive_seminar_essay_skeleton .up.> n_archive_seminar_essay
+n_archive_seminar_essay_style .up.> n_archive_seminar_essay
 together {
-  class "cv" as n_examples_phd_application_profile_documents_cv
-  class "publications" as n_examples_phd_application_profile_documents_publications
-  class "references" as n_examples_phd_application_profile_documents_references
-  class "transcripts" as n_examples_phd_application_profile_documents_transcripts
-  class "writing_sample" as n_examples_phd_application_profile_documents_writing_sample
+  class "ai_pattern" as n_archive_seminar_essay_style_ai_pattern
+  class "voice" as n_archive_seminar_essay_style_voice
 }
-n_examples_phd_application_profile_documents_cv .up.> n_examples_phd_application_profile_documents
-n_examples_phd_application_profile_documents_publications .up.> n_examples_phd_application_profile_documents
-n_examples_phd_application_profile_documents_references .up.> n_examples_phd_application_profile_documents
-n_examples_phd_application_profile_documents_transcripts .up.> n_examples_phd_application_profile_documents
-n_examples_phd_application_profile_documents_writing_sample .up.> n_examples_phd_application_profile_documents
-n_examples_phd_application_profile_questionnaire .up.> n_examples_phd_application_profile
-n_examples_writings .up.> n_examples
+n_archive_seminar_essay_style_ai_pattern .up.> n_archive_seminar_essay_style
+n_archive_seminar_essay_style_voice .up.> n_archive_seminar_essay_style
 together {
-  class "seminar" as n_examples_writings_seminar
+  class "narrative" as n_archive_seminar_essay_style_voice_narrative
+  class "tone" as n_archive_seminar_essay_style_voice_tone
 }
-n_examples_writings_seminar .up.> n_examples_writings
+n_archive_seminar_essay_style_voice_narrative .up.> n_archive_seminar_essay_style_voice
+n_archive_seminar_essay_style_voice_tone .up.> n_archive_seminar_essay_style_voice
+n_phd_application .up.> topology
 together {
-  class "analysis" as n_examples_writings_seminar_analysis
-  class "audit" as n_examples_writings_seminar_audit
-  class "drafting" as n_examples_writings_seminar_drafting
-  class "materials" as n_examples_writings_seminar_materials
-  class "skeleton" as n_examples_writings_seminar_skeleton
-  class "style" as n_examples_writings_seminar_style
+  class "pool" as n_phd_application_pool
+  class "profile" as n_phd_application_profile
 }
-n_examples_writings_seminar_analysis .up.> n_examples_writings_seminar
+n_phd_application_pool .up.> n_phd_application
 together {
-  class "references" as n_examples_writings_seminar_analysis_references
-  class "subject" as n_examples_writings_seminar_analysis_subject
-  class "task" as n_examples_writings_seminar_analysis_task
+  class "profs" as n_phd_application_pool_profs
+  class "unis" as n_phd_application_pool_unis
 }
-n_examples_writings_seminar_analysis_references .up.> n_examples_writings_seminar_analysis
-n_examples_writings_seminar_analysis_subject .up.> n_examples_writings_seminar_analysis
-n_examples_writings_seminar_analysis_task .up.> n_examples_writings_seminar_analysis
-n_examples_writings_seminar_audit .up.> n_examples_writings_seminar
+n_phd_application_pool_profs .up.> n_phd_application_pool
+n_phd_application_pool_unis .up.> n_phd_application_pool
+n_phd_application_profile .up.> n_phd_application
 together {
-  class "draft" as n_examples_writings_seminar_audit_draft
-  class "draft_star" as n_examples_writings_seminar_audit_draft_star
-  class "issues" as n_examples_writings_seminar_audit_issues
+  class "cv" as n_phd_application_profile_cv
+  class "requirement" as n_phd_application_profile_requirement
 }
-n_examples_writings_seminar_audit_draft .up.> n_examples_writings_seminar_audit
-n_examples_writings_seminar_audit_draft_star .up.> n_examples_writings_seminar_audit
-n_examples_writings_seminar_audit_issues .up.> n_examples_writings_seminar_audit
-n_examples_writings_seminar_drafting .up.> n_examples_writings_seminar
+n_phd_application_profile_cv .up.> n_phd_application_profile
+n_phd_application_profile_requirement .up.> n_phd_application_profile
+n_seminar_essay .up.> topology
 together {
-  class "annotation" as n_examples_writings_seminar_drafting_annotation
-  class "draft" as n_examples_writings_seminar_drafting_draft
+  class "materials" as n_seminar_essay_materials
 }
-n_examples_writings_seminar_drafting_annotation .up.> n_examples_writings_seminar_drafting
-n_examples_writings_seminar_drafting_draft .up.> n_examples_writings_seminar_drafting
-n_examples_writings_seminar_materials .up.> n_examples_writings_seminar
+n_seminar_essay_materials .up.> n_seminar_essay
 together {
-  class "papers" as n_examples_writings_seminar_materials_papers
-  class "task" as n_examples_writings_seminar_materials_task
+  class "analysis" as n_seminar_essay_materials_analysis
+  class "drafting" as n_seminar_essay_materials_drafting
+  class "papers" as n_seminar_essay_materials_papers
+  class "patterns" as n_seminar_essay_materials_patterns
 }
-n_examples_writings_seminar_materials_papers .up.> n_examples_writings_seminar_materials
+n_seminar_essay_materials_analysis .up.> n_seminar_essay_materials
 together {
-  class "references" as n_examples_writings_seminar_materials_papers_references
-  class "subject" as n_examples_writings_seminar_materials_papers_subject
+  class "facts" as n_seminar_essay_materials_analysis_facts
+  class "interconnection" as n_seminar_essay_materials_analysis_interconnection
+  class "intraconnection" as n_seminar_essay_materials_analysis_intraconnection
+  class "summary" as n_seminar_essay_materials_analysis_summary
 }
-n_examples_writings_seminar_materials_papers_references .up.> n_examples_writings_seminar_materials_papers
-n_examples_writings_seminar_materials_papers_subject .up.> n_examples_writings_seminar_materials_papers
-n_examples_writings_seminar_materials_task .up.> n_examples_writings_seminar_materials
-n_examples_writings_seminar_skeleton .up.> n_examples_writings_seminar
-n_examples_writings_seminar_style .up.> n_examples_writings_seminar
+n_seminar_essay_materials_analysis_facts .up.> n_seminar_essay_materials_analysis
+n_seminar_essay_materials_analysis_interconnection .up.> n_seminar_essay_materials_analysis
+n_seminar_essay_materials_analysis_intraconnection .up.> n_seminar_essay_materials_analysis
+n_seminar_essay_materials_analysis_summary .up.> n_seminar_essay_materials_analysis
+n_seminar_essay_materials_drafting .up.> n_seminar_essay_materials
 together {
-  class "ai_pattern" as n_examples_writings_seminar_style_ai_pattern
-  class "voice" as n_examples_writings_seminar_style_voice
+  class "draft" as n_seminar_essay_materials_drafting_draft
+  class "parts" as n_seminar_essay_materials_drafting_parts
+  class "structure" as n_seminar_essay_materials_drafting_structure
+  class "task" as n_seminar_essay_materials_drafting_task
 }
-n_examples_writings_seminar_style_ai_pattern .up.> n_examples_writings_seminar_style
-n_examples_writings_seminar_style_voice .up.> n_examples_writings_seminar_style
+n_seminar_essay_materials_drafting_draft .up.> n_seminar_essay_materials_drafting
+n_seminar_essay_materials_drafting_parts .up.> n_seminar_essay_materials_drafting
+n_seminar_essay_materials_drafting_structure .up.> n_seminar_essay_materials_drafting
+n_seminar_essay_materials_drafting_task .up.> n_seminar_essay_materials_drafting
+n_seminar_essay_materials_papers .up.> n_seminar_essay_materials
 together {
-  class "narrative" as n_examples_writings_seminar_style_voice_narrative
-  class "tone" as n_examples_writings_seminar_style_voice_tone
+  class "metadata" as n_seminar_essay_materials_papers_metadata
+  class "pdf" as n_seminar_essay_materials_papers_pdf
+  class "sidenote" as n_seminar_essay_materials_papers_sidenote
 }
-n_examples_writings_seminar_style_voice_narrative .up.> n_examples_writings_seminar_style_voice
-n_examples_writings_seminar_style_voice_tone .up.> n_examples_writings_seminar_style_voice
+n_seminar_essay_materials_papers_metadata .up.> n_seminar_essay_materials_papers
+n_seminar_essay_materials_papers_pdf .up.> n_seminar_essay_materials_papers
+n_seminar_essay_materials_papers_sidenote .up.> n_seminar_essay_materials_papers
+n_seminar_essay_materials_patterns .up.> n_seminar_essay_materials
+n_thesis .up.> topology
+together {
+  class "brainstorm" as n_thesis_brainstorm
+}
+n_thesis_brainstorm .up.> n_thesis
 
 class "None" as none_node
 
-n_cv_draft -[bold]right-> n_cv_audit
-n_cv_materials -[bold]right-> n_cv_audit
-n_cv_preferences -[bold]right-> n_cv_audit
-n_cv_materials -[bold]right-> n_cv_draft
-n_cv_preferences -[bold]right-> n_cv_draft
-n_cv_current_cv -[bold]right-> n_cv_materials_education
-n_cv_current_cv -[bold]right-> n_cv_materials_funding_and_honors
-n_cv_current_cv -[bold]right-> n_cv_materials_personal_projects
-n_cv_current_cv -[bold]right-> n_cv_materials_positions
-n_cv_current_cv -[bold]right-> n_cv_materials_publications_and_presentations
-n_cv_current_cv -[bold]right-> n_cv_materials_references
-n_cv_current_cv -[bold]right-> n_cv_materials_teaching_and_service
-none_node -[bold]-> n_cv_preferences
-n_examples_coding_spec -[bold]right-> n_examples_coding_blueprint
-none_node -[bold]-> n_examples_coding_spec_app
-n_examples_phd_application_profile -[bold]right-> n_examples_phd_application_hunt_landscape
-n_examples_phd_application_hunt_landscape -[bold]right-> n_examples_phd_application_hunt_profiles
-n_examples_phd_application_profile -[bold]right-> n_examples_phd_application_hunt_profiles
-n_examples_phd_application_hunt_profiles -[bold]right-> n_examples_phd_application_hunt_shortlist
-n_examples_phd_application_profile -[bold]right-> n_examples_phd_application_hunt_shortlist
-n_examples_phd_application_outreach_emails -[bold]right-> n_examples_phd_application_outreach_dispatch
-n_examples_phd_application_outreach_review -[bold]right-> n_examples_phd_application_outreach_dispatch
-n_examples_phd_application_hunt_shortlist -[bold]right-> n_examples_phd_application_outreach_emails
-n_examples_phd_application_profile -[bold]right-> n_examples_phd_application_outreach_emails
-n_examples_phd_application_profile_documents -[bold]right-> n_examples_phd_application_outreach_emails
-none_node -[bold]-> n_examples_phd_application_profile_questionnaire
-n_examples_writings_seminar_materials_papers -[bold]right-> n_examples_writings_seminar_analysis_references
-n_examples_writings_seminar_materials_papers_subject -[bold]right-> n_examples_writings_seminar_analysis_subject
-n_examples_writings_seminar_materials_task -[bold]right-> n_examples_writings_seminar_analysis_task
-n_examples_writings_seminar_drafting_draft -[bold]right-> n_examples_writings_seminar_audit_draft
-n_examples_writings_seminar_drafting_annotation -[bold]right-> n_examples_writings_seminar_audit_draft
-n_examples_writings_seminar_audit_draft -[bold]right-> n_examples_writings_seminar_audit_draft_star
-n_examples_writings_seminar_audit_issues -[bold]right-> n_examples_writings_seminar_audit_draft_star
-n_examples_writings_seminar_drafting_draft -[bold]right-> n_examples_writings_seminar_drafting_annotation
-n_examples_writings_seminar_style_ai_pattern -[bold]right-> n_examples_writings_seminar_drafting_annotation
-n_examples_writings_seminar_skeleton -[bold]right-> n_examples_writings_seminar_drafting_draft
-n_examples_writings_seminar_style -[bold]right-> n_examples_writings_seminar_drafting_draft
-n_examples_writings_seminar_materials -[bold]right-> n_examples_writings_seminar_drafting_draft
-n_examples_writings_seminar_analysis -[bold]right-> n_examples_writings_seminar_skeleton
+n_archive_coding_spec -[bold]right-> n_archive_coding_blueprint
+none_node -[bold]-> n_archive_coding_spec_app
+n_archive_seminar_essay_materials_papers -[bold]right-> n_archive_seminar_essay_analysis_references
+n_archive_seminar_essay_materials_papers_subject -[bold]right-> n_archive_seminar_essay_analysis_subject
+n_archive_seminar_essay_materials_task -[bold]right-> n_archive_seminar_essay_analysis_task
+n_archive_seminar_essay_drafting_draft -[bold]right-> n_archive_seminar_essay_audit_draft
+n_archive_seminar_essay_drafting_annotation -[bold]right-> n_archive_seminar_essay_audit_draft
+n_archive_seminar_essay_audit_draft -[bold]right-> n_archive_seminar_essay_audit_draft_star
+n_archive_seminar_essay_audit_issues -[bold]right-> n_archive_seminar_essay_audit_draft_star
+n_archive_seminar_essay_drafting_draft -[bold]right-> n_archive_seminar_essay_drafting_annotation
+n_archive_seminar_essay_style_ai_pattern -[bold]right-> n_archive_seminar_essay_drafting_annotation
+n_archive_seminar_essay_skeleton -[bold]right-> n_archive_seminar_essay_drafting_draft
+n_archive_seminar_essay_style -[bold]right-> n_archive_seminar_essay_drafting_draft
+n_archive_seminar_essay_materials -[bold]right-> n_archive_seminar_essay_drafting_draft
+n_archive_seminar_essay_analysis -[bold]right-> n_archive_seminar_essay_skeleton
+n_phd_application_pool_unis -[bold]right-> n_phd_application_pool_profs
+none_node --> n_phd_application_pool_unis : search
+n_seminar_essay_materials_papers -[bold]right-> n_seminar_essay_materials_analysis
+n_seminar_essay_materials_drafting_parts -[bold]right-> n_seminar_essay_materials_drafting_draft
+n_seminar_essay_materials_drafting_structure -[bold]right-> n_seminar_essay_materials_drafting_parts
+n_seminar_essay_materials_analysis -[bold]right-> n_seminar_essay_materials_drafting_parts
+n_seminar_essay_materials_papers -[bold]right-> n_seminar_essay_materials_drafting_parts
+n_seminar_essay_materials_drafting_task -[bold]right-> n_seminar_essay_materials_drafting_structure
+none_node --> n_seminar_essay_materials_patterns : search
+none_node --> n_thesis_brainstorm : start
 @enduml

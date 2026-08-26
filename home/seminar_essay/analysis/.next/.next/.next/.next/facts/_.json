@@ -1,0 +1,11 @@
+{
+  "paper_title": "Ontology in Knowledge Representation",
+  "paper_author": "William L. Benzon",
+  "paper_main_claim": "Single-hierarchy classification fails for entities with multiple roles",
+  "paper_method": "Two orthogonal structures: paradigmatic (is-a) tree and assignment (role) tree",
+  "paper_key_result": "Separates identity from role, resolving contradictions like teacher/son (George)",
+  "paper_application": "CIMWorld: assignment-tree ontology for an automated factory (RPI, 1980s)",
+  "paper_change_types": "Paradigmatic transition (form changes, identity stays) vs ontological transition (structure changes)",
+  "student_takeaway": "Benzon's problem not solved by LLMs, only sidestepped via statistical pattern matching, not explicit structure",
+  "note": "Paper PDF is password-protected and unreadable; facts drawn from student's sidenote (slides) only"
+}

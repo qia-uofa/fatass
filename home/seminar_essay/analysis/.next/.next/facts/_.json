@@ -1,0 +1,11 @@
+{
+  "paper_title": "ChatGPT tells 20 versions of its prototypical story, with a short note on method, Version 3",
+  "paper_author": "William L. Benzon",
+  "paper_main_claim": "ChatGPT has a 'prototypical story' revealing structure of underlying model",
+  "paper_method": "Prompted ChatGPT with single word 'story' 20x: 10 in one session, 10 in separate sessions",
+  "paper_key_result": "Fairy-tale exploration/return story recurs; 'Elara' protagonist 2/10 single session vs 5/10 separate sessions",
+  "paper_interpretation": "Prototypical story is abstraction over training corpus; blackbox study as valid as mechanistic interpretability",
+  "student_takeaway": "Replicated with Llama/DeepSeek models; scale and training corpus affect prototype completeness and coherence",
+  "student_method": "Scored 20+ generated stories on 8-element prototype rubric (Home, Departure, Magical World, Helpers, Challenge, Growth, Return, Community Benefit)",
+  "student_key_finding": "Single-session prompts yield more coherent/varied output; larger models (Llama-3.3-70B, DeepSeek) more coherent than Llama-3.1-8B; DeepSeek has a different default story"
+}

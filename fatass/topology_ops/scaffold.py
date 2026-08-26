@@ -1,3 +1,4 @@
+import ast
 import re
 import shutil
 from pathlib import Path
@@ -119,6 +120,55 @@ def create_transform(node_path: str, transform_name: str) -> bool:
     return True
 
 
+def _line_start(source: str, lineno: int) -> int:
+    """Byte offset of the start of 1-indexed `lineno` in `source`."""
+    pos = 0
+    for _ in range(lineno - 1):
+        pos = source.index("\n", pos) + 1
+    return pos
+
+
+def _rewrite_self_imports(node_dir: Path, old_stem: str, new_stem: str, new_class: str) -> None:
+    """A transform file sitting in the same directory as the node's own
+    file can import that node's own class via a *relative* self-import
+    (e.g. `from .search_result import SearchResult`, used to find its
+    own node's `_assets_dir()` without hardcoding a path) — unlike
+    `_rewrite_references`'s *absolute* `fatass.topology.<path>` pattern,
+    a same-directory relative import never spells out the full topology
+    path, so it isn't caught there. `_rename_own_file` already renamed
+    the file itself and fixed `__init__.py`'s own import; this fixes
+    every other `.py` file in the directory (transforms) that relied on
+    the old module name — aliasing the new class back to whatever local
+    name the file already used for it (`from .{new_stem} import
+    {new_class} as <that name>`), so nothing else in the file (in
+    particular a transform's own prompt text) needs to change."""
+    for file in node_dir.glob("*.py"):
+        if file.name in ("__init__.py", f"{new_stem}.py"):
+            continue
+        source = file.read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        target = next(
+            (
+                n
+                for n in tree.body
+                if isinstance(n, ast.ImportFrom) and n.level == 1 and n.module == old_stem
+            ),
+            None,
+        )
+        if target is None:
+            continue
+
+        alias = target.names[0].asname or target.names[0].name
+        abs_start = _line_start(source, target.lineno) + target.col_offset
+        abs_end = _line_start(source, target.end_lineno) + target.end_col_offset
+        new_source = (
+            source[:abs_start]
+            + f"from .{new_stem} import {new_class} as {alias}"
+            + source[abs_end:]
+        )
+        file.write_text(new_source, encoding="utf-8")
+
+
 def _rename_own_file(node_dir: Path, old_path: str, new_path: str) -> None:
     """After `move_node`/`copy_node` place a node at `node_dir`, its own
     file/class are still named after `old_path`'s last segment — fine if
@@ -147,6 +197,99 @@ def _rename_own_file(node_dir: Path, old_path: str, new_path: str) -> None:
         f"from .{old_stem} import {old_class}", f"from .{new_stem} import {new_class}"
     ).replace(f'__all__ = ["{old_class}"]', f'__all__ = ["{new_class}"]')
     init_file.write_text(init_source, encoding="utf-8")
+
+    _rewrite_self_imports(node_dir, old_stem, new_stem, new_class)
+
+
+def _rewrite_external_class_imports(
+    root: Path, new_path: str, old_class: str, new_class: str
+) -> None:
+    """`_rewrite_references` retargets `fatass.topology.<old_path>` ->
+    `fatass.topology.<new_path>` in every dependent file, but if the move/
+    copy also renamed the node's own class (see `_rename_own_file` — the
+    leaf segment changed, e.g. "uni_candidates" -> "unis"), an absolute
+    import that named the old class explicitly (`from
+    fatass.topology.<new_path> import <old_class>[ as <alias>]`) now asks
+    the new module for a name it no longer exports. Fix those up too,
+    aliasing the new class back to whatever local name the importing file
+    already used, so nothing else in that file (in particular a
+    transform's own prompt text or its parameter names) needs to change —
+    mirroring `_rewrite_self_imports`'s approach for same-directory
+    transforms, but for absolute imports anywhere under `root`."""
+    module = f"fatass.topology.{new_path}"
+    for file in root.rglob("*.py"):
+        source = file.read_text(encoding="utf-8")
+        try:
+            tree = ast.parse(source)
+        except SyntaxError:
+            continue
+        match = next(
+            (
+                (imp, alias)
+                for imp in ast.walk(tree)
+                if isinstance(imp, ast.ImportFrom) and imp.module == module
+                for alias in imp.names
+                if alias.name == old_class
+            ),
+            None,
+        )
+        if match is None:
+            continue
+
+        imp, alias = match
+        local = alias.asname or alias.name
+        abs_start = _line_start(source, imp.lineno) + imp.col_offset
+        abs_end = _line_start(source, imp.end_lineno) + imp.end_col_offset
+        new_source = (
+            source[:abs_start]
+            + f"from {module} import {new_class} as {local}"
+            + source[abs_end:]
+        )
+        file.write_text(new_source, encoding="utf-8")
+
+
+def _rewrite_external_references(old_path: str, new_path: str, root: Path | None = None) -> int:
+    """Combines `_rewrite_references` (module path) with
+    `_rewrite_external_class_imports` (imported class name, only if the
+    leaf segment/class actually changed) — the two fixes a move/copy of a
+    renamed node needs everywhere outside the node's own directory."""
+    updated = _rewrite_references(old_path, new_path, root=root)
+    old_stem = old_path.rsplit(".", 1)[-1]
+    new_stem = new_path.rsplit(".", 1)[-1]
+    if old_stem != new_stem:
+        _rewrite_external_class_imports(
+            root if root is not None else _TOPOLOGY_ROOT,
+            new_path,
+            pascal_case(old_stem),
+            pascal_case(new_stem),
+        )
+    return updated
+
+
+def _notify_parent_of_child_move(old_path: str, new_path: str) -> None:
+    """After a node's own topology/home/ directories are relocated,
+    give its *parent's* class a chance to react — e.g. a `NodeList`
+    mirrors its schema children's names into every existing `.next`
+    level (see `NodeList.on_child_moved`), content `move_node` itself has
+    no notion of. Only fires for an in-place rename (same parent, leaf
+    segment changed) — moving a node to a different parent entirely, or
+    moving it without renaming it, needs no such reaction. Best-effort:
+    a parent that fails to import (e.g. it's mid-edit) just means no
+    hook runs, not a failed move — the move itself already succeeded."""
+    if "." not in old_path or "." not in new_path:
+        return
+    old_parent, old_stem = old_path.rsplit(".", 1)
+    new_parent, new_stem = new_path.rsplit(".", 1)
+    if old_parent != new_parent or old_stem == new_stem:
+        return
+
+    from ..core.transform import _import_node  # local import: avoid a cycle
+
+    try:
+        parent_cls = _import_node(old_parent)
+    except Exception:
+        return
+    parent_cls.on_child_moved(old_stem, new_stem)
 
 
 def move_node(old_path: str, new_path: str) -> int:
@@ -198,7 +341,9 @@ def move_node(old_path: str, new_path: str) -> int:
     new_assets_dir.parent.mkdir(parents=True, exist_ok=True)
     shutil.move(str(old_assets_dir), str(new_assets_dir))
 
-    return _rewrite_references(old_path, new_path)
+    _notify_parent_of_child_move(old_path, new_path)
+
+    return _rewrite_external_references(old_path, new_path)
 
 
 def copy_node(old_path: str, new_path: str) -> int:
@@ -255,7 +400,7 @@ def copy_node(old_path: str, new_path: str) -> int:
     new_assets_dir.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(str(old_assets_dir), str(new_assets_dir))
 
-    return _rewrite_references(old_path, new_path, root=new_node_dir)
+    return _rewrite_external_references(old_path, new_path, root=new_node_dir)
 
 
 def _rewrite_references(old_path: str, new_path: str, root: Path | None = None) -> int:
@@ -391,6 +536,14 @@ def refine_transform(
         raise TopologyValidationError(
             f"no transform named {transform_name!r} under {node_path!r}"
         )
+
+    # Local import: topology_ops.bind imports _node_dir from this module,
+    # so importing it back at module level here would be a cycle.
+    from .bind import bound_dep_paths
+
+    dep_paths = bound_dep_paths(node_path, transform_name)
+    add_dirs = [_node_dir(dep_path) for dep_path in dep_paths]
+
     full_prompt = (
         f"Edit {transform_name}.py in the current directory according to: "
         f"{prompt}. It must define a function named {transform_name}. Any "
@@ -399,11 +552,14 @@ def refine_transform(
         f"that node — follow the convention described in your system "
         f"prompt (you don't have read access to other nodes to check by "
         f"example). A transform with no such parameters is also valid "
-        f"(it declares no dependencies)."
+        f"(it declares no dependencies). You've been granted read access "
+        f"to this transform's already-declared dependency nodes' own "
+        f"topology directories (not their home/ assets) — nothing else."
     )
     free_topology(
         cwd=node_dir,
         prompt=full_prompt,
+        add_dirs=add_dirs,
         system_prompt=system_prompt,
         permission_mode=permission_mode,
         silent=silent,

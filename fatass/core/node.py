@@ -47,3 +47,16 @@ class Node:
         """Same as create_sys_prompt(), but for `fatass modify` against an
         already-existing node of this class."""
         return None
+
+    @classmethod
+    def on_child_moved(cls, old_child_stem: str, new_child_stem: str) -> None:
+        """Called on a node's own class, after `fatass move` renames one of
+        its *direct* children in place (same parent, only the leaf segment
+        changed) — a chance for a node class with its own extra structure
+        mirroring its children's names (see `NodeList`) to keep that mirror
+        in sync. No-op by default: an ordinary `Node` has no such mirror,
+        so `move_node`'s own generic topology/home/ directory move (already
+        done by the time this is called) is the whole story. `move_node`
+        calls this on the child's *parent's* class, unaware of what (if
+        anything) that class actually needs to do about it."""
+        return None

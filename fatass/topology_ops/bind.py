@@ -158,6 +158,15 @@ def _last_import_end(source: str, tree: ast.Module) -> int:
     return pos
 
 
+def bound_dep_paths(node_path: str, transform_name: str) -> list[str]:
+    """Node paths currently bound as declared `Node`-typed parameters on
+    `transform_name` — used by `bind -a` to clear every existing binding
+    before applying the new set."""
+    _file_path, _source, tree, func = _parse_transform(node_path, transform_name)
+    imports = _existing_imports(tree)
+    return list(_existing_deps(func, imports).values())
+
+
 def bind_transform(node_path: str, transform_name: str, dep_node_paths: list[str]) -> list[str]:
     """Add each of `dep_node_paths` as a declared `Node`-typed parameter
     (and matching import) on `transform_name`'s function — the

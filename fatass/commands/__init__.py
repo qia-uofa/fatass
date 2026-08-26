@@ -18,6 +18,7 @@ from .run import RunCommand
 from .sh import ShCommand
 from .shell import ShellCommand
 from .unbind import UnbindCommand
+from .vim import VimCommand
 
 ALL_COMMANDS = [
     RunCommand(),
@@ -40,6 +41,7 @@ ALL_COMMANDS = [
     BindCommand(),
     UnbindCommand(),
     ShellCommand(),
+    VimCommand(),
 ]
 
 __all__ = ["ALL_COMMANDS"]
