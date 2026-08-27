@@ -18,11 +18,11 @@ def resolve(target: str) -> Path:
       transform file now sits directly in it (no separate transforms/
       subdirectory) — the agent sees the whole node, not an isolated
       transform-only view.
-    - "node1.node2:rel/path" -> a path under the node's home/ assets
-      directory ("./" or "" for the assets directory itself); a path
-      naming a file resolves to that file's parent directory, so the
-      file itself can be referenced bare wherever the resolved directory
-      is used.
+    - "node1.node2/rel/path" -> a path under the node's home/ assets
+      directory ("/./" or trailing "/" for the assets directory itself);
+      a path naming a file resolves to that file's parent directory, so
+      the file itself can be referenced bare wherever the resolved
+      directory is used.
 
     Every node-path portion above is first expanded relative to the
     current node (see fatass.resolve.cwd.expand) — FATASS_NODE from the dotenv
@@ -30,11 +30,26 @@ def resolve(target: str) -> Path:
     "~" ignores it for an absolute path. A node-path portion that expands
     to ROOT ("~", the true topology root — no FATASS_NODE set, or an
     explicit "~") maps to the topology/home root directory itself for
-    the plain and ":" forms; "transform@~..." is rejected, since the
+    the plain and "/" forms; "transform@~..." is rejected, since the
     root isn't a node and has no transforms of its own.
+
+    The node-path portion before the first "/" must be non-empty — a
+    target that starts with "/" (e.g. an unquoted "~/rel/path" that a
+    shell tilde-expanded into an absolute filesystem path before fatass
+    ever saw it, stripping the leading "~" entirely) is rejected rather
+    than silently resolving against the current node, which is what an
+    empty node-path expression would otherwise do. Use "~/" (trailing
+    slash, rel="") or "~/." for the topology/home root's assets
+    directory itself.
     """
-    if ":" in target:
-        node_expr, rel = target.split(":", 1)
+    if "/" in target:
+        node_expr, rel = target.split("/", 1)
+        if not node_expr:
+            raise TopologyValidationError(
+                f"empty node path before '/' in {target!r} — if this came "
+                "from an unquoted '~/...', your shell tilde-expanded it "
+                "before fatass saw it; quote it or use '~.' instead"
+            )
         node_path = expand(node_expr)
         if node_path == ROOT:
             base = scaffold._HOME_ROOT
@@ -71,20 +86,30 @@ def resolve(target: str) -> Path:
 def resolve_file(target: str) -> Path:
     """Resolve a CLI target string — for `vim` — to an actual openable
     file, using the same "node1.node2" / "transform@node1.node2" /
-    "node1.node2:rel/path" grammar as `resolve()` above. `resolve()` always
-    returns a directory (a cwd for `sh`/`free`), collapsing a ":" file
+    "node1.node2/rel/path" grammar as `resolve()` above. `resolve()` always
+    returns a directory (a cwd for `sh`/`free`), collapsing a "/" file
     target to its parent; this instead keeps the file itself:
 
     - "node1.node2" -> the node's own <name>.py class file.
     - "transform@node1.node2" -> that transform's own .py file.
-    - "node1.node2:rel/path" -> that path under the node's home/ assets
-      directory ("./" or "" names the assets directory itself, opened
-      as-is — vim browses a directory fine). Unlike the plain/"@" forms,
-      the file need not already exist here: vim creates it on save, same
-      as running `vim newfile.txt` at a shell.
+    - "node1.node2/rel/path" -> that path under the node's home/ assets
+      directory (a trailing "/" or "/./" names the assets directory
+      itself, opened as-is — vim browses a directory fine). Unlike the
+      plain/"@" forms, the file need not already exist here: vim creates
+      it on save, same as running `vim newfile.txt` at a shell.
+
+    As in `resolve()`, the node-path portion before the first "/" must be
+    non-empty (see there for why — an unquoted "~/..." can get shell
+    tilde-expanded before fatass sees it).
     """
-    if ":" in target:
-        node_expr, rel = target.split(":", 1)
+    if "/" in target:
+        node_expr, rel = target.split("/", 1)
+        if not node_expr:
+            raise TopologyValidationError(
+                f"empty node path before '/' in {target!r} — if this came "
+                "from an unquoted '~/...', your shell tilde-expanded it "
+                "before fatass saw it; quote it or use '~.' instead"
+            )
         node_path = expand(node_expr)
         if node_path == ROOT:
             base = scaffold._HOME_ROOT

@@ -62,14 +62,14 @@ def _render_node_tree(tree: NodeTree, indent: str = "") -> list[str]:
 
 class LsCommand(Command):
     name = "ls"
-    help = "list a node's own class, subnodes, and transforms, or (for a ':'/'@' target) its directory content"
+    help = "list a node's own class, subnodes, and transforms, or (for a '/'/'@' target) its directory content"
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             "target",
             nargs="?",
             default=".",
-            help="node.path (class + subnodes + transforms) | node.path:rel/path or "
+            help="node.path (class + subnodes + transforms) | node.path/rel/path or "
             "transform@node.path (raw directory listing); defaults to the "
             "current node ('.'), which lists all top-level nodes if no "
             "current node is set",
@@ -77,12 +77,12 @@ class LsCommand(Command):
         parser.add_argument(
             "-r",
             action="store_true",
-            help="recurse — show the full inclusion tree (or, for a ':'/'@' "
+            help="recurse — show the full inclusion tree (or, for a '/'/'@' "
             "target, the full directory tree) instead of just one level",
         )
 
     def run(self, args: argparse.Namespace) -> int:
-        is_raw = ":" in args.target or "@" in args.target
+        is_raw = "/" in args.target or "@" in args.target
         try:
             if is_raw:
                 target_dir = resolve_target(args.target)

@@ -1,6 +1,6 @@
 """Tab-completion for the `shell` REPL: command names, node paths
 (dot-separated, completed segment by segment against the real topology
-tree), and the `node.path:rel/path` / `transform@node.path` target
+tree), and the `node.path/rel/path` / `transform@node.path` target
 grammar (`fatass.resolve.targets`)."""
 
 from prompt_toolkit.completion import CompleteEvent, Completer, Completion
@@ -44,7 +44,7 @@ def _complete_node_expr(expr: str) -> list[str]:
 
 
 def _complete_asset_path(node_expr: str, rel: str) -> list[str]:
-    """Completions for the `rel/path` portion of a `node.path:rel/path`
+    """Completions for the `rel/path` portion of a `node.path/rel/path`
     target, as full replacements for `rel` itself."""
     try:
         node_path = expand(node_expr)
@@ -87,10 +87,10 @@ class ShellCompleter(Completer):
                     yield Completion(name, start_position=-len(word))
             return
 
-        if ":" in word:
-            node_expr, rel = word.split(":", 1)
+        if "/" in word:
+            node_expr, rel = word.split("/", 1)
             for candidate in _complete_asset_path(node_expr, rel):
-                replacement = f"{node_expr}:{candidate}"
+                replacement = f"{node_expr}/{candidate}"
                 yield Completion(replacement, start_position=-len(word))
             return
 

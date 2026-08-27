@@ -126,7 +126,7 @@ setup.
 | `run <node.path>[.transforms.<name>] [--force]` | Run one or all of a node's transforms, cache-aware. |
 | `apply <transform>@<node.path> [key=value ...]` | Run one transform with explicit args, ignoring cache. |
 | `create <node.path \| transform@node.path> [--prompt ""] [--silent] [--permission-mode M] [--model M]` | Scaffold a node or transform if it doesn't exist yet. |
-| `modify <node.path \| transform@node.path> --prompt "" [--silent] [--permission-mode M] [--model M]` | Edit an existing node/transform file with an agent. |
+| `modify <node.path \| transform@node.path> ["..."] [--silent] [--permission-mode M] [--model M]` | Edit an existing node/transform file with an agent; prompt is positional and optional. |
 | `move <old.node.path> <new.node.path>` | Move/rename a node, rewriting references to it. |
 | `copy <old.node.path> <new.node.path>` | Copy a node, rewriting the copy's internal references to itself. |
 | `remove <node.path \| transform@node.path>` | Remove a node (and nested nodes) or a single transform. |
@@ -136,12 +136,12 @@ setup.
 | `archive [name] [--node <node.path>]` | Move the whole topology/home trees under `./archive/`, start fresh — or, with `--node`, archive just that node's subtree in place. |
 | `retrieve [name] [--node <node.path>]` | Restore an archived topology/home snapshot — or, with `--node` (requires a named archive), just that node back to its original path. |
 | `build <node.path> [key=value ...]` | Shorthand for `apply build@<node.path>`. |
-| `free <target> --prompt "" [--silent] [--permission-mode M] [--model M]` | Ad-hoc agent call scoped to one resolved target directory. |
+| `free <target> ["..."] [--silent] [--permission-mode M] [--model M]` | Ad-hoc agent call scoped to one resolved target directory; prompt is positional and optional. |
 | `sh <target> <command...>` | Run a shell command with its cwd resolved from a node, transform, or file target. |
 | `cd <expr>` | Change the current node (`FATASS_NODE`) that relative targets resolve against. |
 | `pwd` | Print the current node (`FATASS_NODE`). |
 | `graph [node.path] [-o/--output ...]` | Write a PlantUML diagram of node inclusion + transform dependencies, rooted at `node.path` (default: whole topology). |
-| `ls <node.path \| node.path:rel/path \| transform@node.path>` | List a node's subnodes and transforms (with each transform's input node) — or, for a `:`/`@` target, a raw directory listing like Linux `ls`. |
+| `ls <node.path \| node.path/rel/path \| transform@node.path>` | List a node's subnodes and transforms (with each transform's input node) — or, for a `/`/`@` target, a raw directory listing like Linux `ls`. |
 | `shell` | Interactive REPL — one command per line. |
 
 Node and transform paths are `.`-separated, matching Python module
@@ -151,10 +151,15 @@ no separate slash-path translation.
 `sh`, `free`, and `ls` share one target grammar: `node1.node2` (that
 node's own directory), `transform@node1.node2` (that same node
 directory too — a transform file sits directly in it, no separate
-subdirectory), or `node1.node2:dir1/dir2/file.txt` (a path relative to the
-node's `home/` directory). `ls` treats a bare `node1.node2` specially —
-listing subnodes/transforms instead of raw directory content — since
-that's more useful than a raw directory listing.
+subdirectory), or `node1.node2/dir1/dir2/file.txt` (a path relative to the
+node's `home/` directory). The node-path portion before the first `/`
+must be non-empty — an unquoted `~/rel/path` gets shell-tilde-expanded
+into an absolute filesystem path before fatass ever sees it, so a target
+starting with `/` is rejected rather than silently resolving against the
+current node; write `~.` for an explicit root-relative target. `ls`
+treats a bare `node1.node2` specially — listing subnodes/transforms
+instead of raw directory content — since that's more useful than a raw
+directory listing.
 
 **Every command that reaches `fatass.free()` shells out to the real
 `claude` CLI — it's a real, billable agent call, not a dry run.**

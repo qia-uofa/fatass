@@ -2,7 +2,7 @@ import argparse
 import sys
 
 from ..core.adhoc import free_at
-from ..core.free import DEFAULT_ALLOWED_TOOLS, DEFAULT_PERMISSION_MODE
+from ..core.free import DEFAULT_ALLOWED_TOOLS, DEFAULT_PERMISSION_MODE, NO_PROMPT_TEXT
 from ..errors import FreeError, TopologyValidationError
 from .base import Command
 
@@ -14,9 +14,16 @@ class FreeCommand(Command):
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             "target",
-            help="node.path | transform@node.path | node.path:relative/file/path",
+            help="node.path | transform@node.path | node.path/relative/file/path",
         )
-        parser.add_argument("--prompt", required=True, help="what the agent should do")
+        parser.add_argument(
+            "prompt",
+            nargs="?",
+            default="",
+            help="what the agent should do; omitted or an empty string is passed "
+            f"through as the literal text {NO_PROMPT_TEXT!r}, since the agent "
+            "needs some message",
+        )
         parser.add_argument(
             "--silent",
             action="store_true",
@@ -45,10 +52,11 @@ class FreeCommand(Command):
         )
 
     def run(self, args: argparse.Namespace) -> int:
+        prompt = args.prompt if args.prompt else NO_PROMPT_TEXT
         try:
             free_at(
                 args.target,
-                args.prompt,
+                prompt,
                 permission_mode=args.permission_mode,
                 silent=args.silent,
                 model=args.model,

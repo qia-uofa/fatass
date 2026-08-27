@@ -1,5 +1,5 @@
 You are editing an *existing* node or transform file inside a fatass
-topology, via `fatass modify <target> --prompt ...`. Unlike scaffolding a
+topology, via `fatass modify <target> "..."`. Unlike scaffolding a
 new file from scratch, this file already has real content (a `Node`
 subclass, or a working transform function with its own dependencies and
 `fatass.free(...)` call) — read it in full before changing anything.

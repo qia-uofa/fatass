@@ -8,9 +8,10 @@ from pathlib import Path
 from typing import Any
 
 from .._internal.logs import get_logger
-from .._internal.paths import HOME_ROOT
+from .._internal.paths import ENV_PATH, HOME_ROOT
 from .._internal.prompts import load_system_prompt
 from ..errors import FreeCoercionError, FreeError
+from ..resolve import dotenv
 from .node import Node
 
 _current_node: contextvars.ContextVar[type[Node]] = contextvars.ContextVar(
@@ -33,6 +34,24 @@ Claude Code's own finer-grained safety checks (e.g. on risky Bash
 commands) still apply instead of being skipped outright. A caller whose
 prompt genuinely needs unattended shell access can still pass
 permission_mode="bypassPermissions" explicitly."""
+
+NO_PROMPT_TEXT = "<no instructions given — wait for further input>"
+"""What `modify`/`free`'s CLI substitutes for an omitted or empty prompt
+argument, since the agent needs some starting message. Meant for a
+non-silent (interactive) call, where a human picks up the conversation
+right after; a silent call with no real prompt has nothing to wait on."""
+
+
+_CLAUDE_BIN_KEY = "FATASS_CLAUDE_BIN"
+
+
+def _claude_binary() -> str:
+    """The `claude` executable to invoke: FATASS_CLAUDE_BIN from
+    .fatass/.env if set, else just "claude" (resolved from PATH as
+    normal). Needed for environments (e.g. this process's own PATH over
+    SSH) where the interactive login shell can find `claude` but the
+    PATH actually visible here can't."""
+    return dotenv.read(ENV_PATH).get(_CLAUDE_BIN_KEY, "claude")
 
 
 def _log_token_usage(logger, stdout: str) -> None:
@@ -155,7 +174,7 @@ def _invoke_claude(
     add_dirs_str = ", ".join(str(path) for path in add_dirs)
 
     base_command = [
-        "claude",
+        _claude_binary(),
         "--allowedTools",
         tools,
         "--permission-mode",

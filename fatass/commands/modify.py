@@ -2,7 +2,7 @@ import argparse
 import sys
 
 from .._internal.prompts import load_topology_edit_system_prompt
-from ..core.free import DEFAULT_ALLOWED_TOOLS, DEFAULT_PERMISSION_MODE
+from ..core.free import DEFAULT_ALLOWED_TOOLS, DEFAULT_PERMISSION_MODE, NO_PROMPT_TEXT
 from ..core.transform import _import_node
 from ..errors import FreeError, TopologyValidationError
 from ..topology_ops.scaffold import refine_node, refine_transform
@@ -21,8 +21,11 @@ class ModifyCommand(Command):
         )
         parser.add_argument(
             "prompt",
-            help="what the agent should do; an empty string is passed through as "
-            "the literal text '<empty string>', since the agent needs some message",
+            nargs="?",
+            default="",
+            help="what the agent should do; omitted or an empty string is passed "
+            f"through as the literal text {NO_PROMPT_TEXT!r}, since the agent "
+            "needs some message",
         )
         parser.add_argument(
             "--silent",
@@ -46,7 +49,7 @@ class ModifyCommand(Command):
         )
 
     def run(self, args: argparse.Namespace) -> int:
-        prompt = args.prompt if args.prompt else "<empty string>"
+        prompt = args.prompt if args.prompt else NO_PROMPT_TEXT
         try:
             node_path, transform_name = parse_maybe_at_target(args.target)
             if transform_name is not None:

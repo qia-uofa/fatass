@@ -18,7 +18,7 @@ python -m fatass run <node.path>[.transforms.<name>] [--force]   # run transform
 python -m fatass apply <transform>@<node.path> [key=value ...]    # run one transform with explicit args, ignoring cache
 python -m fatass create <node.path | transform@node.path>[(NodeSubclass)]  # scaffold if missing; e.g. members(NodeList) subclasses fatass.NodeList instead of fatass.Node
 python -m fatass create <transform>(<dep.path>[,<dep.path> ...])@<node.path>   # scaffold a transform and bind the given deps onto it in the same call (no agent call for the binding — same as a `bind` right after)
-python -m fatass modify <node.path | transform@node.path> "..." [--silent] [--permission-mode M] [--model M]    # edit an existing node/transform file; prompt is positional (empty string becomes the literal text "<empty string>")
+python -m fatass modify <node.path | transform@node.path> ["..."] [--silent] [--permission-mode M] [--model M]    # edit an existing node/transform file; prompt is positional and optional — omitted or "" both become the literal text "<no instructions given — wait for further input>"
 python -m fatass move <node.path> <new.node.path>                 # move/rename a node, rewriting references
 python -m fatass copy <node.path> <new.node.path>                 # copy a node, rewriting the copy's internal references
 python -m fatass remove <node.path | transform@node.path>         # remove a node (and nested nodes) or one transform
@@ -26,28 +26,34 @@ python -m fatass purge <node.path> [-rs] [-rd] [-rsd]              # empty a nod
 python -m fatass archive [name] [--node <node.path>]                # move topology/home under ./archive/ and start fresh, or (with --node) archive just that node's subtree in place
 python -m fatass retrieve [name] [--node <node.path>]               # restore an archived topology/home snapshot, or (with --node, requires a named archive) just that node back to its original path
 python -m fatass build <node.path> [key=value ...]                 # shorthand for `apply build@<node.path>`
-python -m fatass free <target> --prompt "..." [--silent] [--permission-mode M] [--model M]  # ad-hoc agent call scoped to a resolved target's directory
+python -m fatass free <target> ["..."] [--silent] [--permission-mode M] [--model M]  # ad-hoc agent call scoped to a resolved target's directory; prompt is positional and optional, same "<no instructions given — wait for further input>" fallback as modify
 python -m fatass sh <target> <command...>                          # run a shell command, cwd resolved from target
 python -m fatass cd <expr>                                          # change the current node (FATASS_NODE)
 python -m fatass pwd                                                # print the current node (FATASS_NODE)
 python -m fatass graph [node.path] [-o/--output ...]                # write a PlantUML diagram of node inclusion + transform dependencies, rooted at node.path (default: whole topology)
-python -m fatass ls [-r] <node.path | node.path:rel/path | transform@node.path>  # show a node's own class + subnodes + transforms (each with its dependencies' classes/subnodes), or a raw directory listing for a ':'/'@' target; -r recurses into the full inclusion/directory tree instead of one level
+python -m fatass ls [-r] <node.path | node.path/rel/path | transform@node.path>  # show a node's own class + subnodes + transforms (each with its dependencies' classes/subnodes), or a raw directory listing for a '/'/'@' target; -r recurses into the full inclusion/directory tree instead of one level
 python -m fatass bind [-a/--absolute] <transform>@<node.path> [dep.path ...]    # add nodes as declared Node-typed dependencies on a transform (no agent call); -a replaces the whole dependency set instead of adding to it (unbinds everything first) — with no dep.path at all, -a just clears every existing bind
 python -m fatass unbind <transform>@<node.path> <dep.path> [dep.path ...]  # remove nodes from a transform's declared dependencies (no agent call)
-python -m fatass vim <node.path | transform@node.path | node.path:rel/path>  # open a node's class file, a transform file, or a home/ file in vim
+python -m fatass vim <node.path | transform@node.path | node.path/rel/path>  # open a node's class file, a transform file, or a home/ file in vim
 python -m fatass shell                                              # interactive REPL, one command per line
 ```
 
 Node/transform paths are `.`-separated, matching Python module addressing
 (`node1.node2`, `node1.node2.transforms.synthesize`).
 
-`sh`, `free`, and `ls`'s `:`/`@` targets share one `<target>` grammar
+`sh`, `free`, and `ls`'s `/`/`@` targets share one `<target>` grammar
 (`fatass.resolve.targets.resolve`): `node1.node2` (that node's own
 directory under `fatass/topology/`), `transform@node1.node2` (that same
 node directory too — a transform file sits directly in it, no separate
-subdirectory), or `node1.node2:dir1/dir2/file.txt` (a path relative to the node's `home/`
-assets directory — `node1.node2:./` names that directory itself; a file
-path resolves to its parent dir). `ls`'s bare `node1.node2` form (no `:`
+subdirectory), or `node1.node2/dir1/dir2/file.txt` (a path relative to the node's `home/`
+assets directory — `node1.node2/./` (or a trailing `/`) names that
+directory itself; a file path resolves to its parent dir). The node-path
+portion before the first `/` must be non-empty — a target starting with
+`/` is rejected rather than silently resolving against the current node,
+since an unquoted `~/rel/path` gets shell-tilde-expanded into an
+absolute filesystem path (dropping the leading `~` entirely) before
+fatass ever sees the argument; write `~.` (or quote the argument) for an
+explicit root-relative target. `ls`'s bare `node1.node2` form (no `/`
 or `@`) doesn't resolve through this — it takes the fast path in
 `fatass/ls.py:list_node`, which imports the node itself (via
 `fatass.core.transform._import_node`) to get its *base* fatass class
@@ -103,7 +109,7 @@ as the non-`-r` form, each nesting level indented four spaces further.
 `fatass.resolve.targets.resolve_file`, which keeps the actual file instead
 of collapsing it to its parent directory: `node1.node2` opens that node's
 own `<name>.py` class file, `transform@node1.node2` opens that transform's
-`.py` file, and `node1.node2:rel/path` opens that path under the node's
+`.py` file, and `node1.node2/rel/path` opens that path under the node's
 `home/` directory (need not already exist — vim creates it on save, same
 as `vim newfile.txt` at a shell).
 

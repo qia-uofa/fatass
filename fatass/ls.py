@@ -131,7 +131,7 @@ def list_root_tree() -> NodeTree:
 
 
 def list_dir(path: Path) -> list[str]:
-    """Directory entry names, sorted — the raw `ls` view used for a ':'
+    """Directory entry names, sorted — the raw `ls` view used for a '/'
     (home/ asset directory) target. Unlike `list_node`'s subnodes (which
     aren't literally directories in the topology sense), these entries
     are real filesystem content, so a subdirectory gets a trailing "/"
@@ -142,7 +142,7 @@ def list_dir(path: Path) -> list[str]:
 
 
 def list_dir_tree(path: Path, _prefix: str = "") -> list[str]:
-    """Recursive raw `ls -r` view for a ':'/'@' target — same trailing
+    """Recursive raw `ls -r` view for a '/'/'@' target — same trailing
     "/" convention as list_dir(), but descending into every subdirectory
     too, each already indented four spaces per nesting level so the
     command layer can just print the lines as given."""

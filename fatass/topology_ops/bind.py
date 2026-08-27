@@ -170,8 +170,8 @@ def bound_dep_paths(node_path: str, transform_name: str) -> list[str]:
 def bind_transform(node_path: str, transform_name: str, dep_node_paths: list[str]) -> list[str]:
     """Add each of `dep_node_paths` as a declared `Node`-typed parameter
     (and matching import) on `transform_name`'s function — the
-    deterministic alternative to `modify --prompt "add a dependency on
-    X"`. Doesn't call free(), and never touches a `fatass.free(...)`
+    deterministic alternative to `modify <transform>@<node.path> "add a
+    dependency on X"`. Doesn't call free(), and never touches a `fatass.free(...)`
     call's `readable=[...]` or prompt text — wiring the new parameter
     into a specific call is left to a human or a follow-up `modify`.
 
