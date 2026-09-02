@@ -1,0 +1,1002 @@
+[
+ {
+  "keyword": "killer",
+  "temperature": 0.6369616873214543,
+  "generation_seed": 1097657232
+ },
+ {
+  "keyword": "world",
+  "temperature": 0.04097352393619469,
+  "generation_seed": 579362556
+ },
+ {
+  "keyword": "man",
+  "temperature": 0.016527635528529094,
+  "generation_seed": 376383645
+ },
+ {
+  "keyword": "lion",
+  "temperature": 0.9127555772777217,
+  "generation_seed": 1746484540
+ },
+ {
+  "keyword": "longhorn",
+  "temperature": 0.6066357757671799,
+  "generation_seed": 2084654370
+ },
+ {
+  "keyword": "baby",
+  "temperature": 0.5436249914654229,
+  "generation_seed": 1566581935
+ },
+ {
+  "keyword": "drums",
+  "temperature": 0.9350724237877682,
+  "generation_seed": 595598246
+ },
+ {
+  "keyword": "game",
+  "temperature": 0.002738500170148095,
+  "generation_seed": 1752032166
+ },
+ {
+  "keyword": "newt",
+  "temperature": 0.8574042765875693,
+  "generation_seed": 1190382223
+ },
+ {
+  "keyword": "creatures",
+  "temperature": 0.7296554464299441,
+  "generation_seed": 72124473
+ },
+ {
+  "keyword": "mare",
+  "temperature": 0.17565562060255901,
+  "generation_seed": 191741831
+ },
+ {
+  "keyword": "stocks",
+  "temperature": 0.5414612202490917,
+  "generation_seed": 1853662621
+ },
+ {
+  "keyword": "varmint",
+  "temperature": 0.2997118905373848,
+  "generation_seed": 1033071480
+ },
+ {
+  "keyword": "men",
+  "temperature": 0.028319671145462966,
+  "generation_seed": 907713895
+ },
+ {
+  "keyword": "horse",
+  "temperature": 0.12428327649956394,
+  "generation_seed": 17790420
+ },
+ {
+  "keyword": "head",
+  "temperature": 0.6471895115742501,
+  "generation_seed": 1440154964
+ },
+ {
+  "keyword": "grades",
+  "temperature": 0.6153851114812539,
+  "generation_seed": 1640795442
+ },
+ {
+  "keyword": "humanity",
+  "temperature": 0.997209935789211,
+  "generation_seed": 823941273
+ },
+ {
+  "keyword": "pacemaker",
+  "temperature": 0.9808353387762301,
+  "generation_seed": 815020182
+ },
+ {
+  "keyword": "layer",
+  "temperature": 0.6504592762678163,
+  "generation_seed": 1472190201
+ },
+ {
+  "keyword": "tobacco",
+  "temperature": 0.6884467305709401,
+  "generation_seed": 1511830743
+ },
+ {
+  "keyword": "roses",
+  "temperature": 0.13509650502241122,
+  "generation_seed": 835202398
+ },
+ {
+  "keyword": "plant",
+  "temperature": 0.7214883401940817,
+  "generation_seed": 1815655709
+ },
+ {
+  "keyword": "tea",
+  "temperature": 0.31024187555895566,
+  "generation_seed": 1128189816
+ },
+ {
+  "keyword": "maple",
+  "temperature": 0.4858353588317891,
+  "generation_seed": 1543657889
+ },
+ {
+  "keyword": "lilies",
+  "temperature": 0.9340435159562497,
+  "generation_seed": 1910160579
+ },
+ {
+  "keyword": "tree",
+  "temperature": 0.35779519670907023,
+  "generation_seed": 1444696808
+ },
+ {
+  "keyword": "fir",
+  "temperature": 0.32186939107594215,
+  "generation_seed": 1227350965
+ },
+ {
+  "keyword": "palm",
+  "temperature": 0.5943000301996968,
+  "generation_seed": 1083230753
+ },
+ {
+  "keyword": "rutabaga",
+  "temperature": 0.39161900052816123,
+  "generation_seed": 725658831
+ },
+ {
+  "keyword": "clocks",
+  "temperature": 0.8902743520047923,
+  "generation_seed": 566779217
+ },
+ {
+  "keyword": "stocks",
+  "temperature": 0.6231871446860424,
+  "generation_seed": 487817217
+ },
+ {
+  "keyword": "spruce",
+  "temperature": 0.08401534358238483,
+  "generation_seed": 809899614
+ },
+ {
+  "keyword": "trees",
+  "temperature": 0.7870983074886834,
+  "generation_seed": 1788089691
+ },
+ {
+  "keyword": "soybean",
+  "temperature": 0.23936944299295215,
+  "generation_seed": 1700138882
+ },
+ {
+  "keyword": "weeds",
+  "temperature": 0.05856803480519435,
+  "generation_seed": 1882235553
+ },
+ {
+  "keyword": "stock",
+  "temperature": 0.3361170605456604,
+  "generation_seed": 1231901276
+ },
+ {
+  "keyword": "corn",
+  "temperature": 0.450339366649287,
+  "generation_seed": 322722697
+ },
+ {
+  "keyword": "grass",
+  "temperature": 0.7963242702872942,
+  "generation_seed": 1514711734
+ },
+ {
+  "keyword": "coffee",
+  "temperature": 0.05202130106440961,
+  "generation_seed": 495300372
+ },
+ {
+  "keyword": "juice",
+  "temperature": 0.4045518398215282,
+  "generation_seed": 2140277470
+ },
+ {
+  "keyword": "course",
+  "temperature": 0.0907530456191219,
+  "generation_seed": 426303516
+ },
+ {
+  "keyword": "board",
+  "temperature": 0.5803323859868507,
+  "generation_seed": 1930469649
+ },
+ {
+  "keyword": "liquor",
+  "temperature": 0.6719948779563594,
+  "generation_seed": 641445060
+ },
+ {
+  "keyword": "ice",
+  "temperature": 0.1995154439682133,
+  "generation_seed": 1628312690
+ },
+ {
+  "keyword": "pasture",
+  "temperature": 0.36511016824482856,
+  "generation_seed": 2023172499
+ },
+ {
+  "keyword": "potatoes",
+  "temperature": 0.10549527957022953,
+  "generation_seed": 1095352899
+ },
+ {
+  "keyword": "honey",
+  "temperature": 0.9271545530678674,
+  "generation_seed": 1350999468
+ },
+ {
+  "keyword": "stock",
+  "temperature": 0.440377154715784,
+  "generation_seed": 1018360728
+ },
+ {
+  "keyword": "whiskey",
+  "temperature": 0.499895813687647,
+  "generation_seed": 2049967475
+ },
+ {
+  "keyword": "courses",
+  "temperature": 0.42522862484907553,
+  "generation_seed": 2030045016
+ },
+ {
+  "keyword": "whip",
+  "temperature": 0.9950965052353241,
+  "generation_seed": 1331898246
+ },
+ {
+  "keyword": "table",
+  "temperature": 0.9489436749377653,
+  "generation_seed": 35072564
+ },
+ {
+  "keyword": "chives",
+  "temperature": 0.7577288453082914,
+  "generation_seed": 987939414
+ },
+ {
+  "keyword": "center",
+  "temperature": 0.49742269548761897,
+  "generation_seed": 902462479
+ },
+ {
+  "keyword": "cup",
+  "temperature": 0.7857857007138075,
+  "generation_seed": 1136689208
+ },
+ {
+  "keyword": "water",
+  "temperature": 0.4146558493556708,
+  "generation_seed": 605291690
+ },
+ {
+  "keyword": "formula",
+  "temperature": 0.7111428779897498,
+  "generation_seed": 1577291460
+ },
+ {
+  "keyword": "wine",
+  "temperature": 0.9320596866133782,
+  "generation_seed": 396530696
+ },
+ {
+  "keyword": "diet",
+  "temperature": 0.7290151170763094,
+  "generation_seed": 246815950
+ },
+ {
+  "keyword": "hemisphere",
+  "temperature": 0.9274239286245599,
+  "generation_seed": 1435036779
+ },
+ {
+  "keyword": "member",
+  "temperature": 0.014706304965369288,
+  "generation_seed": 2078605665
+ },
+ {
+  "keyword": "areas",
+  "temperature": 0.8636400902455758,
+  "generation_seed": 176863876
+ },
+ {
+  "keyword": "system",
+  "temperature": 0.9572101796109636,
+  "generation_seed": 2107100304
+ },
+ {
+  "keyword": "brush",
+  "temperature": 0.1487640122324979,
+  "generation_seed": 1109958448
+ },
+ {
+  "keyword": "buns",
+  "temperature": 0.8899355557205206,
+  "generation_seed": 2088704473
+ },
+ {
+  "keyword": "investment",
+  "temperature": 0.8223738275430704,
+  "generation_seed": 493018052
+ },
+ {
+  "keyword": "hair",
+  "temperature": 0.23237291963930384,
+  "generation_seed": 1030766217
+ },
+ {
+  "keyword": "neck",
+  "temperature": 0.8018805787183079,
+  "generation_seed": 299909236
+ },
+ {
+  "keyword": "calves",
+  "temperature": 0.2661302722922926,
+  "generation_seed": 1983265916
+ },
+ {
+  "keyword": "gums",
+  "temperature": 0.5389344076221869,
+  "generation_seed": 1411099205
+ },
+ {
+  "keyword": "lips",
+  "temperature": 0.931017315981155,
+  "generation_seed": 950804460
+ },
+ {
+  "keyword": "heart",
+  "temperature": 0.040510711188434634,
+  "generation_seed": 1748708619
+ },
+ {
+  "keyword": "limb",
+  "temperature": 0.6143732469489966,
+  "generation_seed": 1571971335
+ },
+ {
+  "keyword": "hand",
+  "temperature": 0.028365365113521057,
+  "generation_seed": 1991575181
+ },
+ {
+  "keyword": "hands",
+  "temperature": 0.015991729523571974,
+  "generation_seed": 1544512701
+ },
+ {
+  "keyword": "members",
+  "temperature": 0.7579510023564281,
+  "generation_seed": 320704861
+ },
+ {
+  "keyword": "area",
+  "temperature": 0.9291042207970062,
+  "generation_seed": 1101140973
+ },
+ {
+  "keyword": "muscles",
+  "temperature": 0.06608249672407474,
+  "generation_seed": 1062733147
+ },
+ {
+  "keyword": "style",
+  "temperature": 0.0666900087671014,
+  "generation_seed": 1806715100
+ },
+ {
+  "keyword": "buses",
+  "temperature": 0.34430997880412517,
+  "generation_seed": 485792374
+ },
+ {
+  "keyword": "car",
+  "temperature": 0.9660620807840702,
+  "generation_seed": 924059490
+ },
+ {
+  "keyword": "cars",
+  "temperature": 0.562231842228457,
+  "generation_seed": 1635307038
+ },
+ {
+  "keyword": "boat",
+  "temperature": 0.24167571409434496,
+  "generation_seed": 555907480
+ },
+ {
+  "keyword": "bottoms",
+  "temperature": 0.8881183206591798,
+  "generation_seed": 469485975
+ },
+ {
+  "keyword": "pickup",
+  "temperature": 0.1245547058352835,
+  "generation_seed": 485050904
+ },
+ {
+  "keyword": "truck",
+  "temperature": 0.2883307570075776,
+  "generation_seed": 1722230530
+ },
+ {
+  "keyword": "planes",
+  "temperature": 0.5540905021732678,
+  "generation_seed": 1258689697
+ },
+ {
+  "keyword": "airplanes",
+  "temperature": 0.8097107759127777,
+  "generation_seed": 131069158
+ },
+ {
+  "keyword": "automobile",
+  "temperature": 0.2884212144312105,
+  "generation_seed": 1203612942
+ },
+ {
+  "keyword": "cycle",
+  "temperature": 0.4128963426808927,
+  "generation_seed": 1056188273
+ },
+ {
+  "keyword": "stage",
+  "temperature": 0.6265064624197535,
+  "generation_seed": 1756901407
+ },
+ {
+  "keyword": "steamboat",
+  "temperature": 0.9590776426974422,
+  "generation_seed": 1367752507
+ },
+ {
+  "keyword": "wheel",
+  "temperature": 0.5526115105212872,
+  "generation_seed": 793289932
+ },
+ {
+  "keyword": "wagons",
+  "temperature": 0.5939242016131683,
+  "generation_seed": 55205954
+ },
+ {
+  "keyword": "vehicle",
+  "temperature": 0.14547353818653175,
+  "generation_seed": 1821691498
+ },
+ {
+  "keyword": "coach",
+  "temperature": 0.40651033674812664,
+  "generation_seed": 89514544
+ },
+ {
+  "keyword": "engines",
+  "temperature": 0.043066888568204176,
+  "generation_seed": 1954121990
+ },
+ {
+  "keyword": "cats",
+  "temperature": 0.8227062801815019,
+  "generation_seed": 1696194209
+ },
+ {
+  "keyword": "aircraft",
+  "temperature": 0.8298039852781027,
+  "generation_seed": 892030427
+ },
+ {
+  "keyword": "motel",
+  "temperature": 0.009954560807291957,
+  "generation_seed": 219536274
+ },
+ {
+  "keyword": "base",
+  "temperature": 0.07863003716563988,
+  "generation_seed": 783930654
+ },
+ {
+  "keyword": "office",
+  "temperature": 0.6526145763366384,
+  "generation_seed": 1125662723
+ },
+ {
+  "keyword": "fire",
+  "temperature": 0.7026520706597863,
+  "generation_seed": 588086461
+ },
+ {
+  "keyword": "tanks",
+  "temperature": 0.9438014269420908,
+  "generation_seed": 1686949518
+ },
+ {
+  "keyword": "gate",
+  "temperature": 0.8647782954007741,
+  "generation_seed": 272337653
+ },
+ {
+  "keyword": "body",
+  "temperature": 0.059464151600338466,
+  "generation_seed": 1023419372
+ },
+ {
+  "keyword": "institutions",
+  "temperature": 0.42977406117857664,
+  "generation_seed": 817698440
+ },
+ {
+  "keyword": "club",
+  "temperature": 0.48884954683346427,
+  "generation_seed": 1055562760
+ },
+ {
+  "keyword": "towers",
+  "temperature": 0.7756911881018284,
+  "generation_seed": 2096936869
+ },
+ {
+  "keyword": "gates",
+  "temperature": 0.308857362719261,
+  "generation_seed": 2112488124
+ },
+ {
+  "keyword": "homes",
+  "temperature": 0.8631202041893178,
+  "generation_seed": 579470084
+ },
+ {
+  "keyword": "bars",
+  "temperature": 0.8813071727376899,
+  "generation_seed": 353044762
+ },
+ {
+  "keyword": "college",
+  "temperature": 0.34429573096232524,
+  "generation_seed": 1096733869
+ },
+ {
+  "keyword": "lock",
+  "temperature": 0.9949173481609178,
+  "generation_seed": 1581761358
+ },
+ {
+  "keyword": "floor",
+  "temperature": 0.18271237892656245,
+  "generation_seed": 678483597
+ },
+ {
+  "keyword": "stand",
+  "temperature": 0.8800981213040697,
+  "generation_seed": 581917525
+ },
+ {
+  "keyword": "study",
+  "temperature": 0.6678894055713512,
+  "generation_seed": 1744476984
+ },
+ {
+  "keyword": "schools",
+  "temperature": 0.9584136317779519,
+  "generation_seed": 1216325250
+ },
+ {
+  "keyword": "bodies",
+  "temperature": 0.7482485033017541,
+  "generation_seed": 1987956917
+ },
+ {
+  "keyword": "locker",
+  "temperature": 0.8607014095476777,
+  "generation_seed": 2139873757
+ },
+ {
+  "keyword": "stage",
+  "temperature": 0.1412465569010316,
+  "generation_seed": 530743583
+ },
+ {
+  "keyword": "ponies",
+  "temperature": 0.670061849314936,
+  "generation_seed": 102092474
+ },
+ {
+  "keyword": "measure",
+  "temperature": 0.16705292878227218,
+  "generation_seed": 1534631622
+ },
+ {
+  "keyword": "skin",
+  "temperature": 0.395557273104876,
+  "generation_seed": 1918513089
+ },
+ {
+  "keyword": "campers",
+  "temperature": 0.561400767550223,
+  "generation_seed": 1954759373
+ },
+ {
+  "keyword": "tank",
+  "temperature": 0.5783359149262727,
+  "generation_seed": 1601735539
+ },
+ {
+  "keyword": "boat",
+  "temperature": 0.5260222486178752,
+  "generation_seed": 416890512
+ },
+ {
+  "keyword": "plates",
+  "temperature": 0.5234347273949199,
+  "generation_seed": 658332664
+ },
+ {
+  "keyword": "pony",
+  "temperature": 0.9819426931267062,
+  "generation_seed": 190987833
+ },
+ {
+  "keyword": "automobile",
+  "temperature": 0.5713956004557744,
+  "generation_seed": 960169881
+ },
+ {
+  "keyword": "mold",
+  "temperature": 0.7726492012253886,
+  "generation_seed": 13762970
+ },
+ {
+  "keyword": "banks",
+  "temperature": 0.9782657138401457,
+  "generation_seed": 1136182737
+ },
+ {
+  "keyword": "form",
+  "temperature": 0.319681636282665,
+  "generation_seed": 1266736240
+ },
+ {
+  "keyword": "jar",
+  "temperature": 0.1875077157277849,
+  "generation_seed": 777213504
+ },
+ {
+  "keyword": "shoe",
+  "temperature": 0.19510739845680503,
+  "generation_seed": 1444239949
+ },
+ {
+  "keyword": "car",
+  "temperature": 0.5776878925178592,
+  "generation_seed": 1976691420
+ },
+ {
+  "keyword": "wagons",
+  "temperature": 0.962423093124381,
+  "generation_seed": 1293298783
+ },
+ {
+  "keyword": "case",
+  "temperature": 0.07226526552987678,
+  "generation_seed": 1079200427
+ },
+ {
+  "keyword": "cases",
+  "temperature": 0.7440974792826482,
+  "generation_seed": 1073683463
+ },
+ {
+  "keyword": "fear",
+  "temperature": 0.1772267404746588,
+  "generation_seed": 1460534082
+ },
+ {
+  "keyword": "states",
+  "temperature": 0.06289549845497133,
+  "generation_seed": 833366960
+ },
+ {
+  "keyword": "state",
+  "temperature": 0.7258808637757768,
+  "generation_seed": 582027100
+ },
+ {
+  "keyword": "charge",
+  "temperature": 0.3950917083579676,
+  "generation_seed": 188480101
+ },
+ {
+  "keyword": "foreboding",
+  "temperature": 0.8735226311207321,
+  "generation_seed": 496254106
+ },
+ {
+  "keyword": "sorrow",
+  "temperature": 0.9126219336408856,
+  "generation_seed": 1014257250
+ },
+ {
+  "keyword": "temper",
+  "temperature": 0.7659171177388724,
+  "generation_seed": 1986944591
+ },
+ {
+  "keyword": "love",
+  "temperature": 0.12740300904890633,
+  "generation_seed": 1965643236
+ },
+ {
+  "keyword": "grievances",
+  "temperature": 0.07356290533063203,
+  "generation_seed": 279162560
+ },
+ {
+  "keyword": "anxiety",
+  "temperature": 0.8688542943473193,
+  "generation_seed": 151024479
+ },
+ {
+  "keyword": "gloom",
+  "temperature": 0.6340699793474432,
+  "generation_seed": 2116130274
+ },
+ {
+  "keyword": "apprehension",
+  "temperature": 0.16354341619648027,
+  "generation_seed": 1066379592
+ },
+ {
+  "keyword": "veneration",
+  "temperature": 0.6737334377272737,
+  "generation_seed": 766760085
+ },
+ {
+  "keyword": "spirits",
+  "temperature": 0.7108798632659449,
+  "generation_seed": 682937140
+ },
+ {
+  "keyword": "resentment",
+  "temperature": 0.4603553288673248,
+  "generation_seed": 1598640628
+ },
+ {
+  "keyword": "trouble",
+  "temperature": 0.7896657324598704,
+  "generation_seed": 1089783227
+ },
+ {
+  "keyword": "aggression",
+  "temperature": 0.09274547552338075,
+  "generation_seed": 121012641
+ },
+ {
+  "keyword": "frustration",
+  "temperature": 0.19723494729586855,
+  "generation_seed": 1242874422
+ },
+ {
+  "keyword": "scenes",
+  "temperature": 0.8081367518135681,
+  "generation_seed": 2049571151
+ },
+ {
+  "keyword": "rage",
+  "temperature": 0.9886953333678197,
+  "generation_seed": 1049788868
+ },
+ {
+  "keyword": "camp",
+  "temperature": 0.18294332467571872,
+  "generation_seed": 549260787
+ },
+ {
+  "keyword": "part",
+  "temperature": 0.800917036608609,
+  "generation_seed": 2068067856
+ },
+ {
+  "keyword": "program",
+  "temperature": 0.4812604965752686,
+  "generation_seed": 1789927146
+ },
+ {
+  "keyword": "laws",
+  "temperature": 0.6028489052411163,
+  "generation_seed": 1747051099
+ },
+ {
+  "keyword": "tone",
+  "temperature": 0.6551210639913803,
+  "generation_seed": 1042672249
+ },
+ {
+  "keyword": "sets",
+  "temperature": 0.06527041641129139,
+  "generation_seed": 1962135972
+ },
+ {
+  "keyword": "products",
+  "temperature": 0.8349882039584006,
+  "generation_seed": 181316223
+ },
+ {
+  "keyword": "art",
+  "temperature": 0.3255456161007044,
+  "generation_seed": 819940996
+ },
+ {
+  "keyword": "example",
+  "temperature": 0.9940267712099843,
+  "generation_seed": 781393582
+ },
+ {
+  "keyword": "theories",
+  "temperature": 0.48553513877958776,
+  "generation_seed": 1677593829
+ },
+ {
+  "keyword": "idealism",
+  "temperature": 0.4226283964247812,
+  "generation_seed": 30122970
+ },
+ {
+  "keyword": "evidence",
+  "temperature": 0.08681487221489415,
+  "generation_seed": 1884478976
+ },
+ {
+  "keyword": "reflection",
+  "temperature": 0.708418756913866,
+  "generation_seed": 645939061
+ },
+ {
+  "keyword": "law",
+  "temperature": 0.7991963797161148,
+  "generation_seed": 1694696650
+ },
+ {
+  "keyword": "kind",
+  "temperature": 0.3222867247398318,
+  "generation_seed": 1302388739
+ },
+ {
+  "keyword": "heaven",
+  "temperature": 0.22532844187566514,
+  "generation_seed": 1710769618
+ },
+ {
+  "keyword": "goals",
+  "temperature": 0.3623079504845691,
+  "generation_seed": 1491964130
+ },
+ {
+  "keyword": "thing",
+  "temperature": 0.5414099836301646,
+  "generation_seed": 896462994
+ },
+ {
+  "keyword": "opinion",
+  "temperature": 0.11261366554055718,
+  "generation_seed": 1986310578
+ },
+ {
+  "keyword": "title",
+  "temperature": 0.0003006901069229073,
+  "generation_seed": 873913747
+ },
+ {
+  "keyword": "beauty",
+  "temperature": 0.744380726347399,
+  "generation_seed": 636300172
+ },
+ {
+  "keyword": "area",
+  "temperature": 0.13893167912019755,
+  "generation_seed": 1829389591
+ },
+ {
+  "keyword": "assistance",
+  "temperature": 0.7037857692667978,
+  "generation_seed": 643323834
+ },
+ {
+  "keyword": "number",
+  "temperature": 0.9818283228717938,
+  "generation_seed": 1763305455
+ },
+ {
+  "keyword": "sentiment",
+  "temperature": 0.8437905623687267,
+  "generation_seed": 7592670
+ },
+ {
+  "keyword": "potentiality",
+  "temperature": 0.9796887085096565,
+  "generation_seed": 910761742
+ },
+ {
+  "keyword": "force",
+  "temperature": 0.9739844048523552,
+  "generation_seed": 890259340
+ },
+ {
+  "keyword": "numbers",
+  "temperature": 0.7534465385839052,
+  "generation_seed": 1081638076
+ },
+ {
+  "keyword": "voice",
+  "temperature": 0.9138376676731629,
+  "generation_seed": 412216004
+ },
+ {
+  "keyword": "radius",
+  "temperature": 0.8637862410970849,
+  "generation_seed": 1022518051
+ },
+ {
+  "keyword": "importance",
+  "temperature": 0.7015685660618728,
+  "generation_seed": 1958199454
+ },
+ {
+  "keyword": "place",
+  "temperature": 0.7676522699834736,
+  "generation_seed": 631197533
+ },
+ {
+  "keyword": "anger",
+  "temperature": 0.5706847858594991,
+  "generation_seed": 1898703232
+ },
+ {
+  "keyword": "problem",
+  "temperature": 0.3913804263046642,
+  "generation_seed": 201530932
+ },
+ {
+  "keyword": "justice",
+  "temperature": 0.07374101339780592,
+  "generation_seed": 972018090
+ },
+ {
+  "keyword": "doses",
+  "temperature": 0.4285396081429238,
+  "generation_seed": 1022560767
+ },
+ {
+  "keyword": "reason",
+  "temperature": 0.42373744297044735,
+  "generation_seed": 656389835
+ },
+ {
+  "keyword": "troubles",
+  "temperature": 0.12269066017607344,
+  "generation_seed": 1259070422
+ },
+ {
+  "keyword": "difference",
+  "temperature": 0.9337689099568427,
+  "generation_seed": 636542532
+ },
+ {
+  "keyword": "state",
+  "temperature": 0.8237813583927717,
+  "generation_seed": 1468987151
+ }
+]

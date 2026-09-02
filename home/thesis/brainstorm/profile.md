@@ -89,5 +89,20 @@ trustworthy, meaningful, or even coherent talk of "LLM confidence" is.
 ## Open Items
 - Confirm the specific extra epistemic/affective states to test in the
   extension (RQ3).
-- Verify Goethe CS-specific CP threshold and any department-specific
-  deviations from the Bioinformatik-template Merkblatt already reviewed.
+- **Resolved (2026-08-31)**: the CS-specific admission rule, from the real
+  Bachelor Informatik PO 2019 (`§35 Bachelorarbeit`, not the borrowed
+  Bioinformatik Merkblatt cited earlier) — no CP-threshold number; admission
+  requires completion of *all* Basismodule plus passing "wissenschaftliches
+  Arbeiten." §35's numbering (Abs. 1-18) otherwise tracks the Merkblatt's
+  content closely (declaration of originality, 3 bound copies + electronic
+  form, German-default language, one-time topic return in the first half of
+  the processing period).
+- **Open, urgent**: writing in English requires the Prüfungsausschuss
+  chair's approval (with the supervisor's written consent and a qualified
+  second examiner available), requested **at latest at Anmeldung/topic
+  registration** (§35 Abs. 11) — not something that can be arranged later.
+  Confirm whether this was requested (and whether the topic has even been
+  officially issued/`Themenausgabe` yet — still unconfirmed from the last
+  session too). If the topic is already issued without this having been
+  filed, that's a real problem for the whole English-language plan, not a
+  paperwork afterthought.

@@ -1,0 +1,802 @@
+[
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Highly likely",
+  0.85
+ ],
+ [
+  "Likely",
+  0.65
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Almost certain",
+  0.95
+ ],
+ [
+  "Unlikely",
+  0.35
+ ],
+ [
+  "Almost certain",
+  0.95
+ ]
+]

@@ -1,0 +1,3565 @@
+[
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment",
+    "gt": "correctness",
+    "rho": 0.45580398725371085,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment",
+    "gt": "entropy_gt",
+    "rho": -0.2945199393104532,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment",
+    "gt": "gegt",
+    "rho": -0.241898520202457,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment",
+    "gt": "hegt",
+    "rho": 0.16315735274300674,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment",
+    "gt": "logit_gt",
+    "rho": 0.5589185211914283,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment",
+    "gt": "nbgt",
+    "rho": -0.7446668920065437,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_challenge",
+    "gt": "correctness",
+    "rho": 0.08593202219466305,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_challenge",
+    "gt": "entropy_gt",
+    "rho": -0.4827273609988002,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_challenge",
+    "gt": "gegt",
+    "rho": -0.12773188682060702,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_challenge",
+    "gt": "hegt",
+    "rho": -0.21253184153189494,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_challenge",
+    "gt": "logit_gt",
+    "rho": -0.06178251207322528,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_challenge",
+    "gt": "nbgt",
+    "rho": -0.37810897388813863,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_defined",
+    "gt": "correctness",
+    "rho": 0.2982488067578066,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_defined",
+    "gt": "entropy_gt",
+    "rho": -0.2688531456675966,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_defined",
+    "gt": "gegt",
+    "rho": -0.07367394340183639,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_defined",
+    "gt": "hegt",
+    "rho": 0.19254499211177714,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_defined",
+    "gt": "logit_gt",
+    "rho": 0.5882826256687016,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_defined",
+    "gt": "nbgt",
+    "rho": -0.59005723389093,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_parallel",
+    "gt": "correctness",
+    "rho": 0.2075143391598224,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_parallel",
+    "gt": "entropy_gt",
+    "rho": -0.3779644730092272,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_parallel",
+    "gt": "gegt",
+    "rho": -0.2189038471594681,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_parallel",
+    "gt": "hegt",
+    "rho": -0.01989286700048564,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_parallel",
+    "gt": "logit_gt",
+    "rho": 0.3779644730092272,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "commitment_parallel",
+    "gt": "nbgt",
+    "rho": -0.2983930050072846,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "confidence",
+    "gt": "correctness",
+    "rho": 0.34051632096595663,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "confidence",
+    "gt": "entropy_gt",
+    "rho": -0.42598833965038424,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "confidence",
+    "gt": "gegt",
+    "rho": -0.2889973101658332,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "confidence",
+    "gt": "hegt",
+    "rho": 0.40477052962948384,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "confidence",
+    "gt": "logit_gt",
+    "rho": 0.48882570009689674,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "confidence",
+    "gt": "nbgt",
+    "rho": -0.8332070781284334,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance",
+    "gt": "correctness",
+    "rho": -0.28511240114923325,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance",
+    "gt": "entropy_gt",
+    "rho": 0.11353134489128945,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance",
+    "gt": "gegt",
+    "rho": 0.34072214979394333,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance",
+    "gt": "hegt",
+    "rho": -0.3595159254890833,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance",
+    "gt": "logit_gt",
+    "rho": -0.5865786152716621,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance",
+    "gt": "nbgt",
+    "rho": 0.643344287717307,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_ambiguity",
+    "gt": "correctness",
+    "rho": -0.5527707983925667,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_ambiguity",
+    "gt": "entropy_gt",
+    "rho": 0.065033247714309,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_ambiguity",
+    "gt": "gegt",
+    "rho": 0.3036026471292166,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_ambiguity",
+    "gt": "hegt",
+    "rho": -0.628654727904987,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_ambiguity",
+    "gt": "logit_gt",
+    "rho": -0.606976978666884,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_ambiguity",
+    "gt": "nbgt",
+    "rho": 0.693687975619296,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_certainty",
+    "gt": "correctness",
+    "rho": -0.6382847385042254,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_certainty",
+    "gt": "entropy_gt",
+    "rho": 0.19023794624226836,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_certainty",
+    "gt": "gegt",
+    "rho": 0.3505701400934722,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_certainty",
+    "gt": "hegt",
+    "rho": -0.6307889796454161,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_certainty",
+    "gt": "logit_gt",
+    "rho": -0.4105134629438423,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_certainty",
+    "gt": "nbgt",
+    "rho": 0.7509392614826383,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_defined",
+    "gt": "correctness",
+    "rho": -0.17407765595569785,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_defined",
+    "gt": "entropy_gt",
+    "rho": 0.1301628053236573,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_defined",
+    "gt": "gegt",
+    "rho": 0.23037466348999602,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_defined",
+    "gt": "hegt",
+    "rho": -0.19023794624226836,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_defined",
+    "gt": "logit_gt",
+    "rho": -0.4705886038624534,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_commonsense",
+    "om": "nuance_defined",
+    "gt": "nbgt",
+    "rho": 0.510638697808194,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment",
+    "gt": "correctness",
+    "rho": -0.16834512458535864,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment",
+    "gt": "entropy_gt",
+    "rho": -0.3779644730092272,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment",
+    "gt": "gegt",
+    "rho": 0.09953920466677615,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment",
+    "gt": "hegt",
+    "rho": 0.2588019321336181,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment",
+    "gt": "logit_gt",
+    "rho": 0.33817873900825596,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment",
+    "gt": "nbgt",
+    "rho": -0.3779644730092272,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_challenge",
+    "gt": "correctness",
+    "rho": 0.10482848367219186,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_challenge",
+    "gt": "entropy_gt",
+    "rho": -0.49136231606366804,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_challenge",
+    "gt": "gegt",
+    "rho": 0.34710506725031165,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_challenge",
+    "gt": "hegt",
+    "rho": 0.4049559117920303,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_challenge",
+    "gt": "logit_gt",
+    "rho": 0.5202659817144719,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_challenge",
+    "gt": "nbgt",
+    "rho": -0.37574765346045197,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_defined",
+    "gt": "correctness",
+    "rho": -0.16834512458535864,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_defined",
+    "gt": "entropy_gt",
+    "rho": -0.3779644730092272,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_defined",
+    "gt": "gegt",
+    "rho": 0.09953920466677615,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_defined",
+    "gt": "hegt",
+    "rho": 0.2588019321336181,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_defined",
+    "gt": "logit_gt",
+    "rho": 0.33817873900825596,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_defined",
+    "gt": "nbgt",
+    "rho": -0.3779644730092272,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_parallel",
+    "gt": "correctness",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_parallel",
+    "gt": "entropy_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_parallel",
+    "gt": "gegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_parallel",
+    "gt": "hegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_parallel",
+    "gt": "logit_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "commitment_parallel",
+    "gt": "nbgt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "confidence",
+    "gt": "correctness",
+    "rho": 0.2528815657485832,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "confidence",
+    "gt": "entropy_gt",
+    "rho": 0.051038966755504685,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "confidence",
+    "gt": "gegt",
+    "rho": 0.05275205362199741,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "confidence",
+    "gt": "hegt",
+    "rho": -0.07536007660285345,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "confidence",
+    "gt": "logit_gt",
+    "rho": -0.05605919299375105,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "confidence",
+    "gt": "nbgt",
+    "rho": 0.332171636097301,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance",
+    "gt": "correctness",
+    "rho": -0.2445997952351143,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance",
+    "gt": "entropy_gt",
+    "rho": 0.40465131911125596,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance",
+    "gt": "gegt",
+    "rho": 0.23140337816687445,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance",
+    "gt": "hegt",
+    "rho": 0.17355253362515582,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance",
+    "gt": "logit_gt",
+    "rho": 0.086710996952412,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance",
+    "gt": "nbgt",
+    "rho": 0.115614662603216,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_ambiguity",
+    "gt": "correctness",
+    "rho": -0.3902137383261929,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_ambiguity",
+    "gt": "entropy_gt",
+    "rho": 0.37249768861089055,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_ambiguity",
+    "gt": "gegt",
+    "rho": 0.06984132615075178,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_ambiguity",
+    "gt": "hegt",
+    "rho": -0.2985716692944638,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_ambiguity",
+    "gt": "logit_gt",
+    "rho": -0.32539025258047355,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_ambiguity",
+    "gt": "nbgt",
+    "rho": 0.25211201875538025,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_certainty",
+    "gt": "correctness",
+    "rho": -0.2516299559794226,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_certainty",
+    "gt": "entropy_gt",
+    "rho": 0.20814079896736398,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_certainty",
+    "gt": "gegt",
+    "rho": 0.02840420079959447,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_certainty",
+    "gt": "hegt",
+    "rho": 0.1988294055971613,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_certainty",
+    "gt": "logit_gt",
+    "rho": -0.09460945407607455,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_certainty",
+    "gt": "nbgt",
+    "rho": 0.03784378163042982,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_defined",
+    "gt": "correctness",
+    "rho": -0.2445997952351143,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_defined",
+    "gt": "entropy_gt",
+    "rho": 0.173421993904824,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_defined",
+    "gt": "gegt",
+    "rho": 0.05785084454171861,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_defined",
+    "gt": "hegt",
+    "rho": 0.289254222708593,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_defined",
+    "gt": "logit_gt",
+    "rho": 0.14451832825401997,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_deontology",
+    "om": "nuance_defined",
+    "gt": "nbgt",
+    "rho": -0.086710996952412,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment",
+    "gt": "correctness",
+    "rho": -0.10112997936948634,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment",
+    "gt": "entropy_gt",
+    "rho": -0.47691048323826596,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment",
+    "gt": "gegt",
+    "rho": 0.3363847086193371,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment",
+    "gt": "hegt",
+    "rho": 0.22787351229051872,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment",
+    "gt": "logit_gt",
+    "rho": 0.260132990857236,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment",
+    "gt": "nbgt",
+    "rho": -0.49858823247636896,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_challenge",
+    "gt": "correctness",
+    "rho": 0.22969488514057132,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_challenge",
+    "gt": "entropy_gt",
+    "rho": -0.17521916101261562,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_challenge",
+    "gt": "gegt",
+    "rho": 0.19797074017728003,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_challenge",
+    "gt": "hegt",
+    "rho": 0.40680063487905227,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_challenge",
+    "gt": "logit_gt",
+    "rho": 0.5039636821505706,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_challenge",
+    "gt": "nbgt",
+    "rho": -0.523988729123441,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_defined",
+    "gt": "correctness",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_defined",
+    "gt": "entropy_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_defined",
+    "gt": "gegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_defined",
+    "gt": "hegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_defined",
+    "gt": "logit_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_defined",
+    "gt": "nbgt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_parallel",
+    "gt": "correctness",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_parallel",
+    "gt": "entropy_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_parallel",
+    "gt": "gegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_parallel",
+    "gt": "hegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_parallel",
+    "gt": "logit_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "commitment_parallel",
+    "gt": "nbgt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "confidence",
+    "gt": "correctness",
+    "rho": 0.2282177322938192,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "confidence",
+    "gt": "entropy_gt",
+    "rho": -0.2983930050072846,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "confidence",
+    "gt": "gegt",
+    "rho": 0.3385607900496994,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "confidence",
+    "gt": "hegt",
+    "rho": 0.3385607900496994,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "confidence",
+    "gt": "logit_gt",
+    "rho": -0.2983930050072846,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "confidence",
+    "gt": "nbgt",
+    "rho": 0.17903580300437075,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance",
+    "gt": "correctness",
+    "rho": 0.2282177322938192,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance",
+    "gt": "entropy_gt",
+    "rho": 0.0994643350024282,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance",
+    "gt": "gegt",
+    "rho": -0.03983068118231758,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance",
+    "gt": "hegt",
+    "rho": 0.01991534059115879,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance",
+    "gt": "logit_gt",
+    "rho": -0.05967860100145692,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance",
+    "gt": "nbgt",
+    "rho": -0.0994643350024282,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_ambiguity",
+    "gt": "correctness",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_ambiguity",
+    "gt": "entropy_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_ambiguity",
+    "gt": "gegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_ambiguity",
+    "gt": "hegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_ambiguity",
+    "gt": "logit_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_ambiguity",
+    "gt": "nbgt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_certainty",
+    "gt": "correctness",
+    "rho": -0.3175426480542942,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_certainty",
+    "gt": "entropy_gt",
+    "rho": 0.23845524161913298,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_certainty",
+    "gt": "gegt",
+    "rho": -0.15191567486034582,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_certainty",
+    "gt": "hegt",
+    "rho": -0.32553358898645535,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_certainty",
+    "gt": "logit_gt",
+    "rho": -0.585299229428781,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_certainty",
+    "gt": "nbgt",
+    "rho": 0.390199486285854,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_defined",
+    "gt": "correctness",
+    "rho": 0.2282177322938192,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_defined",
+    "gt": "entropy_gt",
+    "rho": -0.115614662603216,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_defined",
+    "gt": "gegt",
+    "rho": 0.11574527608407299,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_defined",
+    "gt": "hegt",
+    "rho": 0.15914975461560035,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_defined",
+    "gt": "logit_gt",
+    "rho": -0.231229325206432,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_justice",
+    "om": "nuance_defined",
+    "gt": "nbgt",
+    "rho": -0.346843987809648,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment",
+    "gt": "correctness",
+    "rho": 0.15504341823651055,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment",
+    "gt": "entropy_gt",
+    "rho": -0.5996063088092968,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment",
+    "gt": "gegt",
+    "rho": -0.5443166578192585,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment",
+    "gt": "hegt",
+    "rho": -0.2579455738462914,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment",
+    "gt": "logit_gt",
+    "rho": 0.5560705372125823,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment",
+    "gt": "nbgt",
+    "rho": -0.6312686881523619,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_challenge",
+    "gt": "correctness",
+    "rho": 0.0944911182523068,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_challenge",
+    "gt": "entropy_gt",
+    "rho": -0.8495907904857465,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_challenge",
+    "gt": "gegt",
+    "rho": -0.39869559357685863,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_challenge",
+    "gt": "hegt",
+    "rho": -0.09742222209244521,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_challenge",
+    "gt": "logit_gt",
+    "rho": 0.6194932847291901,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_challenge",
+    "gt": "nbgt",
+    "rho": -0.7787915579452674,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_defined",
+    "gt": "correctness",
+    "rho": 0.3668996928526714,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_defined",
+    "gt": "entropy_gt",
+    "rho": -0.37574765346045197,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_defined",
+    "gt": "gegt",
+    "rho": -0.3617039877627281,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_defined",
+    "gt": "hegt",
+    "rho": -0.33264235611488197,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_defined",
+    "gt": "logit_gt",
+    "rho": 0.49136231606366804,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_defined",
+    "gt": "nbgt",
+    "rho": -0.40465131911125596,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_parallel",
+    "gt": "correctness",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_parallel",
+    "gt": "entropy_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_parallel",
+    "gt": "gegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_parallel",
+    "gt": "hegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_parallel",
+    "gt": "logit_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "commitment_parallel",
+    "gt": "nbgt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "confidence",
+    "gt": "correctness",
+    "rho": -0.040291148201269014,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "confidence",
+    "gt": "entropy_gt",
+    "rho": 0.33041327505236084,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "confidence",
+    "gt": "gegt",
+    "rho": 0.3508342230989772,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "confidence",
+    "gt": "hegt",
+    "rho": 0.19038114381334806,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "confidence",
+    "gt": "logit_gt",
+    "rho": -0.05006261743217588,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "confidence",
+    "gt": "nbgt",
+    "rho": 0.39048841597097184,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance",
+    "gt": "correctness",
+    "rho": 0.24999999999999997,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance",
+    "gt": "entropy_gt",
+    "rho": -0.20232565955562798,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance",
+    "gt": "gegt",
+    "rho": -0.11574527608407299,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance",
+    "gt": "hegt",
+    "rho": -0.11570168908343723,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance",
+    "gt": "logit_gt",
+    "rho": 0.5202659817144719,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance",
+    "gt": "nbgt",
+    "rho": -0.31794032215884394,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_ambiguity",
+    "gt": "correctness",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_ambiguity",
+    "gt": "entropy_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_ambiguity",
+    "gt": "gegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_ambiguity",
+    "gt": "hegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_ambiguity",
+    "gt": "logit_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_ambiguity",
+    "gt": "nbgt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_certainty",
+    "gt": "correctness",
+    "rho": 0.0944911182523068,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_certainty",
+    "gt": "entropy_gt",
+    "rho": 0.49061365083532366,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_certainty",
+    "gt": "gegt",
+    "rho": 0.4009533978274025,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_certainty",
+    "gt": "hegt",
+    "rho": 0.3106218662217784,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_certainty",
+    "gt": "logit_gt",
+    "rho": -0.21026299321513872,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_certainty",
+    "gt": "nbgt",
+    "rho": 0.510638697808194,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_defined",
+    "gt": "correctness",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_defined",
+    "gt": "entropy_gt",
+    "rho": -0.0994643350024282,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_defined",
+    "gt": "gegt",
+    "rho": 0.01991534059115879,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_defined",
+    "gt": "hegt",
+    "rho": -0.019907840933355233,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_defined",
+    "gt": "logit_gt",
+    "rho": 0.33817873900825596,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_utilitarianism",
+    "om": "nuance_defined",
+    "gt": "nbgt",
+    "rho": -0.0994643350024282,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment",
+    "gt": "correctness",
+    "rho": 0.24310145234559308,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment",
+    "gt": "entropy_gt",
+    "rho": -0.05486764709794662,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment",
+    "gt": "gegt",
+    "rho": 0.030863051492594978,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment",
+    "gt": "hegt",
+    "rho": -0.07718665172620635,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment",
+    "gt": "logit_gt",
+    "rho": 0.1671748622515561,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment",
+    "gt": "nbgt",
+    "rho": -0.2889124542501252,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_challenge",
+    "gt": "correctness",
+    "rho": 0.47736327438633,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_challenge",
+    "gt": "entropy_gt",
+    "rho": -0.43658687474013325,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_challenge",
+    "gt": "gegt",
+    "rho": -0.04109052938730665,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_challenge",
+    "gt": "hegt",
+    "rho": -0.20296080425175442,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_challenge",
+    "gt": "logit_gt",
+    "rho": 0.16693027563593327,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_challenge",
+    "gt": "nbgt",
+    "rho": -0.6728574187171464,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_defined",
+    "gt": "correctness",
+    "rho": 0.06546536707079773,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_defined",
+    "gt": "entropy_gt",
+    "rho": -0.36924560631476844,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_defined",
+    "gt": "gegt",
+    "rho": -0.033897957301027924,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_defined",
+    "gt": "hegt",
+    "rho": -0.07993238334260258,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_defined",
+    "gt": "logit_gt",
+    "rho": 0.36198175832169105,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_defined",
+    "gt": "nbgt",
+    "rho": -0.29660712638399434,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_parallel",
+    "gt": "correctness",
+    "rho": 0.2988071523335984,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_parallel",
+    "gt": "entropy_gt",
+    "rho": -0.21882153700534204,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_parallel",
+    "gt": "gegt",
+    "rho": -0.2586072710063133,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_parallel",
+    "gt": "hegt",
+    "rho": -0.37810664509362674,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_parallel",
+    "gt": "logit_gt",
+    "rho": 0.17903580300437075,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "commitment_parallel",
+    "gt": "nbgt",
+    "rho": -0.13925006900339948,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "confidence",
+    "gt": "correctness",
+    "rho": 0.275062430475957,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "confidence",
+    "gt": "entropy_gt",
+    "rho": -0.3600993575241086,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "confidence",
+    "gt": "gegt",
+    "rho": 0.08721156315037006,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "confidence",
+    "gt": "hegt",
+    "rho": -0.0018762229667185876,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "confidence",
+    "gt": "logit_gt",
+    "rho": 0.029070521050123355,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "confidence",
+    "gt": "nbgt",
+    "rho": -0.23068865091388205,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance",
+    "gt": "correctness",
+    "rho": 0.0871165065546462,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance",
+    "gt": "entropy_gt",
+    "rho": 0.25399972497591156,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance",
+    "gt": "gegt",
+    "rho": 0.15442028734330987,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance",
+    "gt": "hegt",
+    "rho": 0.1270476337375249,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance",
+    "gt": "logit_gt",
+    "rho": -0.13132940325459064,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance",
+    "gt": "nbgt",
+    "rho": 0.2655451670202712,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_ambiguity",
+    "gt": "correctness",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_ambiguity",
+    "gt": "entropy_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_ambiguity",
+    "gt": "gegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_ambiguity",
+    "gt": "hegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_ambiguity",
+    "gt": "logit_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_ambiguity",
+    "gt": "nbgt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_certainty",
+    "gt": "correctness",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_certainty",
+    "gt": "entropy_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_certainty",
+    "gt": "gegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_certainty",
+    "gt": "hegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_certainty",
+    "gt": "logit_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_certainty",
+    "gt": "nbgt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_defined",
+    "gt": "correctness",
+    "rho": 0.0871165065546462,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_defined",
+    "gt": "entropy_gt",
+    "rho": 0.25399972497591156,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_defined",
+    "gt": "gegt",
+    "rho": 0.15442028734330987,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_defined",
+    "gt": "hegt",
+    "rho": 0.1270476337375249,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_defined",
+    "gt": "logit_gt",
+    "rho": -0.13132940325459064,
+    "n": 20
+  },
+  {
+    "dataset": "ethics_virtue",
+    "om": "nuance_defined",
+    "gt": "nbgt",
+    "rho": 0.2655451670202712,
+    "n": 20
+  },
+  {
+    "dataset": "list_elicitation",
+    "om": "confidence",
+    "gt": "category_membership",
+    "rho": 0.06564842588983072,
+    "n": 99
+  },
+  {
+    "dataset": "list_elicitation",
+    "om": "variety",
+    "gt": "embedding_variety_gt",
+    "rho": null,
+    "n": 5
+  },
+  {
+    "dataset": "list_elicitation",
+    "om": "variety_defined",
+    "gt": "embedding_variety_gt",
+    "rho": null,
+    "n": 5
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment",
+    "gt": "correctness",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment",
+    "gt": "entropy_gt",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment",
+    "gt": "gegt",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment",
+    "gt": "hegt",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment",
+    "gt": "logit_gt",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment",
+    "gt": "nbgt",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_challenge",
+    "gt": "correctness",
+    "rho": -0.032009219983223994,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_challenge",
+    "gt": "entropy_gt",
+    "rho": -0.21320071635561044,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_challenge",
+    "gt": "gegt",
+    "rho": 0.013329997833239791,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_challenge",
+    "gt": "hegt",
+    "rho": -0.013328103363675969,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_challenge",
+    "gt": "logit_gt",
+    "rho": 0.11326288056391806,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_challenge",
+    "gt": "nbgt",
+    "rho": -0.2065381939694976,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_defined",
+    "gt": "correctness",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_defined",
+    "gt": "entropy_gt",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_defined",
+    "gt": "gegt",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_defined",
+    "gt": "hegt",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_defined",
+    "gt": "logit_gt",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_defined",
+    "gt": "nbgt",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_parallel",
+    "gt": "correctness",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_parallel",
+    "gt": "entropy_gt",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_parallel",
+    "gt": "gegt",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_parallel",
+    "gt": "hegt",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_parallel",
+    "gt": "logit_gt",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "commitment_parallel",
+    "gt": "nbgt",
+    "rho": null,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "confidence",
+    "gt": "correctness",
+    "rho": 0.02726123041436051,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "confidence",
+    "gt": "entropy_gt",
+    "rho": -0.47365792086338426,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "confidence",
+    "gt": "gegt",
+    "rho": 0.14184512704223273,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "confidence",
+    "gt": "hegt",
+    "rho": 0.05390326722977262,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "confidence",
+    "gt": "logit_gt",
+    "rho": 0.4471198548200237,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "confidence",
+    "gt": "nbgt",
+    "rho": -0.43038225000846553,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance",
+    "gt": "correctness",
+    "rho": -0.09598354219878545,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance",
+    "gt": "entropy_gt",
+    "rho": 0.30143837892188907,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance",
+    "gt": "gegt",
+    "rho": -0.1315235755210778,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance",
+    "gt": "hegt",
+    "rho": 0.11643452404964348,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance",
+    "gt": "logit_gt",
+    "rho": -0.48148847107633186,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance",
+    "gt": "nbgt",
+    "rho": 0.2869109258341769,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_ambiguity",
+    "gt": "correctness",
+    "rho": -0.15066583257565433,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_ambiguity",
+    "gt": "entropy_gt",
+    "rho": 0.3097987170489126,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_ambiguity",
+    "gt": "gegt",
+    "rho": -0.18032410785794611,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_ambiguity",
+    "gt": "hegt",
+    "rho": 0.2289817664139257,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_ambiguity",
+    "gt": "logit_gt",
+    "rho": -0.46361962639346244,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_ambiguity",
+    "gt": "nbgt",
+    "rho": 0.47400679481045604,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_certainty",
+    "gt": "correctness",
+    "rho": 0.023820016373373044,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_certainty",
+    "gt": "entropy_gt",
+    "rho": 0.5679152172533627,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_certainty",
+    "gt": "gegt",
+    "rho": 0.012625029275249614,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_certainty",
+    "gt": "hegt",
+    "rho": -0.015328213924152016,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_certainty",
+    "gt": "logit_gt",
+    "rho": -0.42909149748031855,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_certainty",
+    "gt": "nbgt",
+    "rho": 0.4363031192867104,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_defined",
+    "gt": "correctness",
+    "rho": -0.11370481830146578,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_defined",
+    "gt": "entropy_gt",
+    "rho": 0.4339678658243006,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_defined",
+    "gt": "gegt",
+    "rho": -0.003439403685479323,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_defined",
+    "gt": "hegt",
+    "rho": 0.19579127500597968,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_defined",
+    "gt": "logit_gt",
+    "rho": -0.5184884558891126,
+    "n": 65
+  },
+  {
+    "dataset": "ontology_trivials",
+    "om": "nuance_defined",
+    "gt": "nbgt",
+    "rho": 0.39758103552521196,
+    "n": 65
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment",
+    "gt": "correctness",
+    "rho": -0.008635588243524516,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment",
+    "gt": "disagreement_gt",
+    "rho": -0.008635588243524516,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment",
+    "gt": "entropy_gt",
+    "rho": -0.3254392621584677,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment",
+    "gt": "gegt",
+    "rho": 0.20690019363503137,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment",
+    "gt": "hegt",
+    "rho": 0.20690019363503137,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment",
+    "gt": "logit_gt",
+    "rho": 0.42902735621421334,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment",
+    "gt": "nbgt",
+    "rho": -0.7622357254268619,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_challenge",
+    "gt": "correctness",
+    "rho": 0.06159203789597795,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_challenge",
+    "gt": "disagreement_gt",
+    "rho": 0.06159203789597795,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_challenge",
+    "gt": "entropy_gt",
+    "rho": -0.07089749661627713,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_challenge",
+    "gt": "gegt",
+    "rho": 0.12042975464233435,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_challenge",
+    "gt": "hegt",
+    "rho": 0.12042975464233435,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_challenge",
+    "gt": "logit_gt",
+    "rho": 0.4608337280058013,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_challenge",
+    "gt": "nbgt",
+    "rho": -0.6903177302111194,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_defined",
+    "gt": "correctness",
+    "rho": 0.06545619070971326,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_defined",
+    "gt": "disagreement_gt",
+    "rho": 0.06545619070971326,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_defined",
+    "gt": "entropy_gt",
+    "rho": 0.0842679419972653,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_defined",
+    "gt": "gegt",
+    "rho": 0.08135497150327256,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_defined",
+    "gt": "hegt",
+    "rho": 0.08135497150327256,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_defined",
+    "gt": "logit_gt",
+    "rho": 0.4193569348805085,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_defined",
+    "gt": "nbgt",
+    "rho": -0.6979368372479384,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_parallel",
+    "gt": "correctness",
+    "rho": -0.04209067180727667,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_parallel",
+    "gt": "disagreement_gt",
+    "rho": -0.04209067180727667,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_parallel",
+    "gt": "entropy_gt",
+    "rho": 0.14672253735519358,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_parallel",
+    "gt": "gegt",
+    "rho": 0.12038145020892285,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_parallel",
+    "gt": "hegt",
+    "rho": 0.12038145020892285,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_parallel",
+    "gt": "logit_gt",
+    "rho": 0.4347734011334045,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "commitment_parallel",
+    "gt": "nbgt",
+    "rho": -0.6516206806068892,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "confidence",
+    "gt": "correctness",
+    "rho": -0.1060599435487876,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "confidence",
+    "gt": "disagreement_gt",
+    "rho": -0.1060599435487876,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "confidence",
+    "gt": "entropy_gt",
+    "rho": 0.013992495742087814,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "confidence",
+    "gt": "gegt",
+    "rho": 0.26390322557634843,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "confidence",
+    "gt": "hegt",
+    "rho": 0.26390322557634843,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "confidence",
+    "gt": "logit_gt",
+    "rho": 0.22387993187340502,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "confidence",
+    "gt": "nbgt",
+    "rho": -0.5736923254256003,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance",
+    "gt": "correctness",
+    "rho": -0.2189038471594681,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance",
+    "gt": "disagreement_gt",
+    "rho": -0.2189038471594681,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance",
+    "gt": "entropy_gt",
+    "rho": 0.05967860100145692,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance",
+    "gt": "gegt",
+    "rho": 0.2588019321336181,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance",
+    "gt": "hegt",
+    "rho": 0.2588019321336181,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance",
+    "gt": "logit_gt",
+    "rho": -0.0994643350024282,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance",
+    "gt": "nbgt",
+    "rho": -0.21882153700534204,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_ambiguity",
+    "gt": "correctness",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_ambiguity",
+    "gt": "disagreement_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_ambiguity",
+    "gt": "entropy_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_ambiguity",
+    "gt": "gegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_ambiguity",
+    "gt": "hegt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_ambiguity",
+    "gt": "logit_gt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_ambiguity",
+    "gt": "nbgt",
+    "rho": null,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_certainty",
+    "gt": "correctness",
+    "rho": 0.20649110239899524,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_certainty",
+    "gt": "disagreement_gt",
+    "rho": 0.20649110239899524,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_certainty",
+    "gt": "entropy_gt",
+    "rho": 0.25498133240721954,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_certainty",
+    "gt": "gegt",
+    "rho": -0.04860443127358144,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_certainty",
+    "gt": "hegt",
+    "rho": -0.04860443127358144,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_certainty",
+    "gt": "logit_gt",
+    "rho": -0.25498133240721954,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_certainty",
+    "gt": "nbgt",
+    "rho": 0.37640101450589547,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_defined",
+    "gt": "correctness",
+    "rho": 0.11017918688651983,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_defined",
+    "gt": "disagreement_gt",
+    "rho": 0.11017918688651983,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_defined",
+    "gt": "entropy_gt",
+    "rho": 0.1301628053236573,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_defined",
+    "gt": "gegt",
+    "rho": -0.10020060200702528,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_defined",
+    "gt": "hegt",
+    "rho": -0.10020060200702528,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_defined",
+    "gt": "logit_gt",
+    "rho": -0.4105134629438423,
+    "n": 20
+  },
+  {
+    "dataset": "philpapers",
+    "om": "nuance_defined",
+    "gt": "nbgt",
+    "rho": 0.3504383220252312,
+    "n": 20
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment",
+    "gt": "correctness",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment",
+    "gt": "entropy_gt",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment",
+    "gt": "gegt",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment",
+    "gt": "hegt",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment",
+    "gt": "logit_gt",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment",
+    "gt": "nbgt",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_challenge",
+    "gt": "correctness",
+    "rho": 0.14896847267965935,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_challenge",
+    "gt": "entropy_gt",
+    "rho": -0.17971697989736907,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_challenge",
+    "gt": "gegt",
+    "rho": -0.05106649451262651,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_challenge",
+    "gt": "hegt",
+    "rho": -0.01621602016369543,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_challenge",
+    "gt": "logit_gt",
+    "rho": 0.3466709497060574,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_challenge",
+    "gt": "nbgt",
+    "rho": -0.40393202199581413,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_defined",
+    "gt": "correctness",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_defined",
+    "gt": "entropy_gt",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_defined",
+    "gt": "gegt",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_defined",
+    "gt": "hegt",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_defined",
+    "gt": "logit_gt",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_defined",
+    "gt": "nbgt",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_parallel",
+    "gt": "correctness",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_parallel",
+    "gt": "entropy_gt",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_parallel",
+    "gt": "gegt",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_parallel",
+    "gt": "hegt",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_parallel",
+    "gt": "logit_gt",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "commitment_parallel",
+    "gt": "nbgt",
+    "rho": null,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "confidence",
+    "gt": "correctness",
+    "rho": 0.5283081986188632,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "confidence",
+    "gt": "entropy_gt",
+    "rho": -0.29127394312825383,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "confidence",
+    "gt": "gegt",
+    "rho": -0.13214944333832765,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "confidence",
+    "gt": "hegt",
+    "rho": -0.22829825077307142,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "confidence",
+    "gt": "logit_gt",
+    "rho": 0.5441073765446374,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "confidence",
+    "gt": "nbgt",
+    "rho": -0.5257268415610489,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance",
+    "gt": "correctness",
+    "rho": -0.5112238439868767,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance",
+    "gt": "entropy_gt",
+    "rho": 0.26213817228919484,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance",
+    "gt": "gegt",
+    "rho": 0.10344686261541504,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance",
+    "gt": "hegt",
+    "rho": 0.1386712414842083,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance",
+    "gt": "logit_gt",
+    "rho": -0.4990689079012203,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance",
+    "gt": "nbgt",
+    "rho": 0.43480432123946344,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_ambiguity",
+    "gt": "correctness",
+    "rho": -0.48214275617585567,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_ambiguity",
+    "gt": "entropy_gt",
+    "rho": 0.26521704559429693,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_ambiguity",
+    "gt": "gegt",
+    "rho": 0.048524491303589094,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_ambiguity",
+    "gt": "hegt",
+    "rho": 0.14496616506303556,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_ambiguity",
+    "gt": "logit_gt",
+    "rho": -0.4346248278640496,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_ambiguity",
+    "gt": "nbgt",
+    "rho": 0.41703059708281126,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_certainty",
+    "gt": "correctness",
+    "rho": -0.6302714031078533,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_certainty",
+    "gt": "entropy_gt",
+    "rho": 0.33832469030345236,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_certainty",
+    "gt": "gegt",
+    "rho": 0.05341379968284692,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_certainty",
+    "gt": "hegt",
+    "rho": 0.17771598886284345,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_certainty",
+    "gt": "logit_gt",
+    "rho": -0.5197390997778768,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_certainty",
+    "gt": "nbgt",
+    "rho": 0.5145867015533264,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_defined",
+    "gt": "correctness",
+    "rho": -0.6700768512163792,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_defined",
+    "gt": "entropy_gt",
+    "rho": 0.2998877244394441,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_defined",
+    "gt": "gegt",
+    "rho": 0.13654462294214004,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_defined",
+    "gt": "hegt",
+    "rho": 0.29297502081821947,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_defined",
+    "gt": "logit_gt",
+    "rho": -0.4993639714221239,
+    "n": 120
+  },
+  {
+    "dataset": "synonyms",
+    "om": "nuance_defined",
+    "gt": "nbgt",
+    "rho": 0.4755163428316287,
+    "n": 120
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment",
+    "gt": "correctness",
+    "rho": 0.2946438113778875,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment",
+    "gt": "entropy_gt",
+    "rho": -0.19308329771813829,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment",
+    "gt": "gegt",
+    "rho": 0.1798993300850632,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment",
+    "gt": "hegt",
+    "rho": 0.16393280585164893,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment",
+    "gt": "logit_gt",
+    "rho": 0.3555320221314956,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment",
+    "gt": "nbgt",
+    "rho": 0.3182517536759434,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_challenge",
+    "gt": "correctness",
+    "rho": 0.10206207261596575,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_challenge",
+    "gt": "entropy_gt",
+    "rho": -0.22805333988473672,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_challenge",
+    "gt": "gegt",
+    "rho": -0.029174165221125623,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_challenge",
+    "gt": "hegt",
+    "rho": -0.11317194731924769,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_challenge",
+    "gt": "logit_gt",
+    "rho": 0.2068390757094124,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_challenge",
+    "gt": "nbgt",
+    "rho": 0.2740685655253143,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_defined",
+    "gt": "correctness",
+    "rho": 0.2499344360096377,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_defined",
+    "gt": "entropy_gt",
+    "rho": -0.18812705876380573,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_defined",
+    "gt": "gegt",
+    "rho": 0.15876037794891024,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_defined",
+    "gt": "hegt",
+    "rho": 0.10214971421863367,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_defined",
+    "gt": "logit_gt",
+    "rho": 0.3670998986239539,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_defined",
+    "gt": "nbgt",
+    "rho": 0.34985419891431624,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_parallel",
+    "gt": "correctness",
+    "rho": 0.2743516305843672,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_parallel",
+    "gt": "entropy_gt",
+    "rho": -0.2124888697326779,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_parallel",
+    "gt": "gegt",
+    "rho": 0.13715479192491695,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_parallel",
+    "gt": "hegt",
+    "rho": 0.12019245427311832,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_parallel",
+    "gt": "logit_gt",
+    "rho": 0.3197516218661064,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "commitment_parallel",
+    "gt": "nbgt",
+    "rho": 0.35511935207580253,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "confidence",
+    "gt": "correctness",
+    "rho": 0.48160638202418954,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "confidence",
+    "gt": "entropy_gt",
+    "rho": -0.37166045525534563,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "confidence",
+    "gt": "gegt",
+    "rho": 0.3888944985899487,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "confidence",
+    "gt": "hegt",
+    "rho": 0.31355275738227995,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "confidence",
+    "gt": "logit_gt",
+    "rho": 0.34395005934481115,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "confidence",
+    "gt": "nbgt",
+    "rho": 0.46991541368488876,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance",
+    "gt": "correctness",
+    "rho": 0.17213259316477406,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance",
+    "gt": "entropy_gt",
+    "rho": 0.003428809010236415,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance",
+    "gt": "gegt",
+    "rho": 0.13270070582661156,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance",
+    "gt": "hegt",
+    "rho": 0.06188361046568544,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance",
+    "gt": "logit_gt",
+    "rho": 0.10137348378090269,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance",
+    "gt": "nbgt",
+    "rho": 0.006635234433397287,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_ambiguity",
+    "gt": "correctness",
+    "rho": -0.066475975896833,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_ambiguity",
+    "gt": "entropy_gt",
+    "rho": 0.22149118699920686,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_ambiguity",
+    "gt": "gegt",
+    "rho": -0.22547639287891483,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_ambiguity",
+    "gt": "hegt",
+    "rho": -0.3015493913584751,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_ambiguity",
+    "gt": "logit_gt",
+    "rho": -0.10868670000343232,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_ambiguity",
+    "gt": "nbgt",
+    "rho": -0.16651920707721407,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_certainty",
+    "gt": "correctness",
+    "rho": -0.24999999999999994,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_certainty",
+    "gt": "entropy_gt",
+    "rho": 0.14809774911972642,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_certainty",
+    "gt": "gegt",
+    "rho": -0.24989981365689065,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_certainty",
+    "gt": "hegt",
+    "rho": -0.24082924908732542,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_certainty",
+    "gt": "logit_gt",
+    "rho": -0.3576863765289299,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_certainty",
+    "gt": "nbgt",
+    "rho": -0.35905227620708285,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_defined",
+    "gt": "correctness",
+    "rho": 0.06088943809036442,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_defined",
+    "gt": "entropy_gt",
+    "rho": 0.046440108682923795,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_defined",
+    "gt": "gegt",
+    "rho": -0.024356292829979278,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_defined",
+    "gt": "hegt",
+    "rho": -0.03444515232603818,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_defined",
+    "gt": "logit_gt",
+    "rho": 0.048224966550487025,
+    "n": 100
+  },
+  {
+    "dataset": "triviaqa",
+    "om": "nuance_defined",
+    "gt": "nbgt",
+    "rho": -0.02883352296183159,
+    "n": 100
+  },
+  {
+    "dataset": "twenty_questions",
+    "om": "impurity",
+    "gt": "gini_impurity",
+    "rho": 0.18859728291450098,
+    "n": 1000
+  },
+  {
+    "dataset": "twenty_questions:animal.n.01",
+    "om": "impurity",
+    "gt": "gini_impurity",
+    "rho": 0.19685777354859985,
+    "n": 100
+  },
+  {
+    "dataset": "twenty_questions:attribute.n.02",
+    "om": "impurity",
+    "gt": "gini_impurity",
+    "rho": -0.013614225155509403,
+    "n": 100
+  },
+  {
+    "dataset": "twenty_questions:body_part.n.01",
+    "om": "impurity",
+    "gt": "gini_impurity",
+    "rho": 0.39671222614290685,
+    "n": 100
+  },
+  {
+    "dataset": "twenty_questions:cognition.n.01",
+    "om": "impurity",
+    "gt": "gini_impurity",
+    "rho": 0.02281346487538024,
+    "n": 100
+  },
+  {
+    "dataset": "twenty_questions:container.n.01",
+    "om": "impurity",
+    "gt": "gini_impurity",
+    "rho": 0.3476044283316989,
+    "n": 100
+  },
+  {
+    "dataset": "twenty_questions:emotion.n.01",
+    "om": "impurity",
+    "gt": "gini_impurity",
+    "rho": 0.08897919112832332,
+    "n": 100
+  },
+  {
+    "dataset": "twenty_questions:food.n.01",
+    "om": "impurity",
+    "gt": "gini_impurity",
+    "rho": 0.3635805845377853,
+    "n": 100
+  },
+  {
+    "dataset": "twenty_questions:plant.n.02",
+    "om": "impurity",
+    "gt": "gini_impurity",
+    "rho": 0.16387904800331443,
+    "n": 100
+  },
+  {
+    "dataset": "twenty_questions:structure.n.01",
+    "om": "impurity",
+    "gt": "gini_impurity",
+    "rho": 0.12439289108248829,
+    "n": 100
+  },
+  {
+    "dataset": "twenty_questions:vehicle.n.01",
+    "om": "impurity",
+    "gt": "gini_impurity",
+    "rho": 0.05690257078972298,
+    "n": 100
+  }
+]
