@@ -28,7 +28,7 @@ def load_topology_edit_system_prompt(name: str, extra: str | None = None) -> str
     `extra` if given — used by `create`/`modify`, the two CLI commands
     that go through free_topology(). `extra` is where a target node's own
     class contributes guidance specific to its kind (e.g.
-    `NodeList.create_sys_prompt()`/`modify_sys_prompt()`), so a plain
+    `Chain.create_sys_prompt()`/`modify_sys_prompt()`), so a plain
     `Node` edit doesn't pay for guidance it doesn't need."""
     parts = [
         text

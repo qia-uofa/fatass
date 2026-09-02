@@ -57,7 +57,7 @@ def build(papers: Papers):
                 model="sonnet",
                 tools="Read,Write,Bash,Glob,Grep",
                 prompt=(
-                    f"papers is a NodeList (dependency `seminar_essay.materials.papers`); "
+                    f"papers is a Chain (dependency `seminar_essay.materials.papers`); "
                     f"look at item index {i}, whose {paths}. "
                     f"Metadata: {json.dumps(meta)}. "
                     f"Read the paper pdf and the student's sidenote file. "
@@ -83,7 +83,7 @@ def build(papers: Papers):
                 model="sonnet",
                 tools="Read,Write,Bash,Glob,Grep",
                 prompt=(
-                    f"papers is a NodeList (dependency `seminar_essay.materials.papers`); "
+                    f"papers is a Chain (dependency `seminar_essay.materials.papers`); "
                     f"look at item index {i}, whose {paths}. "
                     f"Metadata: {json.dumps(meta)}. "
                     f"Read the paper pdf and the student's sidenote file. "
@@ -109,7 +109,7 @@ def build(papers: Papers):
                 model="sonnet",
                 tools="Read,Write,Bash,Glob,Grep",
                 prompt=(
-                    f"papers is a NodeList (dependency `seminar_essay.materials.papers`); "
+                    f"papers is a Chain (dependency `seminar_essay.materials.papers`); "
                     f"look at item index {i}, whose {paths}. "
                     f"Metadata: {json.dumps(meta)}. "
                     f"Read the paper pdf and the student's sidenote file. "
@@ -144,7 +144,7 @@ def build(papers: Papers):
                 model="sonnet",
                 tools="Read,Write,Bash,Glob,Grep",
                 prompt=(
-                    f"papers is a NodeList (dependency `seminar_essay.materials.papers`); "
+                    f"papers is a Chain (dependency `seminar_essay.materials.papers`); "
                     f"look at item index {i}, whose {paths}. "
                     f"Metadata: {json.dumps(meta)}. "
                     f"The subject paper is item index {subject_index}, titled "

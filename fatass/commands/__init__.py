@@ -5,12 +5,17 @@ from .build import BuildCommand
 from .cd import CdCommand
 from .copy import CopyCommand
 from .create import CreateCommand
+from .debug import DebugCommand
 from .free import FreeCommand
 from .graph import GraphCommand
+from .insert import InsertCommand
+from .length import LenCommand
 from .ls import LsCommand
 from .modify import ModifyCommand
 from .move import MoveCommand
+from .pop import PopCommand
 from .purge import PurgeCommand
+from .push import PushCommand
 from .pwd import PwdCommand
 from .remove import RemoveCommand
 from .retrieve import RetrieveCommand
@@ -25,6 +30,7 @@ ALL_COMMANDS = [
     ApplyCommand(),
     CreateCommand(),
     FreeCommand(),
+    DebugCommand(),
     ModifyCommand(),
     MoveCommand(),
     CopyCommand(),
@@ -40,6 +46,10 @@ ALL_COMMANDS = [
     LsCommand(),
     BindCommand(),
     UnbindCommand(),
+    LenCommand(),
+    InsertCommand(),
+    PushCommand(),
+    PopCommand(),
     ShellCommand(),
     VimCommand(),
 ]

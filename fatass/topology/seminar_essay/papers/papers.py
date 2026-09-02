@@ -1,5 +1,5 @@
 import fatass
 
 
-class Papers(fatass.NodeList):
+class Papers(fatass.Chain):
     pass

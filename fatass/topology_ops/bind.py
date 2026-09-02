@@ -219,6 +219,40 @@ def bind_transform(node_path: str, transform_name: str, dep_node_paths: list[str
     return [dep_path for _name, _alias, dep_path in new_params]
 
 
+def add_plain_params(
+    node_path: str, transform_name: str, params: list[tuple[str, str]]
+) -> list[str]:
+    """Add each of `params` (param_name, type_annotation) as an ordinary,
+    non-default, import-free parameter on `transform_name`'s function —
+    e.g. ("prompt", "str"), ("n", "int"). Unlike `bind_transform`, these
+    aren't `Node`-typed dependencies: no import is added, and nothing is
+    resolved against the topology. Raises if a name collides with an
+    existing parameter (of any kind).
+
+    Returns the param names actually added."""
+    file_path, source, tree, func = _parse_transform(node_path, transform_name)
+    existing_names = {arg.arg for arg in func.args.args}
+
+    for name, _type_str in params:
+        if name in existing_names:
+            raise TopologyValidationError(
+                f"can't add parameter {name!r} to {transform_name}@{node_path}: "
+                f"a parameter with that name already exists"
+            )
+        existing_names.add(name)
+
+    if not params:
+        return []
+
+    insert_pos, needs_leading, needs_trailing = _new_param_insertion(source, func)
+    joined = ", ".join(f"{name}: {type_str}" for name, type_str in params)
+    param_text = (", " if needs_leading else "") + joined + (", " if needs_trailing else "")
+    new_source = source[:insert_pos] + param_text + source[insert_pos:]
+
+    file_path.write_text(new_source, encoding="utf-8")
+    return [name for name, _type_str in params]
+
+
 def unbind_transform(node_path: str, transform_name: str, dep_node_paths: list[str]) -> list[str]:
     """Remove each of `dep_node_paths` from `transform_name`'s declared
     parameters (and its import, if no longer referenced anywhere else in

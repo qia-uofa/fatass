@@ -64,7 +64,7 @@ reading/searching (write it up, summarize it, rank it, extract
 semi-structured facts from prose) — never for anything a few lines of
 deterministic Python could do instead (parsing a known file format,
 basic string/number manipulation, filesystem bookkeeping, growing a
-`NodeList`). A transform can freely mix both: plain Python for the
+`Chain`). A transform can freely mix both: plain Python for the
 mechanical parts, `free()` only for the part that actually needs an
 agent.
 
@@ -154,7 +154,7 @@ fatass.free(
   `preferences.json` in its readable directory."
 - Add a `print(...)` before each meaningful step in the transform's own
   code — starting the transform, before/after each `free()` call, before
-  writing an output file, when growing a `NodeList`. A `silent=True`
+  writing an output file, when growing a `Chain`. A `silent=True`
   transform otherwise produces no visible output at all until (or unless)
   it finishes, so a human watching `fatass run`/`apply`/`build` needs
   these to see it's actually making progress.

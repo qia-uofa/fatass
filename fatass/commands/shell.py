@@ -3,9 +3,10 @@ import shlex
 import sys
 
 from prompt_toolkit import PromptSession
-from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.history import FileHistory
 
 from .._internal.import_tree import reload_all
+from .._internal.paths import SHELL_HISTORY_PATH
 from ..errors import TopologyValidationError
 from ..resolve.cwd import (
     ROOT,
@@ -82,6 +83,16 @@ class ShellCommand(Command):
         # completer's command-name list).
         from . import ALL_COMMANDS
 
+        # A FileHistory (not InMemoryHistory) so `>>> ` lines persist to
+        # .fatass/shell_history across every `fatass shell` invocation,
+        # past and present — `fatass debug` reads its tail as one of its
+        # two history sources (the other being ./log). session.prompt()
+        # appends to it automatically on each accepted line; the plain-
+        # input fallback below appends manually, since bypassing
+        # session.prompt() also bypasses that.
+        SHELL_HISTORY_PATH.parent.mkdir(parents=True, exist_ok=True)
+        history = FileHistory(str(SHELL_HISTORY_PATH))
+
         # prompt_toolkit needs a real console (it queries the Windows
         # console API directly on this platform) — unavailable under some
         # terminals/test harnesses (e.g. mintty/Git Bash), where either
@@ -92,7 +103,7 @@ class ShellCommand(Command):
         session: PromptSession | None
         try:
             session = PromptSession(
-                history=InMemoryHistory(),
+                history=history,
                 completer=ShellCompleter([c.name for c in ALL_COMMANDS]),
             )
             use_plain_input = False
@@ -127,6 +138,11 @@ class ShellCommand(Command):
                     break
 
                 if line:
+                    if use_plain_input:
+                        # session.prompt() records accepted input into
+                        # `history` on its own; bare input() doesn't, so
+                        # the fallback path has to do it itself.
+                        history.append_string(line)
                     try:
                         main(shlex.split(line))
                     except SystemExit:

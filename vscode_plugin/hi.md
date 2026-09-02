@@ -1,0 +1,4 @@
+- the plugin detects a fatass root folder and activates if its opened in a vscode window
+- it adds a second explorer thats shows only the tree strucure of the nodes
+- a third explorer shows the content of the selected node, toggles between home and fatass/topology
+- it adds commands to the right click context windows where they belongs

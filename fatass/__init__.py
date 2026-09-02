@@ -1,7 +1,7 @@
 from .core.adhoc import free_at
 from .core.free import free, free_topology
 from .core.node import Node
-from .core.node_list import NodeList
+from .core.chain import Chain
 from .core.transform import apply_transform, discover, run_transform
 from .errors import FreeCoercionError, FreeError, TopologyValidationError
 from .topology_ops.archive import archive_topology, retrieve_topology
@@ -24,7 +24,7 @@ from . import topology
 
 __all__ = [
     "Node",
-    "NodeList",
+    "Chain",
     "free",
     "free_topology",
     "run_transform",

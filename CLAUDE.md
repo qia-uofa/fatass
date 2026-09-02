@@ -16,9 +16,10 @@ Full design docs: [blueprint/](blueprint/README.md).
 ```
 python -m fatass run <node.path>[.transforms.<name>] [--force]   # run transform(s), cache-aware
 python -m fatass apply <transform>@<node.path> [key=value ...]    # run one transform with explicit args, ignoring cache
-python -m fatass create <node.path | transform@node.path>[(NodeSubclass)]  # scaffold if missing; e.g. members(NodeList) subclasses fatass.NodeList instead of fatass.Node
+python -m fatass create <node.path | transform@node.path>[(NodeSubclass)]  # scaffold if missing; e.g. members(Chain) subclasses fatass.Chain instead of fatass.Node
 python -m fatass create <transform>(<dep.path>[,<dep.path> ...])@<node.path>   # scaffold a transform and bind the given deps onto it in the same call (no agent call for the binding — same as a `bind` right after)
 python -m fatass modify <node.path | transform@node.path> ["..."] [--silent] [--permission-mode M] [--model M]    # edit an existing node/transform file; prompt is positional and optional — omitted or "" both become the literal text "<no instructions given — wait for further input>"
+python -m fatass debug <transform>@<node.path> ["..."] [--silent] [--permission-mode M] [--model M]    # like modify, but framed around root-causing a failure: inlines the relevant tail of ./log for this transform (past dispatches and free() calls' args/exit codes/stdout/stderr) plus a tail of `fatass shell`'s own persisted `>>> ` command history (.fatass/shell_history — not the OS terminal's), and grants read access to only the transform's input (declared dependency) and output (home/) nodes
 python -m fatass move <node.path> <new.node.path>                 # move/rename a node, rewriting references
 python -m fatass copy <node.path> <new.node.path>                 # copy a node, rewriting the copy's internal references
 python -m fatass remove <node.path | transform@node.path>         # remove a node (and nested nodes) or one transform
@@ -34,6 +35,10 @@ python -m fatass graph [node.path] [-o/--output ...]                # write a Pl
 python -m fatass ls [-r] <node.path | node.path/rel/path | transform@node.path>  # show a node's own class + subnodes + transforms (each with its dependencies' classes/subnodes), or a raw directory listing for a '/'/'@' target; -r recurses into the full inclusion/directory tree instead of one level
 python -m fatass bind [-a/--absolute] <transform>@<node.path> [dep.path ...]    # add nodes as declared Node-typed dependencies on a transform (no agent call); -a replaces the whole dependency set instead of adding to it (unbinds everything first) — with no dep.path at all, -a just clears every existing bind
 python -m fatass unbind <transform>@<node.path> <dep.path> [dep.path ...]  # remove nodes from a transform's declared dependencies (no agent call)
+python -m fatass len <node.path>                                    # print a Chain's current length (no agent call)
+python -m fatass push <node.path>                                   # append one item to a Chain, seeded as a copy of the dummy head's own content (no agent call)
+python -m fatass insert <n> <node.path> [path1 path2 ...]           # insert an item into a Chain at index n, shifting the rest back; with no paths, seeds from a copy of the dummy head's content, else from those files/dirs (leaf lists only — each path is either an absolute real filesystem path, or a fatass target expression) (no agent call)
+python -m fatass pop <node.path> [n]                                # remove a Chain's tail item, or item n if given, shifting anything after it forward (no agent call)
 python -m fatass vim <node.path | transform@node.path | node.path/rel/path>  # open a node's class file, a transform file, or a home/ file in vim
 python -m fatass shell                                              # interactive REPL, one command per line
 ```
@@ -57,7 +62,7 @@ explicit root-relative target. `ls`'s bare `node1.node2` form (no `/`
 or `@`) doesn't resolve through this — it takes the fast path in
 `fatass/ls.py:list_node`, which imports the node itself (via
 `fatass.core.transform._import_node`) to get its *base* fatass class
-(`"Node"` or `"NodeList"` — not its own specific subclass name, which is
+(`"Node"` or `"Chain"` — not its own specific subclass name, which is
 just the PascalCase of its own path segment and adds no information the
 path doesn't already carry), plus its direct subnodes (from
 `fatass.topology_ops.scaffold._all_node_paths`) and its own transforms
@@ -71,7 +76,7 @@ level deep — but full-path-addressed (`~.<path>`), since a dependency
 can live anywhere in the topology, not just under the node being listed:
 
 ```
-summaries : NodeList(entry)
+summaries : Chain(entry)
 summaries = build(
     ~.tests.list.article : Node(),
 )
@@ -94,7 +99,7 @@ indented four spaces further and comma-terminated):
 tests : Node(
     list : Node(
         article : Node(),
-        summaries : NodeList(
+        summaries : Chain(
             entry : Node(),
         ),
     ),
@@ -113,14 +118,14 @@ own `<name>.py` class file, `transform@node1.node2` opens that transform's
 `home/` directory (need not already exist — vim creates it on save, same
 as `vim newfile.txt` at a shell).
 
-### `NodeList`
+### `Chain`
 
-`fatass.NodeList` (`fatass/core/node_list.py`) represents a dynamically-
+`fatass.Chain` (`fatass/core/chain.py`) represents a dynamically-
 sized, homogeneous sequence without creating a new topology node per
 item — the topology stays fully static (still one `<name>.py` per real
 node, still discoverable by walking the filesystem before any code
 runs). A list can be either **structured** — one real node
-(`class Members(fatass.NodeList): pass`) declares the per-item schema as
+(`class Members(fatass.Chain): pass`) declares the per-item schema as
 its own ordinary children (e.g. `members.info`, `members.contribution` —
 real nodes, can have their own `build()`) — or a **leaf** — no schema
 children declared at all, just one thing per item. Either way every
@@ -144,11 +149,11 @@ members/
   pure `home/`-directory operation (`mkdir`), never touching
   `fatass/topology/`.
 - `Members.length()` counts existing `.next` levels (0 = empty).
-- `members_instance[i]` (`NodeList.__getitem__`) raises
+- `members_instance[i]` (`Chain.__getitem__`) raises
   `TopologyValidationError` naming the current length if `i` is out of
   range — growing only ever happens via an explicit `.extend()`, never as
   a side effect of indexing or reading.
-- **Leaf lists:** `members[i]._assets_dir()` (`_NodeListItem._assets_dir()`)
+- **Leaf lists:** `members[i]._assets_dir()` (`_ChainItem._assets_dir()`)
   resolves straight to a reserved `.entry` directory at that item's depth
   — e.g. `members[1]` -> `members/.next/.next/.entry` — creating it
   lazily on first access. This is the default place to write when a list
@@ -171,9 +176,24 @@ members/
   per index (`discover()` itself still reflects on the *real*,
   index-independent node's own package directory). This targets a
   declared schema child's own transform, so it doesn't apply to `.entry`
-  (there's no transform to run there). `sh`/`free`/`create`/`modify`/
-  `move`/`remove`/`graph` don't understand indexed targets — only
-  `run`/`apply`/`build` do.
+  (there's no transform to run there).
+- `sh`/`free`/`ls`/`vim`'s `/`/`@` target grammar (`fatass.resolve.targets`)
+  understands an indexed segment too, e.g. `fatass free "members[2]/rel/path"`
+  or `transform@members[2].info` — for the `/` form this resolves straight
+  to that item's (or schema child's) own `home/` directory, unlike
+  `run`/`apply`/`build` a *bare* indexed item with no schema-child suffix
+  is valid here (`members[2]` alone resolves to that item's own `.entry`);
+  for the `@` form the index is bounds-checked but the returned directory
+  is always the shared, real topology directory, since a schema child's
+  code is the same file for every item. The bare (no `/`, no `@`) form
+  rejects an indexed target outright — an item has no topology directory
+  of its own. `create`/`modify`/`move`/`remove`/`bind`/`unbind`/`graph`
+  still don't understand indexed targets at all (nothing there is
+  per-item — a schema child's topology definition is shared).
+- `[*]` (in place of a literal index, anywhere the above accept one)
+  means "the current tail" — `length() - 1`, resolved at the time of the
+  call (raises if the list is empty). Handy right after a `push` without
+  having to `len` first, e.g. `fatass run "members[*].info"`.
 - Not supported: a schema child depending on a sibling schema child in
   the same item (e.g. `contribution` reading the same item's `info`) does
   not auto-resolve to the same index — schema-node dependencies should
@@ -323,7 +343,7 @@ real `claude` CLI goes through it, and it takes four orthogonal knobs:
   below); for `modify`, the existing node's real class, imported for this
   purpose alone (best-effort: import failure — e.g. the node's own file
   being fixed is currently broken — just means no extra block, not a
-  command failure). `NodeList` overrides both to teach the `.next`-chain
+  command failure). `Chain` overrides both to teach the `.next`-chain
   conventions only when the node being created/modified is actually one,
   instead of paying for that guidance on every plain-`Node` edit.
 - **`model`** (default `None`): passed straight through as `--model` when

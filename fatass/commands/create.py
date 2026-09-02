@@ -2,14 +2,14 @@ import argparse
 import sys
 
 from ..core.node import Node
-from ..core.node_list import NodeList
+from ..core.chain import Chain
 from ..errors import TopologyValidationError
-from ..topology_ops.bind import bind_transform
+from ..topology_ops.bind import add_plain_params, bind_transform
 from ..topology_ops.scaffold import create_node, create_transform
 from ._targets import parse_create_target
 from .base import Command
 
-_BASE_CLASSES: dict[str, type[Node]] = {"Node": Node, "NodeList": NodeList}
+_BASE_CLASSES: dict[str, type[Node]] = {"Node": Node, "Chain": Chain}
 
 
 class CreateCommand(Command):
@@ -21,17 +21,22 @@ class CreateCommand(Command):
         parser.add_argument(
             "target",
             help=(
-                "node.path, or <transform>@<node.path> to create a transform; "
-                "a node.path may end with (NodeSubclass) (e.g. "
-                "\"members(NodeList)\") to subclass fatass.<NodeSubclass> "
-                "instead of fatass.Node"
+                "node.path, or <transform>@<node.path> to create a transform "
+                "(optionally with dependency node.paths and/or plain "
+                "name:type parameters in parens, e.g. "
+                "\"build(node1,node2,prompt:str,n:int)@node\"); a node.path "
+                "may end with (NodeSubclass) (e.g. \"members(Chain)\") to "
+                "subclass fatass.<NodeSubclass> instead of fatass.Node"
             ),
         )
 
     def run(self, args: argparse.Namespace) -> int:
         bound: list[str] = []
+        added_params: list[str] = []
         try:
-            node_path, transform_name, base_class, dep_paths = parse_create_target(args.target)
+            node_path, transform_name, base_class, dep_paths, plain_params = (
+                parse_create_target(args.target)
+            )
             if base_class not in _BASE_CLASSES:
                 raise ValueError(
                     f"unknown NodeSubclass {base_class!r} "
@@ -47,6 +52,8 @@ class CreateCommand(Command):
                 label = f"{node_path}.transforms.{transform_name}"
                 if created and dep_paths:
                     bound = bind_transform(node_path, transform_name, dep_paths)
+                if created and plain_params:
+                    added_params = add_plain_params(node_path, transform_name, plain_params)
             else:
                 created = create_node(node_path, base_class)
                 label = node_path
@@ -57,4 +64,6 @@ class CreateCommand(Command):
         print(f"{label}: already exists" if not created else f"{label}: created")
         if bound:
             print(f"{label}: bound {', '.join(bound)}")
+        if added_params:
+            print(f"{label}: added parameters {', '.join(added_params)}")
         return 0

@@ -2,19 +2,19 @@ import dataclasses
 from pathlib import Path
 
 from .core.node import Node
-from .core.node_list import NodeList
+from .core.chain import Chain
 from .core.transform import _import_node, discover
 from .errors import TopologyValidationError
 from .topology_ops.scaffold import _all_node_paths, _node_dir
 
 
 def _base_class_name(node_cls: type[Node]) -> str:
-    """"NodeList" or "Node" — the fatass base class a node is built on,
+    """"Chain" or "Node" — the fatass base class a node is built on,
     not its own specific subclass name (which is just the PascalCase of
     its own path segment and so adds no information the path doesn't
     already carry). This is what `fatass ls` shows: it tells you the
     node's *kind* (indexable list vs. plain node) at a glance."""
-    return "NodeList" if issubclass(node_cls, NodeList) else "Node"
+    return "Chain" if issubclass(node_cls, Chain) else "Node"
 
 
 @dataclasses.dataclass
@@ -136,7 +136,7 @@ def list_dir(path: Path) -> list[str]:
     aren't literally directories in the topology sense), these entries
     are real filesystem content, so a subdirectory gets a trailing "/"
     (classic `ls -F` convention) to distinguish it from a plain file —
-    e.g. a NodeList's own ".next" chain vs. a flat asset file."""
+    e.g. a Chain's own ".next" chain vs. a flat asset file."""
     entries = sorted(path.iterdir(), key=lambda entry: entry.name)
     return [f"{entry.name}/" if entry.is_dir() else entry.name for entry in entries]
 

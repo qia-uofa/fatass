@@ -1,0 +1,81 @@
+{
+  "name": "fatass-vscode",
+  "displayName": "fatass",
+  "description": "Topology explorer and command integration for fatass projects",
+  "version": "0.0.1",
+  "engines": { "vscode": "^1.85.0" },
+  "categories": ["Other"],
+  "activationEvents": [
+    "workspaceContains:fatass/topology"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "fatass",
+          "title": "fatass",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "fatass": [
+        {
+          "id": "fatassTopology",
+          "name": "Topology"
+        },
+        {
+          "id": "fatassContent",
+          "name": "Node Content"
+        }
+      ]
+    },
+    "commands": [
+      { "command": "fatass.refreshTopology", "title": "Refresh", "icon": "$(refresh)" },
+      { "command": "fatass.toggleContentSource", "title": "Toggle home/topology", "icon": "$(arrow-swap)" },
+      { "command": "fatass.cd", "title": "fatass: cd here" },
+      { "command": "fatass.run", "title": "fatass: run" },
+      { "command": "fatass.build", "title": "fatass: build" },
+      { "command": "fatass.modify", "title": "fatass: modify..." },
+      { "command": "fatass.create", "title": "fatass: create..." },
+      { "command": "fatass.move", "title": "fatass: move..." },
+      { "command": "fatass.copy", "title": "fatass: copy..." },
+      { "command": "fatass.remove", "title": "fatass: remove" },
+      { "command": "fatass.purge", "title": "fatass: purge" },
+      { "command": "fatass.vim", "title": "fatass: open (vim)" },
+      { "command": "fatass.openFile", "title": "Open" },
+      { "command": "fatass.revealInExplorer", "title": "Reveal in File Explorer" }
+    ],
+    "menus": {
+      "view/title": [
+        { "command": "fatass.refreshTopology", "when": "view == fatassTopology", "group": "navigation" },
+        { "command": "fatass.toggleContentSource", "when": "view == fatassContent", "group": "navigation" }
+      ],
+      "view/item/context": [
+        { "command": "fatass.cd", "when": "view == fatassTopology && viewItem == node", "group": "1_fatass@1" },
+        { "command": "fatass.run", "when": "view == fatassTopology && viewItem == node", "group": "1_fatass@2" },
+        { "command": "fatass.build", "when": "view == fatassTopology && viewItem == node", "group": "1_fatass@3" },
+        { "command": "fatass.modify", "when": "view == fatassTopology && viewItem == node", "group": "2_fatass@1" },
+        { "command": "fatass.create", "when": "view == fatassTopology && viewItem == node", "group": "2_fatass@2" },
+        { "command": "fatass.move", "when": "view == fatassTopology && viewItem == node", "group": "2_fatass@3" },
+        { "command": "fatass.copy", "when": "view == fatassTopology && viewItem == node", "group": "2_fatass@4" },
+        { "command": "fatass.remove", "when": "view == fatassTopology && viewItem == node", "group": "3_fatass@1" },
+        { "command": "fatass.purge", "when": "view == fatassTopology && viewItem == node", "group": "3_fatass@2" },
+        { "command": "fatass.vim", "when": "view == fatassTopology && viewItem == node", "group": "4_fatass@1" },
+        { "command": "fatass.openFile", "when": "view == fatassContent && viewItem == file", "group": "1_fatass@1" },
+        { "command": "fatass.revealInExplorer", "when": "view == fatassContent", "group": "1_fatass@2" }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.4.0"
+  }
+}

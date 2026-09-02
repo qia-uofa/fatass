@@ -247,13 +247,13 @@ def _leaf_asset_dirs(node: type[Node]) -> list[Path]:
     anything, however incidental, sitting directly in an intermediate
     node's own dir).
 
-    Duck-typed like the rest of this module: a `NodeList` item (a bare
-    `_NodeListItem`, or the dynamically-derived per-index subclass
-    `_NodeListItem.__getattr__` returns — see core/node_list.py) has no
+    Duck-typed like the rest of this module: a `Chain` item (a bare
+    `_ChainItem`, or the dynamically-derived per-index subclass
+    `_ChainItem.__getattr__` returns — see core/chain.py) has no
     resolvable fatass/topology/ path of its own, since it's already one
     concrete, specific piece of data rather than a browsable subtree — so
     it's always treated as its own single leaf. Note a bare
-    `_NodeListItem` doesn't just lack `_topology_path()` — its own
+    `_ChainItem` doesn't just lack `_topology_path()` — its own
     `__getattr__` is a catch-all that turns *any* unrecognized attribute
     probe (including this one) into an attempted schema-child lookup, so
     the failure here isn't always a clean AttributeError; catching

@@ -5,7 +5,10 @@ from pathlib import Path
 
 from .._internal.naming import pascal_case
 from .._internal.paths import HOME_ROOT as _HOME_ROOT
+from .._internal.paths import LOG_PATH as _LOG_PATH
+from .._internal.paths import SHELL_HISTORY_PATH as _SHELL_HISTORY_PATH
 from .._internal.paths import TOPOLOGY_ROOT as _TOPOLOGY_ROOT
+from .._internal.prompts import load_topology_edit_system_prompt
 from ..core.free import DEFAULT_ALLOWED_TOOLS, DEFAULT_PERMISSION_MODE, free_topology
 from ..errors import TopologyValidationError
 
@@ -64,8 +67,8 @@ def create_node(node_path: str, base_class: str = "Node") -> bool:
     """Scaffold a node's topology package (<name>.py + __init__.py) and its
     home/ assets directory. `base_class` names the `fatass.<base_class>`
     class the new node subclasses — "Node" (the default) for an
-    ordinary node, or e.g. "NodeList" for a dynamically-sized list node
-    (see NodeList in CLAUDE.md). Doesn't call free(). Returns True if it
+    ordinary node, or e.g. "Chain" for a dynamically-sized list node
+    (see Chain in CLAUDE.md). Doesn't call free(). Returns True if it
     created something, False if the node already existed."""
     node_dir = _node_dir(node_path)
     if node_dir.is_dir():
@@ -201,6 +204,75 @@ def _rename_own_file(node_dir: Path, old_path: str, new_path: str) -> None:
     _rewrite_self_imports(node_dir, old_stem, new_stem, new_class)
 
 
+def _files_still_mention(node_dir: Path, *needles: str) -> bool:
+    """True if any `.py` file directly in `node_dir` (not recursive —
+    same scope `_rename_own_file`/`_rewrite_self_imports` operate in)
+    still contains any of `needles` as a whole word/identifier — used to
+    check, *after* the mechanical rewrites have already run, whether
+    anything's actually left for `_review_renamed_stem` to ask an agent
+    about. A whole-word match (not a bare substring) so e.g. needle "old"
+    doesn't false-positive on "older_result"."""
+    patterns = [re.compile(r"(?<!\w)" + re.escape(n) + r"(?!\w)") for n in needles if n]
+    if not patterns:
+        return False
+    for file in node_dir.glob("*.py"):
+        text = file.read_text(encoding="utf-8")
+        if any(p.search(text) for p in patterns):
+            return True
+    return False
+
+
+def _review_renamed_stem(node_dir: Path, old_path: str, new_path: str) -> None:
+    """After `move_node` renames a node's own leaf segment (e.g. "parent"
+    -> "renamed" in "a.parent" -> "a.renamed"), `_rename_own_file`/
+    `_rewrite_self_imports`/`_rewrite_external_class_imports` already
+    fixed everything a mechanical text substitution can find: the class
+    definition, `__init__.py`'s import, every same-directory transform's
+    self-import, and every external absolute import of the old class
+    name. None of that can catch things that only reading the code and
+    prose actually reveals — a local variable named after the old stem, a
+    mention of the old name inside a `fatass.free(...)` prompt string, a
+    comment — so this opens a real, interactive (`silent=False`)
+    `fatass.free()` conversation scoped to the node's own directory,
+    asking the agent to review and fix exactly that.
+
+    A no-op (returns immediately, no agent call) if the leaf segment
+    didn't actually change (the common case, e.g. "a.b" -> "c.b"), *or*
+    if it did change but `_files_still_mention` finds no remaining trace
+    of the old name (stem or class name) in any of this directory's
+    files — the mechanical rewrites already covered every reference that
+    existed, so there's nothing left to review."""
+    old_stem = old_path.rsplit(".", 1)[-1]
+    new_stem = new_path.rsplit(".", 1)[-1]
+    if old_stem == new_stem:
+        return
+    if not _files_still_mention(node_dir, old_stem, pascal_case(old_stem)):
+        return
+
+    prompt = (
+        f"This node was just renamed from {old_stem!r} to {new_stem!r} "
+        f"(full path: {old_path!r} -> {new_path!r}) by `fatass move`. The "
+        f"mechanical rename already updated the node's own class "
+        f"definition, `__init__.py`'s import, and every same-directory "
+        f"transform's self-import of the class — that part is done, don't "
+        f"redo it. What a plain text substitution can't catch is anything "
+        f"that only reading the code and prose reveals: a local variable "
+        f"named after the old stem ({old_stem!r}), a mention of "
+        f"{old_stem!r} inside a `fatass.free(...)` prompt string, a "
+        f"comment, a docstring. Review every .py file in the current "
+        f"directory (the node's own class file and each transform) for "
+        f"exactly that, and fix whatever you find so it consistently "
+        f"reflects the new name {new_stem!r} — but change nothing "
+        f"unrelated to the rename."
+    )
+    free_topology(
+        cwd=node_dir,
+        prompt=prompt,
+        silent=False,
+        system_prompt=load_topology_edit_system_prompt("move"),
+    )
+
+
 def _rewrite_external_class_imports(
     root: Path, new_path: str, old_class: str, new_class: str
 ) -> None:
@@ -268,9 +340,9 @@ def _rewrite_external_references(old_path: str, new_path: str, root: Path | None
 
 def _notify_parent_of_child_move(old_path: str, new_path: str) -> None:
     """After a node's own topology/home/ directories are relocated,
-    give its *parent's* class a chance to react — e.g. a `NodeList`
+    give its *parent's* class a chance to react — e.g. a `Chain`
     mirrors its schema children's names into every existing `.next`
-    level (see `NodeList.on_child_moved`), content `move_node` itself has
+    level (see `Chain.on_child_moved`), content `move_node` itself has
     no notion of. Only fires for an in-place rename (same parent, leaf
     segment changed) — moving a node to a different parent entirely, or
     moving it without renaming it, needs no such reaction. Best-effort:
@@ -298,8 +370,13 @@ def move_node(old_path: str, new_path: str) -> int:
     `fatass.topology.<old_path>` references elsewhere in the topology tree
     to point at `new_path` — other transforms depend on a node by that
     dotted path (see `Node._topology_path`), and a move must keep them
-    resolvable. Doesn't call free(). Returns the number of files whose
-    references were rewritten."""
+    resolvable. If the node's own leaf segment changed (not just its
+    parent — e.g. "a.old" -> "a.new", not "a.old" -> "b.old"), this also
+    opens a real, interactive `free()` conversation (see
+    `_review_renamed_stem`) once every mechanical rewrite is done, asking
+    the agent to catch anything a text substitution can't — a variable
+    name, a prompt string, a comment still referencing the old name.
+    Returns the number of files whose references were rewritten."""
     if new_path == old_path:
         raise TopologyValidationError(f"{old_path!r} is already at that path")
     if new_path.startswith(old_path + "."):
@@ -343,7 +420,9 @@ def move_node(old_path: str, new_path: str) -> int:
 
     _notify_parent_of_child_move(old_path, new_path)
 
-    return _rewrite_external_references(old_path, new_path)
+    updated = _rewrite_external_references(old_path, new_path)
+    _review_renamed_stem(new_node_dir, old_path, new_path)
+    return updated
 
 
 def copy_node(old_path: str, new_path: str) -> int:
@@ -555,6 +634,164 @@ def refine_transform(
         f"(it declares no dependencies). You've been granted read access "
         f"to this transform's already-declared dependency nodes' own "
         f"topology directories (not their home/ assets) — nothing else."
+    )
+    free_topology(
+        cwd=node_dir,
+        prompt=full_prompt,
+        add_dirs=add_dirs,
+        system_prompt=system_prompt,
+        permission_mode=permission_mode,
+        silent=silent,
+        model=model,
+        tools=tools,
+    )
+
+
+_LOG_EXCERPT_MAX_LINES = 400
+_LOG_EXCERPT_MAX_CHARS = 20_000
+
+_DEBUG_PROMPT_MARKER = "Recent history for this transform from ./log"
+"""Unique text `debug_transform` puts in every prompt it builds (see
+`log_section` below) — `_log_excerpt` skips any ./log line containing it,
+since that line *is* a previous `debug` call's own logged prompt, not
+genuine history about the transform. Without this, each debug call's
+prompt embeds ./log, which then logs that same prompt right back into
+./log — so the next debug call would re-embed the previous one's already-
+embedded copy, compounding every single call (observed in practice:
+27k -> 139k -> 329k -> 810k characters over four calls) until the
+resulting command line is too long for the OS to launch at all."""
+
+
+def _log_excerpt(node_path: str, transform_name: str) -> str | None:
+    """The tail of ./log's lines relevant to this transform — both its own
+    command-dispatch lines (`<current> run <transform>@<node> -> exit ...`)
+    and any free() call it made (cwd=<its home dir>, prompt=..., stdout=...,
+    stderr=...) — read directly here and spliced into the debug prompt,
+    rather than granting the agent the whole repo root as a directory just
+    to read one file. Returns None if the log doesn't exist or nothing in
+    it matches this transform.
+
+    Excludes any line containing `_DEBUG_PROMPT_MARKER` (a previous debug
+    call's own logged prompt — see there) to avoid runaway self-embedding,
+    and hard-caps the final excerpt's total length at
+    `_LOG_EXCERPT_MAX_CHARS` (keeping the tail) as a second, independent
+    backstop against any other way a single ./log line could end up huge."""
+    if not _LOG_PATH.is_file():
+        return None
+    home_dir = str(_assets_dir(node_path))
+    label = f"{node_path}.transforms.{transform_name}"
+    matches = [
+        line
+        for line in _LOG_PATH.read_text(encoding="utf-8", errors="replace").splitlines()
+        if (label in line or home_dir in line) and _DEBUG_PROMPT_MARKER not in line
+    ]
+    if not matches:
+        return None
+    excerpt = "\n".join(matches[-_LOG_EXCERPT_MAX_LINES:])
+    if len(excerpt) > _LOG_EXCERPT_MAX_CHARS:
+        excerpt = excerpt[-_LOG_EXCERPT_MAX_CHARS:]
+    return excerpt
+
+
+_SHELL_HISTORY_MAX_ENTRIES = 100
+
+
+def _shell_history_excerpt() -> str | None:
+    """The tail of `fatass shell`'s own persisted `>>> ` line history
+    (.fatass/shell_history, prompt_toolkit FileHistory format — see
+    commands/shell.py) — unlike _log_excerpt, not scoped to this
+    transform at all (a raw command history has no notion of which
+    fatass node a line related to), so this is unfiltered recent context:
+    whatever was typed at the `>>> ` prompt just before/around the
+    failure, across every past `fatass shell` session, not just the OS
+    terminal's own (bash/PowerShell) history — that history includes
+    plenty that has nothing to do with fatass, where this is exactly the
+    fatass commands that were actually run. Returns None if the file
+    doesn't exist or has no entries yet."""
+    if not _SHELL_HISTORY_PATH.is_file():
+        return None
+    # Local import: prompt_toolkit is otherwise only a `shell` dependency;
+    # importing it at module level here would pull it into every command.
+    from prompt_toolkit.history import FileHistory
+
+    # load_history_strings() yields most-recent-first; take the newest
+    # _SHELL_HISTORY_MAX_ENTRIES, then reverse back to chronological order.
+    entries = []
+    for entry in FileHistory(str(_SHELL_HISTORY_PATH)).load_history_strings():
+        entries.append(entry)
+        if len(entries) >= _SHELL_HISTORY_MAX_ENTRIES:
+            break
+    if not entries:
+        return None
+    return "\n".join(reversed(entries))
+
+
+def debug_transform(
+    node_path: str,
+    transform_name: str,
+    prompt: str,
+    *,
+    system_prompt: str | None = None,
+    permission_mode: str = DEFAULT_PERMISSION_MODE,
+    silent: bool = False,
+    model: str | None = None,
+    tools: str = DEFAULT_ALLOWED_TOOLS,
+) -> None:
+    """Use the Claude CLI to debug a failing transform — same underlying
+    edit as refine_transform (writes into fatass/topology/, so it goes
+    through free_topology(), not free()), but framed around root-causing a
+    failure instead of an open-ended instruction: grants read access to
+    the transform's already-declared dependency nodes (same as
+    refine_transform) plus its own home/ output directory (to inspect
+    whatever it already wrote, including any partial/broken output) —
+    input and output nodes only, nothing else. Also inlines two sources
+    of history directly into the prompt: the relevant tail of ./log (this
+    transform's own past command-dispatch and free() call history — cwd,
+    args, exit code, stdout/stderr) and the tail of the real shell's
+    command history (see _shell_history_excerpt — unfiltered, not scoped
+    to this transform)."""
+    node_dir = _node_dir(node_path)
+    if not (node_dir / f"{transform_name}.py").is_file():
+        raise TopologyValidationError(
+            f"no transform named {transform_name!r} under {node_path!r}"
+        )
+
+    # Local import: topology_ops.bind imports _node_dir from this module,
+    # so importing it back at module level here would be a cycle.
+    from .bind import bound_dep_paths
+
+    dep_paths = bound_dep_paths(node_path, transform_name)
+    home_dir = _assets_dir(node_path)
+    home_dir.mkdir(parents=True, exist_ok=True)
+    add_dirs = [_node_dir(dep_path) for dep_path in dep_paths] + [home_dir]
+
+    log_excerpt = _log_excerpt(node_path, transform_name)
+    log_section = (
+        f"\n\n{_DEBUG_PROMPT_MARKER} (the repo root's fatass invocation "
+        f"log — past command dispatches and free() call arguments/exit "
+        f"codes/stdout/stderr):\n\n{log_excerpt}"
+        if log_excerpt
+        else "\n\nNo matching history was found in ./log for this transform."
+    )
+
+    shell_history = _shell_history_excerpt()
+    shell_section = (
+        f"\n\nRecent shell command history (unfiltered — not specific to "
+        f"this transform, just whatever was run around this time):"
+        f"\n\n{shell_history}"
+        if shell_history
+        else "\n\nNo shell command history was found to read."
+    )
+
+    full_prompt = (
+        f"Debug {transform_name}.py in the current directory. "
+        f"{prompt}{log_section}{shell_section}\n\nYou've been granted read "
+        f"access to this transform's own home/ output directory (where its "
+        f"fatass.free(...) calls actually write, at {home_dir}) and its "
+        f"already-declared dependency nodes' topology directories — "
+        f"inspect whatever it already wrote (including any partial or "
+        f"broken output) alongside the history above to find the root "
+        f"cause, then fix {transform_name}.py."
     )
     free_topology(
         cwd=node_dir,

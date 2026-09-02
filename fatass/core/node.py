@@ -38,7 +38,7 @@ class Node:
         """Extra `--append-system-prompt` guidance for `fatass create`
         when scaffolding a node file that subclasses this class — appended
         after the static conventions/command prompts. None by default;
-        override in a subclass (see NodeList) to teach the agent
+        override in a subclass (see Chain) to teach the agent
         conventions specific to that kind of node."""
         return None
 
@@ -53,7 +53,7 @@ class Node:
         """Called on a node's own class, after `fatass move` renames one of
         its *direct* children in place (same parent, only the leaf segment
         changed) — a chance for a node class with its own extra structure
-        mirroring its children's names (see `NodeList`) to keep that mirror
+        mirroring its children's names (see `Chain`) to keep that mirror
         in sync. No-op by default: an ordinary `Node` has no such mirror,
         so `move_node`'s own generic topology/home/ directory move (already
         done by the time this is called) is the whole story. `move_node`

@@ -181,11 +181,11 @@ node-path expression:
   into whatever follows — `.` stays put, `..` goes to the parent,
   `node1..node2` means "node1's parent's child node2".
 
-### `NodeList`
+### `Chain`
 
-`fatass.NodeList` represents a dynamically-sized, homogeneous sequence
+`fatass.Chain` represents a dynamically-sized, homogeneous sequence
 (e.g. "members of a team") without a topology node per item. A single
-real node (`class Members(fatass.NodeList): pass`) declares the per-item
+real node (`class Members(fatass.Chain): pass`) declares the per-item
 schema as its own children; actual items live in `members`'s `home/`
 directory as a recursive `.next` chain, grown via `Members.extend()` and
 counted via `Members.length()`. `run`/`apply`/`build` accept an indexed

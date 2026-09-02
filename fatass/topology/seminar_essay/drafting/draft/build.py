@@ -56,7 +56,7 @@ This paragraph's prompt and target word count (from structure/{paragraph_file.na
 {paragraph_prompt}
 
 Dependencies you have read access to:
-- `papers` — a NodeList; each item has `metadata` (including the
+- `papers` — a Chain; each item has `metadata` (including the
   presenting student's name and the paper's citation info), `pdf` (the
   paper itself), and `sidenotes` (that student's seminar presentation
   notes on the paper). Use papers only as a sanity check for factual
