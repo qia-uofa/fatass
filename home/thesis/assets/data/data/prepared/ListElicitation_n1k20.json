@@ -1,0 +1,52 @@
+[
+ {
+  "keyword": "killer",
+  "temperature": 0.6369616873214543,
+  "generation_seed": 1097657232
+ },
+ {
+  "keyword": "tobacco",
+  "temperature": 0.04097352393619469,
+  "generation_seed": 579362556
+ },
+ {
+  "keyword": "juice",
+  "temperature": 0.016527635528529094,
+  "generation_seed": 376383645
+ },
+ {
+  "keyword": "hemisphere",
+  "temperature": 0.9127555772777217,
+  "generation_seed": 1746484540
+ },
+ {
+  "keyword": "buses",
+  "temperature": 0.6066357757671799,
+  "generation_seed": 2084654370
+ },
+ {
+  "keyword": "motel",
+  "temperature": 0.5436249914654229,
+  "generation_seed": 1566581935
+ },
+ {
+  "keyword": "locker",
+  "temperature": 0.9350724237877682,
+  "generation_seed": 595598246
+ },
+ {
+  "keyword": "fear",
+  "temperature": 0.002738500170148095,
+  "generation_seed": 1752032166
+ },
+ {
+  "keyword": "camp",
+  "temperature": 0.8574042765875693,
+  "generation_seed": 1190382223
+ },
+ {
+  "keyword": "beauty",
+  "temperature": 0.7296554464299441,
+  "generation_seed": 72124473
+ }
+]

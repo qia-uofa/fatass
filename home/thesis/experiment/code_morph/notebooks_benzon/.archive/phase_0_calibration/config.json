@@ -1,0 +1,21 @@
+{
+    "model": "qwen",
+    "device_map": null,
+    "scale": {
+        "triviaqa": 100,
+        "ontology_trivials": null,
+        "synonyms": null,
+        "list_elicitation": null,
+        "philpapers": null,
+        "ethics_commonsense": null,
+        "ethics_deontology": null,
+        "ethics_justice": null,
+        "ethics_virtue": null,
+        "ethics_utilitarianism": null,
+        "twenty_questions": {
+            "games_per_category": 10,
+            "turns": 10,
+            "universe_size": 100
+        }
+    }
+}

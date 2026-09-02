@@ -1,0 +1,1409 @@
+[
+ {
+  "wordpair": [
+   "sheet",
+   "blanket"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "decide",
+   "choose"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "actor",
+   "actress"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "destroy",
+   "kill"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "labor",
+   "work"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "computer",
+   "machine"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "room",
+   "space"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "column",
+   "article"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "use",
+   "wear"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "chicken",
+   "rooster"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "low",
+   "short"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "contact",
+   "touch"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "trash",
+   "waste"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "complete",
+   "finish"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "protect",
+   "save"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "anger",
+   "enrage"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "bike",
+   "motorcycle"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "growth",
+   "increase"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "slip",
+   "mistake"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "crop",
+   "harvest"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "slip",
+   "stumble"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "pupil",
+   "student"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "begin",
+   "initial"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "arithmetic",
+   "math"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "atmosphere",
+   "mood"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "size",
+   "volume"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "lease",
+   "rent"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "save",
+   "keep"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "home",
+   "house"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "illness",
+   "sickness"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "look",
+   "see"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "sweet",
+   "honey"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "fun",
+   "pleasure"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "fine",
+   "good"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "step",
+   "stairway"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "female",
+   "girl"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "ascend",
+   "rise"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "car",
+   "vehicle"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "cannabis",
+   "weed"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "football",
+   "ball"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "pleasure",
+   "satisfaction"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "love",
+   "lover"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "earth",
+   "world"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "aid",
+   "help"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "like",
+   "love"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "voice",
+   "speak"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "stop",
+   "brake"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "bicycle",
+   "bike"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "same",
+   "equal"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "gentle",
+   "friendly"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "cellar",
+   "basement"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "see",
+   "view"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "carry",
+   "bear"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "part",
+   "element"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "test",
+   "challenge"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "court",
+   "courthouse"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "protect",
+   "cover"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "get",
+   "bring"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "rough",
+   "bumpy"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "pleasure",
+   "happiness"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "harvest",
+   "produce"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "cell_phone",
+   "cell"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "grow",
+   "cultivate"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "boot",
+   "hoof"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "error",
+   "mistake"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "black",
+   "dark"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "hot",
+   "boil"
+  ],
+  "relation": "twin"
+ },
+ {
+  "wordpair": [
+   "perennial",
+   "spearmint"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "tomato",
+   "parsley"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "rocket",
+   "asparagus"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "mare",
+   "fawn"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "jackal",
+   "hyrax"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "rhinoceros",
+   "takin"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "nilgai",
+   "gnu"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "chickpea",
+   "peanut"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "magnolia",
+   "bonsai"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "meerkat",
+   "genet"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "maple",
+   "fig"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "opossum",
+   "guppy"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "beech",
+   "mangrove"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "papaya",
+   "ash"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "safflower",
+   "coreopsis"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "pangolin",
+   "bat"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "sage",
+   "catmint"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "sedge",
+   "aconite"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "fennel",
+   "lobelia"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "goldenrod",
+   "bitterroot"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "mulberry",
+   "pinon"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "tomato",
+   "pineapple"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "walnut",
+   "guava"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "kite",
+   "roadrunner"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "burro",
+   "kiang"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "yarrow",
+   "crop"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "rose",
+   "daphne"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "thyme",
+   "rape"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "pondweed",
+   "lily"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "teak",
+   "apricot"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "woad",
+   "banana"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "phlox",
+   "henbane"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "turnip",
+   "leek"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "tick",
+   "trilobite"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "chick",
+   "seal"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "onager",
+   "springbok"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "sugarcane",
+   "horseradish"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "rosemary",
+   "dill"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "eland",
+   "gnu"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "breadfruit",
+   "rattan"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "papaya",
+   "magnolia"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "lemongrass",
+   "rush"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "ctenophore",
+   "spider"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "lion",
+   "raccoon"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "turnip",
+   "refinery"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "pokeweed",
+   "arnica"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "apple",
+   "cashew"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "oleander",
+   "stonecrop"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "olive",
+   "hazelnut"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "hackberry",
+   "pecan"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "angelica",
+   "borage"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "mammoth",
+   "otter"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "teff",
+   "ramp"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "jackrabbit",
+   "tiger"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "rat",
+   "hamster"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "glider",
+   "balloon"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "otter",
+   "rhea"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "flax",
+   "ginseng"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "teff",
+   "ling"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "hazelnut",
+   "hazel"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "kenaf",
+   "saltwort"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "kookaburra",
+   "potoroo"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "fennel",
+   "grain"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "cassava",
+   "indigo"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "trillium",
+   "camass"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "peach",
+   "quince"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "tangerine",
+   "ginkgo"
+  ],
+  "relation": "sibling"
+ },
+ {
+  "wordpair": [
+   "jacket",
+   "fur"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "sword",
+   "cross"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "ambulance",
+   "belt"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "mackerel",
+   "vertebrate"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "moth",
+   "body"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "dresser",
+   "old"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "cod",
+   "swim"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "ferry",
+   "long"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "tuna",
+   "good"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "villa",
+   "lodging"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "library",
+   "hold"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "oak",
+   "crown"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "rabbit",
+   "run"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "cello",
+   "fingerboard"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "cello",
+   "melodious"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "train",
+   "go"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "goose",
+   "white"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "eagle",
+   "die"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "bomber",
+   "small"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "desk",
+   "steel"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "wardrobe",
+   "object"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "squirrel",
+   "fur"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "battleship",
+   "fore"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "missile",
+   "expensive"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "donkey",
+   "bit"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "jet",
+   "brake"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "motorcycle",
+   "rider"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "falcon",
+   "wing"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "bus",
+   "work"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "dagger",
+   "long"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "villa",
+   "outside"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "cannon",
+   "ammunition"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "salmon",
+   "leap"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "pine",
+   "stand"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "fridge",
+   "electrical"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "box",
+   "wood"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "television",
+   "electrical"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "ferry",
+   "hull"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "cow",
+   "walk"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "cloak",
+   "material"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "gun",
+   "kill"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "flute",
+   "play"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "cello",
+   "old"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "scooter",
+   "fast"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "hospital",
+   "care"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "couch",
+   "artefact"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "cloak",
+   "sell"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "scooter",
+   "mirror"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "coat",
+   "make"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "swan",
+   "bird"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "rat",
+   "eye"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "bed",
+   "uncomfortable"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "hotel",
+   "door"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "hammer",
+   "metal"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "phone",
+   "artefact"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "revolver",
+   "die"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "pub",
+   "stone"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "truck",
+   "refuel"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "rat",
+   "young"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "woodpecker",
+   "inhabit"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "horse",
+   "intelligent"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "spinach",
+   "cook"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "cranberry",
+   "unripe"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "truck",
+   "frame"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "cherry",
+   "sweet"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "potato",
+   "food"
+  ],
+  "relation": "relative"
+ },
+ {
+  "wordpair": [
+   "dishwasher",
+   "door"
+  ],
+  "relation": "relative"
+ }
+]
