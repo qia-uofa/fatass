@@ -1,9 +1,0 @@
-{
-    "model": "qwen",
-    "device_map": null,
-    "attn_implementation": null,
-    "scale": {
-        "triviaqa": 300,
-        "synonyms": null
-    }
-}

@@ -79,11 +79,23 @@ def expand(raw: str, current: str | None = None) -> str:
       current node's parent), "node1..node2" is "node1's parent's child
       node2" (node1 is pushed, then the ".." pops it back off before
       "node2" is pushed), and so on for more dots.
+    - A segment starting with "[" (a Chain index, e.g. "[0]" or "[*]")
+      attaches to whatever the walk just landed on instead of becoming
+      its own dotted segment — "..[0]" indexes the current node's parent,
+      ".[0]" indexes the current node itself. Without this, "." + "[0]"
+      would naively join as "<current>.[0]" (a literal dot before the
+      bracket, which no node path ever has — see `_split_index` in
+      core/transform.py, which expects the index glued directly onto the
+      preceding path segment, e.g. "members[0]", not "members.[0]").
+      Ordinary indexing already glued onto a name in the same run (e.g.
+      "members[0]" typed out in full) was never affected by this — only
+      a bracket reached via dot-navigation shorthand needed this fix.
 
     Returns the resolved absolute node path, or ROOT if the walk lands
     back at the topology root (there's no node there). Raises
-    TopologyValidationError if it tries to go above the root.
-    """
+    TopologyValidationError if it tries to go above the root, or if a
+    leading "[" segment has no node to attach to (the walk is at the
+    root)."""
     if current is None:
         current = read_current_node()
 
@@ -98,7 +110,16 @@ def expand(raw: str, current: str | None = None) -> str:
 
     for i, part in enumerate(parts):
         if i % 2 == 0:
-            if part and not (i == 0 and part == ROOT):
+            if not part or (i == 0 and part == ROOT):
+                continue
+            if part.startswith("["):
+                if not stack:
+                    raise TopologyValidationError(
+                        f"{raw!r}: {part!r} has no node to index — the "
+                        f"walk is at the topology root"
+                    )
+                stack[-1] += part
+            else:
                 stack.append(part)
         else:
             hops = len(part) - 1

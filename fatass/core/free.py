@@ -18,6 +18,27 @@ _current_node: contextvars.ContextVar[type[Node]] = contextvars.ContextVar(
     "fatass_current_node"
 )
 
+
+def current_node() -> type[Node]:
+    """The node class actually running the currently-executing transform —
+    for an indexed `Chain` item, this is the dynamically-derived,
+    depth-scoped subclass (see `_ChainItem.__getattr__`), not the literal
+    (dummy-head) schema class a plain `from fatass.topology.<path> import
+    <Class>` at module level would give you. A transform on a Chain's
+    schema child MUST use this (and call `.write(...)` on what it
+    returns) instead of the module-level import when it needs to write
+    its own content — the module-level class always resolves to the
+    unindexed dummy head, silently writing every item's output to the
+    same shared location. Raises if called outside of a running
+    transform (mirrors `free()`'s own check)."""
+    try:
+        return _current_node.get()
+    except LookupError as exc:
+        raise FreeError(
+            "current_node() was called outside of a running transform "
+            "(no owning node in context)"
+        ) from exc
+
 _RESULT_SENTINEL = ".fatass-result.json"
 
 DEFAULT_ALLOWED_TOOLS = "Read,Write,Edit,Glob,Grep,Bash,WebSearch,WebFetch"
@@ -207,7 +228,12 @@ def _invoke_claude(
                 command, cwd=cwd, capture_output=True, text=True, env=_detached_env()
             )
         except FileNotFoundError as exc:
-            raise FreeError("the `claude` CLI was not found on PATH") from exc
+            raise FreeError(
+                f"the `claude` CLI was not found at {command[0]!r} "
+                f"({exc}) — set FATASS_CLAUDE_BIN in .fatass/.env to the "
+                f"full path to the claude executable if PATH alone can't "
+                f"find it here"
+            ) from exc
 
         logger.info("free(): exit=%s", result.returncode)
         logger.info("free(): stdout=%r", result.stdout)
@@ -230,7 +256,12 @@ def _invoke_claude(
     try:
         result = _run_in_new_window(command, cwd=cwd, env=_detached_env())
     except FileNotFoundError as exc:
-        raise FreeError("the `claude` CLI was not found on PATH") from exc
+        raise FreeError(
+            f"the `claude` CLI was not found at {command[0]!r} "
+            f"({exc}) — set FATASS_CLAUDE_BIN in .fatass/.env to the "
+            f"full path to the claude executable if PATH alone can't "
+            f"find it here"
+        ) from exc
 
     logger.info("free(): exit=%s (interactive session closed)", result.returncode)
     logger.info("free(): token usage unavailable — interactive sessions aren't captured")

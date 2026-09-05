@@ -1,7 +1,0 @@
-name,department,program,research_area,faculty_page,email
-Lyle H. Ungar,Computer and Information Science,CIS,"NLP, text mining, machine learning",https://www.cis.upenn.edu/~ungar/,
-Eric Wong,Computer and Information Science,CIS,"Robust machine learning, adversarial robustness",https://riceric22.github.io/,
-Jacob Gardner,Computer and Information Science,CIS,"Probabilistic machine learning, Bayesian methods",https://jacobrgardner.github.io/,
-Rajeev Alur,Computer and Information Science,CIS,"Formal methods, AI verification",,
-Sameer Singh,Computer and Information Science,CIS,"NLP, machine learning interpretability",,
-Osbert Bastani,Computer and Information Science,CIS,"Safe machine learning, formal verification",,

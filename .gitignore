@@ -6,3 +6,12 @@ __pycache__/
 fatass_blueprint/
 tests/
 /log
+
+# Node content is per-project/personal data, not framework code — track
+# only the `examples` node (topology/ and its home/ mirror), ignore every
+# other node under both.
+/fatass/topology/*
+!/fatass/topology/__init__.py
+!/fatass/topology/examples/
+/home/*
+!/home/examples/

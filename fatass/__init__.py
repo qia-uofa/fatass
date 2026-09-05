@@ -1,5 +1,5 @@
 from .core.adhoc import free_at
-from .core.free import free, free_topology
+from .core.free import current_node, free, free_topology
 from .node.node import Node
 from .node.chain import Chain
 from .node.single import Single, SingleTxt, SinglePdf, SingleMd, SingleJson, SingleCsv
@@ -40,6 +40,7 @@ __all__ = [
     "Repo",
     "free",
     "free_topology",
+    "current_node",
     "run_transform",
     "apply_transform",
     "discover",

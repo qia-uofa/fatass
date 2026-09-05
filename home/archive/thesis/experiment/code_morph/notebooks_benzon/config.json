@@ -1,8 +1,0 @@
-{
-    "synonyms": {"n": 67},
-    "list_elicitation": {"n": 1, "T": 20, "k": 20},
-    "twenty_questions": {"n_games": 20, "k": 128, "T": 2},
-    "triviaqa": {"limit": 200},
-    "calibration": {"n_trials": 200},
-    "steering": {"n_extraction": 30, "n_test_candidates": 60, "n_test": 30, "top_n": 10, "alpha": 5.0, "layers": [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 27]}
-}

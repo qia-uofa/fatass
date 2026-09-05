@@ -412,10 +412,24 @@ class _ChainItem:
         schema_cls = _import_node(full_path)
 
         target_dir = self._list_cls._depth_dir(self._index) / name
+        is_new = not target_dir.is_dir()
         target_dir.mkdir(parents=True, exist_ok=True)
 
-        return type(
+        indexed_cls = type(
             f"{schema_cls.__name__}@{self._index}",
             (schema_cls,),
             {"_assets_dir": classmethod(lambda cls, _dir=target_dir: _dir)},
         )
+        if is_new:
+            # First-ever access of this item's schema child: mirror what
+            # `fatass create` does for a freshly-scaffolded top-level
+            # node (see CreateCommand.after_reload) — a Single/Array/
+            # Tuple subclass needs its own on_created() to materialize
+            # its managed file(s) blank; without this, growing a Chain
+            # via the bare `extend()` primitive (no dummy-head-content
+            # copy, unlike `insert()`) would silently never create them
+            # at all unless a transform happens to write every one of
+            # them explicitly. No-op on a plain Node (base on_created()
+            # already is).
+            indexed_cls.on_created()
+        return indexed_cls

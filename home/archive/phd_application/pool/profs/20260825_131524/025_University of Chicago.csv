@@ -1,9 +1,0 @@
-name,department,program,research_area,faculty_page,email
-Rebecca Willett,Statistics and Computer Science,Machine Learning,"Signal processing, machine learning, large-scale data science",https://willett.psd.uchicago.edu/,
-Nathan Srebro,TTIC (Toyota Technological Institute at Chicago),Machine Learning,"Machine learning, optimization theory",,
-Zhiyuan Li,TTIC (Toyota Technological Institute at Chicago),Machine Learning,"Deep learning theory, LLMs",,
-Greg Shakhnarovich,TTIC (Toyota Technological Institute at Chicago),Machine Learning,"Computer vision, image understanding, vision & language",,
-Karen Livescu,TTIC (Toyota Technological Institute at Chicago),Machine Learning,"Speech and language processing, NLP",,
-Rana Hanocka,Computer Science,Machine Learning,"Computer graphics, computer vision, machine learning",,
-Michael Maire,Computer Science,Machine Learning,"Computer vision, deep learning",,
-Avrim Blum,TTIC (Toyota Technological Institute at Chicago),Machine Learning,"Machine learning theory, game theory",,

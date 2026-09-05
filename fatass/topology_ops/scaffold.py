@@ -966,24 +966,50 @@ def debug_transform(
         else "\n\nNo shell console output history was found to read."
     )
 
-    full_prompt = (
-        f"Debug {transform_name}.py in the current directory. "
-        f"{prompt}{log_section}{shell_section}{shell_output_section}\n\n"
-        f"You've been granted read access to this transform's own home/ "
-        f"output directory (where its fatass.free(...) calls actually "
-        f"write, at {home_dir}) and its already-declared dependency "
-        f"nodes' topology directories — inspect whatever it already wrote "
-        f"(including any partial or broken output) alongside the history "
-        f"above to find the root cause, then fix {transform_name}.py."
+    # This history can run to tens of KB (a real `[WinError 206] The
+    # filename or extension is too long` was observed in practice — the
+    # combined CLI command line, prompt included, tripped Windows'
+    # CreateProcess length limit, and Python surfaces that specific
+    # failure as a plain FileNotFoundError, misleadingly looking like
+    # `claude` itself couldn't be found). Write it to a scratch file in
+    # the already-granted home/ output directory instead of inlining it
+    # as a raw CLI argument, so the prompt itself stays short regardless
+    # of how much history there is to show.
+    debug_context_path = home_dir / ".fatass-debug-context.md"
+    debug_context_path.write_text(
+        f"{log_section.strip()}\n\n{shell_section.strip()}\n\n"
+        f"{shell_output_section.strip()}\n",
+        encoding="utf-8",
     )
-    result = free_topology(
-        cwd=node_dir,
-        prompt=full_prompt,
-        add_dirs=add_dirs,
-        system_prompt=system_prompt,
-        permission_mode=permission_mode,
-        silent=silent,
-        model=model,
-        tools=tools,
-    )
-    return result_summary(result) if silent else None
+    try:
+        full_prompt = (
+            f"Debug {transform_name}.py in the current directory. "
+            f"{prompt}\n\n"
+            f"Recent history relevant to this failure has been written to "
+            f"{debug_context_path.name}, in the granted home/ output "
+            f"directory ({home_dir}) — read it for: the tail of ./log "
+            f"(past command dispatches and free() call arguments/exit "
+            f"codes/stdout/stderr), the tail of the real shell's "
+            f"unfiltered command history, and that same shell's "
+            f"unfiltered console output.\n\n"
+            f"You've been granted read access to this transform's own "
+            f"home/ output directory (where its fatass.free(...) calls "
+            f"actually write, at {home_dir}) and its already-declared "
+            f"dependency nodes' topology directories — inspect whatever "
+            f"it already wrote (including any partial or broken output) "
+            f"alongside that history file to find the root cause, then "
+            f"fix {transform_name}.py."
+        )
+        result = free_topology(
+            cwd=node_dir,
+            prompt=full_prompt,
+            add_dirs=add_dirs,
+            system_prompt=system_prompt,
+            permission_mode=permission_mode,
+            silent=silent,
+            model=model,
+            tools=tools,
+        )
+        return result_summary(result) if silent else None
+    finally:
+        debug_context_path.unlink(missing_ok=True)
