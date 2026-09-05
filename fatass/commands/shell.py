@@ -1,4 +1,6 @@
 import argparse
+import contextlib
+import io
 import shlex
 import sys
 
@@ -6,7 +8,7 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
 from .._internal.import_tree import reload_all
-from .._internal.paths import SHELL_HISTORY_PATH
+from .._internal.paths import SHELL_HISTORY_PATH, SHELL_OUTPUT_PATH
 from ..errors import TopologyValidationError
 from ..resolve.cwd import (
     ROOT,
@@ -20,6 +22,35 @@ from ..resolve.cwd import (
 from ..topology_ops.scaffold import _node_dir
 from ._shell_completion import ShellCompleter
 from .base import Command
+
+
+class _Tee(io.TextIOBase):
+    """Writes to every stream in `streams` — used to mirror the shell's
+    own console output into an in-memory buffer (for persisting to
+    SHELL_OUTPUT_PATH) while still printing live to the real console."""
+
+    def __init__(self, *streams):
+        self._streams = streams
+
+    def write(self, s: str) -> int:
+        for stream in self._streams:
+            stream.write(s)
+        return len(s)
+
+    def flush(self) -> None:
+        for stream in self._streams:
+            stream.flush()
+
+
+def _append_output_history(line: str, output: str) -> None:
+    """Append one command's `>>> ` line and whatever it printed to
+    SHELL_OUTPUT_PATH — read back by `fatass debug` (see
+    topology_ops.scaffold._shell_output_excerpt) alongside the plain
+    command-line history, so debugging context includes actual command
+    output (errors, results), not just what was typed."""
+    SHELL_OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with SHELL_OUTPUT_PATH.open("a", encoding="utf-8") as fh:
+        fh.write(f">>> {line}\n{output}\n")
 
 
 def _prompt() -> str:
@@ -143,14 +174,20 @@ class ShellCommand(Command):
                         # `history` on its own; bare input() doesn't, so
                         # the fallback path has to do it itself.
                         history.append_string(line)
+                    buffer = io.StringIO()
                     try:
-                        main(shlex.split(line))
+                        with contextlib.redirect_stdout(
+                            _Tee(sys.stdout, buffer)
+                        ), contextlib.redirect_stderr(_Tee(sys.stderr, buffer)):
+                            main(shlex.split(line))
                     except SystemExit:
                         pass  # argparse already printed its own error/help
                     except KeyboardInterrupt:
                         print()
                     except Exception as exc:
                         print(f"error: {exc}", file=sys.stderr)
+                        buffer.write(f"error: {exc}\n")
+                    _append_output_history(line, buffer.getvalue())
 
                 # Reload after every iteration — even a blank line — not
                 # just a mutating command (cli.main()'s own reload is

@@ -8,6 +8,7 @@ from .create import CreateCommand
 from .debug import DebugCommand
 from .free import FreeCommand
 from .graph import GraphCommand
+from .init import InitCommand
 from .insert import InsertCommand
 from .length import LenCommand
 from .ls import LsCommand
@@ -39,6 +40,7 @@ ALL_COMMANDS = [
     ArchiveCommand(),
     RetrieveCommand(),
     BuildCommand(),
+    InitCommand(),
     ShCommand(),
     CdCommand(),
     PwdCommand(),

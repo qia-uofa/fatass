@@ -25,11 +25,12 @@ def load_topology_edit_system_prompt(name: str, extra: str | None = None) -> str
     every free_topology() caller needs, now that it has no read access to
     the rest of the topology tree to learn those conventions by example)
     followed by the command-specific prompt named `name`, followed by
-    `extra` if given — used by `create`/`modify`, the two CLI commands
-    that go through free_topology(). `extra` is where a target node's own
-    class contributes guidance specific to its kind (e.g.
-    `Chain.create_sys_prompt()`/`modify_sys_prompt()`), so a plain
-    `Node` edit doesn't pay for guidance it doesn't need."""
+    `extra` if given — used by `modify`, the only CLI command that still
+    goes through free_topology() with a class-specific hook (`create` is
+    now fully deterministic template scaffolding, no agent call). `extra`
+    is where a target node's own class contributes guidance specific to
+    its kind (e.g. `Chain.modify_sys_prompt()`), so a plain `Node` edit
+    doesn't pay for guidance it doesn't need."""
     parts = [
         text
         for text in (load_system_prompt("conventions"), load_system_prompt(name), extra)

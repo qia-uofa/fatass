@@ -14,7 +14,7 @@ class FreeCommand(Command):
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             "target",
-            help="node.path | transform@node.path | node.path/relative/file/path",
+            help="node.path | transform@node.path | node.path(relative/file/path)",
         )
         parser.add_argument(
             "prompt",

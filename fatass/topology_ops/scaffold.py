@@ -3,20 +3,27 @@ import re
 import shutil
 from pathlib import Path
 
+from .._internal.fs import force_rmtree
 from .._internal.naming import pascal_case
 from .._internal.paths import HOME_ROOT as _HOME_ROOT
 from .._internal.paths import LOG_PATH as _LOG_PATH
 from .._internal.paths import SHELL_HISTORY_PATH as _SHELL_HISTORY_PATH
+from .._internal.paths import SHELL_OUTPUT_PATH as _SHELL_OUTPUT_PATH
 from .._internal.paths import TOPOLOGY_ROOT as _TOPOLOGY_ROOT
 from .._internal.prompts import load_topology_edit_system_prompt
-from ..core.free import DEFAULT_ALLOWED_TOOLS, DEFAULT_PERMISSION_MODE, free_topology
+from ..core.free import (
+    DEFAULT_ALLOWED_TOOLS,
+    DEFAULT_PERMISSION_MODE,
+    free_topology,
+    result_summary,
+)
 from ..errors import TopologyValidationError
 
 _NODE_PY = """import fatass
 
 
 class {class_name}(fatass.{base_class}):
-    pass
+{body}
 """
 
 _NODE_INIT_PY = """from .{file_stem} import {class_name}
@@ -63,13 +70,40 @@ def _reference_pattern(node_path: str) -> re.Pattern:
     return re.compile(r"(?<!\w)fatass\.topology\." + re.escape(node_path) + r"(?!\w)")
 
 
-def create_node(node_path: str, base_class: str = "Node") -> bool:
+def _class_body(class_kwargs: dict[str, tuple] | None) -> str:
+    """Render `class_kwargs` (Array's `dim=...`, and any subclass's
+    constructor-style `fields=...` — see `_targets._parse_subclass_args`)
+    as class-body assignment lines — e.g. `{"dim": (2, 2, 2)}` ->
+    `"    DIM = (2, 2, 2)"`. Empty/None renders as a bare `pass` body."""
+    if not class_kwargs:
+        return "    pass"
+    lines = []
+    for key, value in class_kwargs.items():
+        if key == "dim":
+            lines.append(f"    DIM = {tuple(value)!r}")
+        elif key == "fields":
+            lines.append(f"    FIELDS = {tuple(value)!r}")
+        else:
+            raise TopologyValidationError(f"unknown create-target class argument {key!r}")
+    return "\n".join(lines)
+
+
+def create_node(
+    node_path: str,
+    base_class: str = "Node",
+    class_kwargs: dict[str, tuple] | None = None,
+) -> bool:
     """Scaffold a node's topology package (<name>.py + __init__.py) and its
     home/ assets directory. `base_class` names the `fatass.<base_class>`
     class the new node subclasses — "Node" (the default) for an
-    ordinary node, or e.g. "Chain" for a dynamically-sized list node
-    (see Chain in CLAUDE.md). Doesn't call free(). Returns True if it
-    created something, False if the node already existed."""
+    ordinary node, "Chain" for a dynamically-sized list node, or e.g.
+    "ArrayTxt" for a fixed-shape grid of files (see Chain/Single/Array in
+    CLAUDE.md). `class_kwargs` (`{"dim": (2, 2, 2)}` for an
+    Array subclass) is baked in as class-body assignments (`DIM = (2, 2,
+    2)`) instead of a bare `pass`, so the class's shape is known
+    immediately — needed before `on_created()` can create the right files.
+    Doesn't call free(). Returns True if it created something, False if
+    the node already existed."""
     node_dir = _node_dir(node_path)
     if node_dir.is_dir():
         return False
@@ -84,18 +118,33 @@ def create_node(node_path: str, base_class: str = "Node") -> bool:
     file_stem = node_path.rsplit(".", 1)[-1]
     class_name = pascal_case(file_stem)
 
-    node_dir.mkdir()
-    (node_dir / f"{file_stem}.py").write_text(
-        _NODE_PY.format(class_name=class_name, base_class=base_class), encoding="utf-8"
-    )
-    (node_dir / "__init__.py").write_text(
-        _NODE_INIT_PY.format(file_stem=file_stem, class_name=class_name), encoding="utf-8"
-    )
-
     assets_dir = _HOME_ROOT / node_path.replace(".", "/")
-    assets_dir.mkdir(parents=True, exist_ok=True)
-    if not any(assets_dir.iterdir()):
-        (assets_dir / ".gitkeep").write_text("", encoding="utf-8")
+    assets_dir_existed = assets_dir.is_dir()
+    try:
+        node_dir.mkdir()
+        (node_dir / f"{file_stem}.py").write_text(
+            _NODE_PY.format(
+                class_name=class_name, base_class=base_class, body=_class_body(class_kwargs)
+            ),
+            encoding="utf-8",
+        )
+        (node_dir / "__init__.py").write_text(
+            _NODE_INIT_PY.format(file_stem=file_stem, class_name=class_name), encoding="utf-8"
+        )
+
+        assets_dir.mkdir(parents=True, exist_ok=True)
+        if not any(assets_dir.iterdir()):
+            (assets_dir / ".gitkeep").write_text("", encoding="utf-8")
+    except BaseException:
+        # Roll back so a failure never leaves a half-scaffolded node dir
+        # (e.g. missing __init__.py) sitting on disk — that's exactly the
+        # kind of stray directory that later confuses `_is_node_dir` and
+        # collides with a future `create` at the same path.
+        if node_dir.is_dir():
+            force_rmtree(node_dir, ignore_errors=True)
+        if not assets_dir_existed and assets_dir.is_dir():
+            force_rmtree(assets_dir, ignore_errors=True)
+        raise
 
     return True
 
@@ -273,8 +322,24 @@ def _review_renamed_stem(node_dir: Path, old_path: str, new_path: str) -> None:
     )
 
 
+def _restore_backups(backups: list[tuple[Path, str]]) -> None:
+    """Write each file back to the text it had before a rewrite touched
+    it — used to undo a partially-completed `_rewrite_references`/
+    `_rewrite_external_class_imports` pass when a later step in the same
+    move/copy fails."""
+    for file, original_text in backups:
+        try:
+            file.write_text(original_text, encoding="utf-8")
+        except OSError:
+            pass
+
+
 def _rewrite_external_class_imports(
-    root: Path, new_path: str, old_class: str, new_class: str
+    root: Path,
+    new_path: str,
+    old_class: str,
+    new_class: str,
+    backups: list[tuple[Path, str]] | None = None,
 ) -> None:
     """`_rewrite_references` retargets `fatass.topology.<old_path>` ->
     `fatass.topology.<new_path>` in every dependent file, but if the move/
@@ -317,15 +382,25 @@ def _rewrite_external_class_imports(
             + f"from {module} import {new_class} as {local}"
             + source[abs_end:]
         )
+        if backups is not None:
+            backups.append((file, source))
         file.write_text(new_source, encoding="utf-8")
 
 
-def _rewrite_external_references(old_path: str, new_path: str, root: Path | None = None) -> int:
+def _rewrite_external_references(
+    old_path: str,
+    new_path: str,
+    root: Path | None = None,
+    backups: list[tuple[Path, str]] | None = None,
+) -> int:
     """Combines `_rewrite_references` (module path) with
     `_rewrite_external_class_imports` (imported class name, only if the
     leaf segment/class actually changed) — the two fixes a move/copy of a
-    renamed node needs everywhere outside the node's own directory."""
-    updated = _rewrite_references(old_path, new_path, root=root)
+    renamed node needs everywhere outside the node's own directory.
+    `backups`, when given, collects (file, original_text) for every file
+    either pass actually rewrites, so a caller (`move_node`) can restore
+    them verbatim if a later step in the same operation fails."""
+    updated = _rewrite_references(old_path, new_path, root=root, backups=backups)
     old_stem = old_path.rsplit(".", 1)[-1]
     new_stem = new_path.rsplit(".", 1)[-1]
     if old_stem != new_stem:
@@ -334,6 +409,7 @@ def _rewrite_external_references(old_path: str, new_path: str, root: Path | None
             new_path,
             pascal_case(old_stem),
             pascal_case(new_stem),
+            backups=backups,
         )
     return updated
 
@@ -412,15 +488,50 @@ def move_node(old_path: str, new_path: str) -> int:
             f"— create it first"
         )
 
-    shutil.move(str(old_node_dir), str(new_node_dir))
-    _rename_own_file(new_node_dir, old_path, new_path)
-
+    # Build the move at the new location as a *copy* first, and only
+    # delete the original once every mechanical step below has actually
+    # succeeded — so a failure partway through (a rename that only
+    # touches half the files, a rewrite that dies on one bad file) always
+    # leaves the original untouched at old_path rather than a half-moved
+    # node stuck between two locations. Anything this section creates at
+    # new_path, and any external file it rewrites, is undone on failure.
+    backups: list[tuple[Path, str]] = []
     new_assets_dir.parent.mkdir(parents=True, exist_ok=True)
-    shutil.move(str(old_assets_dir), str(new_assets_dir))
+    try:
+        shutil.copytree(str(old_node_dir), str(new_node_dir))
+        _rename_own_file(new_node_dir, old_path, new_path)
+        shutil.copytree(str(old_assets_dir), str(new_assets_dir))
+        updated = _rewrite_external_references(old_path, new_path, backups=backups)
+    except BaseException:
+        _restore_backups(backups)
+        if new_node_dir.is_dir():
+            force_rmtree(new_node_dir, ignore_errors=True)
+        if new_assets_dir.is_dir():
+            force_rmtree(new_assets_dir, ignore_errors=True)
+        raise
 
-    _notify_parent_of_child_move(old_path, new_path)
+    # From here on, the new location is complete and correct — every
+    # external reference already points at it. Removing the original is
+    # cleanup, not a step the move's correctness depends on, so a failure
+    # here is reported rather than rolled back (undoing it would mean
+    # deleting the now-referenced new copy, which is worse).
+    try:
+        force_rmtree(old_node_dir)
+        force_rmtree(old_assets_dir)
+    except OSError as exc:
+        raise TopologyValidationError(
+            f"moved {old_path!r} to {new_path!r} successfully, but couldn't "
+            f"remove the original at {old_node_dir} / {old_assets_dir}: "
+            f"{exc} — remove it manually"
+        ) from exc
 
-    updated = _rewrite_external_references(old_path, new_path)
+    # Best-effort from here: a parent-notification hook or the follow-up
+    # agent review failing doesn't make the move itself wrong or partial —
+    # the topology is already fully consistent at this point.
+    try:
+        _notify_parent_of_child_move(old_path, new_path)
+    except Exception:
+        pass
     _review_renamed_stem(new_node_dir, old_path, new_path)
     return updated
 
@@ -473,16 +584,31 @@ def copy_node(old_path: str, new_path: str) -> int:
             f"— create it first"
         )
 
-    shutil.copytree(str(old_node_dir), str(new_node_dir))
-    _rename_own_file(new_node_dir, old_path, new_path)
-
     new_assets_dir.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(str(old_assets_dir), str(new_assets_dir))
+    try:
+        shutil.copytree(str(old_node_dir), str(new_node_dir))
+        _rename_own_file(new_node_dir, old_path, new_path)
+        shutil.copytree(str(old_assets_dir), str(new_assets_dir))
+        return _rewrite_external_references(old_path, new_path, root=new_node_dir)
+    except BaseException:
+        # Every file this touches lives under new_node_dir/new_assets_dir
+        # (root=new_node_dir above keeps the reference rewrite scoped to
+        # the copy, per this function's own docstring), so undoing a
+        # failed copy is just deleting what got created — the original at
+        # old_path was never written to.
+        if new_node_dir.is_dir():
+            force_rmtree(new_node_dir, ignore_errors=True)
+        if new_assets_dir.is_dir():
+            force_rmtree(new_assets_dir, ignore_errors=True)
+        raise
 
-    return _rewrite_external_references(old_path, new_path, root=new_node_dir)
 
-
-def _rewrite_references(old_path: str, new_path: str, root: Path | None = None) -> int:
+def _rewrite_references(
+    old_path: str,
+    new_path: str,
+    root: Path | None = None,
+    backups: list[tuple[Path, str]] | None = None,
+) -> int:
     """Rewrite every `fatass.topology.<old_path>` reference (import
     statements, and the `<old_path>.transforms.<name>` dotted addressing
     used elsewhere) under `root` (the whole topology tree by default) to
@@ -491,7 +617,9 @@ def _rewrite_references(old_path: str, new_path: str, root: Path | None = None) 
     "new.a.b.c"). `copy_node` passes the copy's own directory as `root`,
     so only references between the copy's own subnodes are rewritten —
     everything outside that directory, including the original subtree, is
-    left untouched."""
+    left untouched. `backups`, when given, collects (file, original_text)
+    for every file actually rewritten, so a caller can restore them
+    verbatim if a later step fails."""
     root = root if root is not None else _TOPOLOGY_ROOT
     pattern = _reference_pattern(old_path)
     replacement = f"fatass.topology.{new_path}"
@@ -501,6 +629,8 @@ def _rewrite_references(old_path: str, new_path: str, root: Path | None = None) 
         text = file.read_text(encoding="utf-8")
         new_text = pattern.sub(replacement, text)
         if new_text != text:
+            if backups is not None:
+                backups.append((file, text))
             file.write_text(new_text, encoding="utf-8")
             updated += 1
     return updated
@@ -538,11 +668,28 @@ def remove_node(node_path: str) -> None:
             f"{', '.join(sorted(dependents))}"
         )
 
-    shutil.rmtree(node_dir)
-
+    # Rename both dirs aside before actually deleting anything — each
+    # rename is a single filesystem op that either fully succeeds or
+    # doesn't happen at all, so if the *second* rename (or either
+    # deletion) fails, we can move whatever already moved back to where
+    # it came from instead of leaving topology/ and home/ diverged (one
+    # removed, the other not).
     assets_dir = _assets_dir(node_path)
-    if assets_dir.is_dir():
-        shutil.rmtree(assets_dir)
+    node_backup = node_dir.with_name(node_dir.name + ".fatass-remove-tmp")
+    assets_backup = assets_dir.with_name(assets_dir.name + ".fatass-remove-tmp")
+    try:
+        node_dir.rename(node_backup)
+        if assets_dir.is_dir():
+            assets_dir.rename(assets_backup)
+        force_rmtree(node_backup)
+        if assets_backup.is_dir():
+            force_rmtree(assets_backup)
+    except BaseException:
+        if node_backup.is_dir() and not node_dir.exists():
+            node_backup.rename(node_dir)
+        if assets_backup.is_dir() and not assets_dir.exists():
+            assets_backup.rename(assets_dir)
+        raise
 
 
 def remove_transform(node_path: str, transform_name: str) -> None:
@@ -726,6 +873,27 @@ def _shell_history_excerpt() -> str | None:
     return "\n".join(reversed(entries))
 
 
+_SHELL_OUTPUT_MAX_CHARS = 20_000
+
+
+def _shell_output_excerpt() -> str | None:
+    """The tail of `fatass shell`'s own persisted console-output
+    transcript (.fatass/shell_output, plain text — see commands/shell.py's
+    `_append_output_history`) — same unfiltered, not-scoped-to-this-
+    transform convention as _shell_history_excerpt, but capturing what
+    each `>>> ` command actually *printed* (errors, results) rather than
+    just what was typed. Returns None if the file doesn't exist or is
+    empty."""
+    if not _SHELL_OUTPUT_PATH.is_file():
+        return None
+    content = _SHELL_OUTPUT_PATH.read_text(encoding="utf-8", errors="replace")
+    if not content.strip():
+        return None
+    if len(content) > _SHELL_OUTPUT_MAX_CHARS:
+        content = content[-_SHELL_OUTPUT_MAX_CHARS:]
+    return content
+
+
 def debug_transform(
     node_path: str,
     transform_name: str,
@@ -736,7 +904,7 @@ def debug_transform(
     silent: bool = False,
     model: str | None = None,
     tools: str = DEFAULT_ALLOWED_TOOLS,
-) -> None:
+) -> str | None:
     """Use the Claude CLI to debug a failing transform — same underlying
     edit as refine_transform (writes into fatass/topology/, so it goes
     through free_topology(), not free()), but framed around root-causing a
@@ -744,12 +912,18 @@ def debug_transform(
     the transform's already-declared dependency nodes (same as
     refine_transform) plus its own home/ output directory (to inspect
     whatever it already wrote, including any partial/broken output) —
-    input and output nodes only, nothing else. Also inlines two sources
+    input and output nodes only, nothing else. Also inlines three sources
     of history directly into the prompt: the relevant tail of ./log (this
     transform's own past command-dispatch and free() call history — cwd,
-    args, exit code, stdout/stderr) and the tail of the real shell's
-    command history (see _shell_history_excerpt — unfiltered, not scoped
-    to this transform)."""
+    args, exit code, stdout/stderr), the tail of the real shell's command
+    history (see _shell_history_excerpt — unfiltered, not scoped to this
+    transform), and the tail of that same shell's actual console output
+    (see _shell_output_excerpt).
+
+    Returns the agent's own final text summary (see
+    `fatass.core.free.result_summary`) for a `silent=True` call, so the
+    CLI can print it — None for an interactive call, where the human
+    watched the conversation directly."""
     node_dir = _node_dir(node_path)
     if not (node_dir / f"{transform_name}.py").is_file():
         raise TopologyValidationError(
@@ -783,17 +957,26 @@ def debug_transform(
         else "\n\nNo shell command history was found to read."
     )
 
+    shell_output = _shell_output_excerpt()
+    shell_output_section = (
+        f"\n\nRecent shell console output (unfiltered — not specific to "
+        f"this transform, whatever those commands actually printed, "
+        f"including errors):\n\n{shell_output}"
+        if shell_output
+        else "\n\nNo shell console output history was found to read."
+    )
+
     full_prompt = (
         f"Debug {transform_name}.py in the current directory. "
-        f"{prompt}{log_section}{shell_section}\n\nYou've been granted read "
-        f"access to this transform's own home/ output directory (where its "
-        f"fatass.free(...) calls actually write, at {home_dir}) and its "
-        f"already-declared dependency nodes' topology directories — "
-        f"inspect whatever it already wrote (including any partial or "
-        f"broken output) alongside the history above to find the root "
-        f"cause, then fix {transform_name}.py."
+        f"{prompt}{log_section}{shell_section}{shell_output_section}\n\n"
+        f"You've been granted read access to this transform's own home/ "
+        f"output directory (where its fatass.free(...) calls actually "
+        f"write, at {home_dir}) and its already-declared dependency "
+        f"nodes' topology directories — inspect whatever it already wrote "
+        f"(including any partial or broken output) alongside the history "
+        f"above to find the root cause, then fix {transform_name}.py."
     )
-    free_topology(
+    result = free_topology(
         cwd=node_dir,
         prompt=full_prompt,
         add_dirs=add_dirs,
@@ -803,3 +986,4 @@ def debug_transform(
         model=model,
         tools=tools,
     )
+    return result_summary(result) if silent else None

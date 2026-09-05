@@ -12,7 +12,7 @@ from .._internal.paths import ENV_PATH, HOME_ROOT
 from .._internal.prompts import load_system_prompt
 from ..errors import FreeCoercionError, FreeError
 from ..resolve import dotenv
-from .node import Node
+from ..node.node import Node
 
 _current_node: contextvars.ContextVar[type[Node]] = contextvars.ContextVar(
     "fatass_current_node"
@@ -364,7 +364,7 @@ def free_topology(
     system_prompt: str | None = None,
     model: str | None = None,
     tools: str = DEFAULT_ALLOWED_TOOLS,
-) -> None:
+) -> subprocess.CompletedProcess:
     """Invoke the Claude CLI to write under fatass/topology/ itself — a
     node's own file, a transform file, or anything else there.
 
@@ -405,6 +405,24 @@ def free_topology(
     )
     if result.returncode != 0:
         raise FreeError(f"claude CLI exited with {result.returncode}: {result.stderr}")
+    return result
+
+
+def result_summary(result: subprocess.CompletedProcess) -> str | None:
+    """The agent's own final text summary from a `silent=True` call's
+    captured `-p --output-format json` stdout (that JSON's top-level
+    `"result"` field), or None for an interactive call (nothing is
+    captured for those) or if the field isn't present. Best-effort, same
+    as `_log_token_usage` — the exact JSON shape is Claude Code's own, not
+    a contract fatass controls."""
+    try:
+        parsed = json.loads(result.stdout)
+    except (json.JSONDecodeError, TypeError):
+        return None
+    if not isinstance(parsed, dict):
+        return None
+    summary = parsed.get("result")
+    return summary if isinstance(summary, str) else None
 
 
 def _shape_hint(returns: type) -> str:

@@ -49,7 +49,7 @@ class DebugCommand(Command):
         prompt = args.prompt if args.prompt else NO_PROMPT_TEXT
         try:
             node_path, transform_name = parse_at_target(args.target)
-            debug_transform(
+            summary = debug_transform(
                 node_path,
                 transform_name,
                 prompt,
@@ -63,5 +63,7 @@ class DebugCommand(Command):
             print(f"error: {exc}", file=sys.stderr)
             return 1
 
+        if summary:
+            print(summary)
         print(f"{node_path}.transforms.{transform_name}: debugged")
         return 0

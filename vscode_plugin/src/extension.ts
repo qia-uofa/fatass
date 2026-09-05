@@ -1,8 +1,9 @@
 import * as vscode from "vscode";
 import { findFatassRoot } from "./workspaceRoot";
-import { TopologyProvider, NodeItem } from "./topologyProvider";
-import { ContentProvider, FileItem } from "./contentProvider";
-import { runFatass } from "./runFatass";
+import { TopologyProvider, TopologyDragAndDropController, NodeItem } from "./topologyProvider";
+import { NodeViewProvider, FileItem, nodeLabel } from "./nodeViewProvider";
+import { runFatass, fatassCommandLine, isInShellRepl } from "./runFatass";
+import { registerFileOps } from "./fileOps";
 
 export function activate(context: vscode.ExtensionContext): void {
   const root = findFatassRoot();
@@ -11,35 +12,117 @@ export function activate(context: vscode.ExtensionContext): void {
   }
 
   const topologyProvider = new TopologyProvider(root);
-  const contentProvider = new ContentProvider(root);
+  const nodeViewProvider = new NodeViewProvider(root);
 
-  context.subscriptions.push(
-    vscode.window.registerTreeDataProvider("fatassTopology", topologyProvider),
-    vscode.window.registerTreeDataProvider("fatassContent", contentProvider)
+  // Always absolute ("~."-prefixed) -- FATASS_NODE (the fatass "pwd") can be
+  // anywhere, and a bare dotted path resolves relative to it, not to root.
+  const nodePathArg = (node: NodeItem) => (node.dotPath ? `~.${node.dotPath}` : "~");
+
+  const refreshAll = () => {
+    topologyProvider.refresh();
+    nodeViewProvider.syncCurrentNode();
+  };
+
+  // Runs a fatass command directly, no confirmation -- used only for `cd`,
+  // which is just navigation and changes nothing outside `.fatass/.env`.
+  const runNoConfirm = (args: string[]) => runFatass(root, args, refreshAll);
+
+  // Every other context-menu command that shells out to fatass confirms
+  // first, showing the exact command line it's about to run (verbatim,
+  // including quoting) rather than a paraphrased description of the
+  // action.
+  const run = async (node: NodeItem, args: string[]) => {
+    const commandLine = fatassCommandLine(args);
+    const confirm = await vscode.window.showWarningMessage(
+      commandLine,
+      { modal: true },
+      "Run"
+    );
+    if (confirm !== "Run") {
+      return;
+    }
+    runNoConfirm(args);
+  };
+
+  // Dropping a node onto another node reparents it there, keeping its own
+  // leaf name (the "*" destination shorthand -- see `fatass move`'s own
+  // docs) -- dropping onto the tree's blank area (target undefined) moves
+  // it to the top level. A drop onto itself, into its own subtree, or back
+  // onto its current parent is a silent no-op / a clear error rather than
+  // an actual `fatass move` call, since that command itself would either
+  // reject it (own subtree) or do nothing useful (current parent).
+  const moveNode = (source: NodeItem, target: NodeItem | undefined) => {
+    const targetDotPath = target ? target.dotPath : "";
+    if (targetDotPath === source.dotPath || targetDotPath.startsWith(`${source.dotPath}.`)) {
+      vscode.window.showErrorMessage(
+        `Can't move ${source.dotPath || "~"} into itself or its own subtree.`
+      );
+      return;
+    }
+    const currentParent = source.dotPath.includes(".")
+      ? source.dotPath.slice(0, source.dotPath.lastIndexOf("."))
+      : "";
+    if (targetDotPath === currentParent) {
+      return;
+    }
+    const dest = targetDotPath ? `~.${targetDotPath}.*` : "~.*";
+    run(source, ["move", nodePathArg(source), dest]);
+  };
+
+  const topologyView = vscode.window.createTreeView("fatassTopology", {
+    treeDataProvider: topologyProvider,
+    dragAndDropController: new TopologyDragAndDropController(moveNode),
+  });
+  const nodeView = vscode.window.createTreeView("fatassNode", {
+    treeDataProvider: nodeViewProvider,
+  });
+
+  // The view's own title stays the static "Node" (matching the Topology
+  // view's own static title) -- the current node and home/topology
+  // toggle live in the description instead, and never mention the
+  // node's class (that's the Topology view's job).
+  const updateNodeViewTitle = () => {
+    nodeView.description = `${nodeLabel(nodeViewProvider.getCurrentPath())} · ${
+      nodeViewProvider.getSource() === "home" ? "Home" : "Topology"
+    }`;
+  };
+  updateNodeViewTitle();
+  nodeViewProvider.onDidChangeTreeData(updateNodeViewTitle);
+
+  // The Node view always tracks FATASS_NODE (the fatass "pwd"), not
+  // tree-click selection, so it must be re-read whenever .fatass/.env
+  // changes -- including edits made from outside this extension (a plain
+  // terminal `fatass cd`, `fatass shell`, etc).
+  const envWatcher = vscode.workspace.createFileSystemWatcher(
+    new vscode.RelativePattern(root, ".fatass/.env")
   );
+  const syncPwd = () => nodeViewProvider.syncCurrentNode();
+  envWatcher.onDidChange(syncPwd);
+  envWatcher.onDidCreate(syncPwd);
+  envWatcher.onDidDelete(syncPwd);
 
-  const nodePathArg = (node: NodeItem) => (node.dotPath ? node.dotPath : "~");
+  context.subscriptions.push(topologyView, nodeView, envWatcher);
+  registerFileOps(context, root, nodeViewProvider);
 
   context.subscriptions.push(
     vscode.commands.registerCommand("fatass.refreshTopology", () => topologyProvider.refresh()),
 
-    vscode.commands.registerCommand("fatass.toggleContentSource", () => contentProvider.toggleSource()),
+    vscode.commands.registerCommand("fatass.toggleNodeViewSource", () => nodeViewProvider.toggleSource()),
 
-    vscode.commands.registerCommand("fatass.selectNode", (node: NodeItem) =>
-      contentProvider.setSelectedNode(node)
-    ),
+    vscode.commands.registerCommand("fatass.cd", (node: NodeItem) => {
+      runNoConfirm(["cd", nodePathArg(node)]);
+      // The REPL's own `cd` is in-memory only (see shell.py's
+      // enter_session) -- it never touches .fatass/.env, so
+      // syncCurrentNode() (via runNoConfirm's onDone) would never see it.
+      // We already know the target here, so mirror it directly instead.
+      if (isInShellRepl()) {
+        nodeViewProvider.setCurrentPath(node.dotPath);
+      }
+    }),
 
-    vscode.commands.registerCommand("fatass.cd", (node: NodeItem) =>
-      runFatass(root, ["cd", nodePathArg(node)])
-    ),
+    vscode.commands.registerCommand("fatass.run", (node: NodeItem) => run(node, ["run", nodePathArg(node)])),
 
-    vscode.commands.registerCommand("fatass.run", (node: NodeItem) =>
-      runFatass(root, ["run", nodePathArg(node)])
-    ),
-
-    vscode.commands.registerCommand("fatass.build", (node: NodeItem) =>
-      runFatass(root, ["build", nodePathArg(node)])
-    ),
+    vscode.commands.registerCommand("fatass.build", (node: NodeItem) => run(node, ["build", nodePathArg(node)])),
 
     vscode.commands.registerCommand("fatass.modify", async (node: NodeItem) => {
       const prompt = await vscode.window.showInputBox({
@@ -53,7 +136,7 @@ export function activate(context: vscode.ExtensionContext): void {
       if (prompt) {
         args.push(prompt);
       }
-      runFatass(root, args);
+      run(node, args);
     }),
 
     vscode.commands.registerCommand("fatass.create", async (node: NodeItem) => {
@@ -64,8 +147,8 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
       }
       const base = nodePathArg(node);
-      const target = base === "~" ? child : `${base}.${child}`;
-      runFatass(root, ["create", target]);
+      const target = base === "~" ? `~.${child}` : `${base}.${child}`;
+      run(node, ["create", target]);
     }),
 
     vscode.commands.registerCommand("fatass.move", async (node: NodeItem) => {
@@ -75,7 +158,7 @@ export function activate(context: vscode.ExtensionContext): void {
       if (!dest) {
         return;
       }
-      runFatass(root, ["move", nodePathArg(node), dest]);
+      run(node, ["move", nodePathArg(node), dest]);
     }),
 
     vscode.commands.registerCommand("fatass.copy", async (node: NodeItem) => {
@@ -85,36 +168,14 @@ export function activate(context: vscode.ExtensionContext): void {
       if (!dest) {
         return;
       }
-      runFatass(root, ["copy", nodePathArg(node), dest]);
+      run(node, ["copy", nodePathArg(node), dest]);
     }),
 
-    vscode.commands.registerCommand("fatass.remove", async (node: NodeItem) => {
-      const confirm = await vscode.window.showWarningMessage(
-        `Remove ${nodePathArg(node)}?`,
-        { modal: true },
-        "Remove"
-      );
-      if (confirm !== "Remove") {
-        return;
-      }
-      runFatass(root, ["remove", nodePathArg(node)]);
-    }),
+    vscode.commands.registerCommand("fatass.remove", (node: NodeItem) => run(node, ["remove", nodePathArg(node)])),
 
-    vscode.commands.registerCommand("fatass.purge", async (node: NodeItem) => {
-      const confirm = await vscode.window.showWarningMessage(
-        `Purge home/ content for ${nodePathArg(node)}?`,
-        { modal: true },
-        "Purge"
-      );
-      if (confirm !== "Purge") {
-        return;
-      }
-      runFatass(root, ["purge", nodePathArg(node)]);
-    }),
+    vscode.commands.registerCommand("fatass.purge", (node: NodeItem) => run(node, ["purge", nodePathArg(node)])),
 
-    vscode.commands.registerCommand("fatass.vim", (node: NodeItem) =>
-      runFatass(root, ["vim", nodePathArg(node)])
-    ),
+    vscode.commands.registerCommand("fatass.vim", (node: NodeItem) => run(node, ["vim", nodePathArg(node)])),
 
     vscode.commands.registerCommand("fatass.openFile", (file: FileItem) => {
       vscode.window.showTextDocument(vscode.Uri.file(file.fsPath));
@@ -124,6 +185,18 @@ export function activate(context: vscode.ExtensionContext): void {
       if (file) {
         vscode.commands.executeCommand("revealFileInOS", vscode.Uri.file(file.fsPath));
       }
+    }),
+
+    // Always targets the node the Node view is currently showing
+    // (FATASS_NODE), not whichever specific file/dir was right-clicked --
+    // a nested file's own directory isn't necessarily a topology node at
+    // all (it could just be a plain subdirectory of assets), so "the
+    // node this content belongs to" is the only reliably meaningful
+    // target here. Scrolls the Topology view to it without selecting/
+    // highlighting it or stealing focus -- reveal() scrolls regardless.
+    vscode.commands.registerCommand("fatass.revealInTopology", async () => {
+      const target = topologyProvider.nodeItemForPath(nodeViewProvider.getCurrentPath());
+      await topologyView.reveal(target, { select: false, focus: false, expand: true });
     })
   );
 }

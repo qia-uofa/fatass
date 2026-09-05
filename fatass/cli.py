@@ -17,8 +17,42 @@ ALIASES = {
 }
 
 
+def _merge_paren_tokens(argv: list[str]) -> list[str]:
+    """A raw command line's own whitespace tokenization (`shlex.split` in
+    `shell.py`'s REPL, or the OS shell for a direct `python -m fatass ...`
+    invocation) knows nothing about fatass's own "(...)" target/
+    create-target grammar — a space after a comma inside parens (e.g.
+    `build(a, b)@c`, `grid(ArrayTxt, dim=2x2x2)`) gets split into two
+    separate argv entries before fatass ever sees them. Re-join any run
+    of consecutive tokens whose "(" count outruns its ")" count back into
+    one token — with the whitespace between them dropped entirely, not
+    just re-inserted — the same single token a fully-quoted
+    "build(a, b)@c" would already have produced. A token (or already-
+    merged run) that reaches balance ("(" count == ")" count, including
+    the common case of no parens at all) is left as its own token;
+    genuinely unbalanced input (e.g. a stray "(" in freeform prompt text
+    with no closing ")" anywhere later on the line) degrades to merging
+    everything after it into one token — quote such a prompt to avoid
+    that, same as you'd need to for any other shell-special character."""
+    merged: list[str] = []
+    buffer = ""
+    depth = 0
+    for token in argv:
+        buffer = token if depth <= 0 else buffer + token
+        depth += token.count("(") - token.count(")")
+        if depth <= 0:
+            merged.append(buffer)
+            buffer = ""
+            depth = 0
+    if buffer:
+        merged.append(buffer)
+    return merged
+
+
 def main(argv: list[str] | None = None) -> int:
-    effective_argv = list(argv) if argv is not None else sys.argv[1:]
+    effective_argv = _merge_paren_tokens(
+        list(argv) if argv is not None else sys.argv[1:]
+    )
     parse_argv = effective_argv
     if parse_argv and parse_argv[0] in ALIASES:
         parse_argv = [ALIASES[parse_argv[0]], *parse_argv[1:]]
@@ -53,6 +87,7 @@ def main(argv: list[str] | None = None) -> int:
         # still holds whatever fatass.topology.* looked like before this
         # command ran — reload so a later command sees the current tree.
         reload_all("fatass.topology")
+        args._command.after_reload(args)
 
     return exit_code
 

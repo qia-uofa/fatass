@@ -3,6 +3,7 @@ import re
 import shutil
 from pathlib import Path
 
+from .._internal.fs import force_rmtree
 from .._internal.paths import ARCHIVE_ROOT, HOME_ROOT, TOPOLOGY_ROOT
 from ..errors import TopologyValidationError
 
@@ -120,13 +121,20 @@ def _archive_node(dest: Path, node_path: str) -> None:
 
     dest_topology = dest / "topology" / rel
     dest_topology.parent.mkdir(parents=True, exist_ok=True)
-    shutil.move(str(node_dir), str(dest_topology))
-
     home_dir = HOME_ROOT / rel
-    if home_dir.is_dir():
-        dest_home = dest / "home" / rel
-        dest_home.parent.mkdir(parents=True, exist_ok=True)
-        shutil.move(str(home_dir), str(dest_home))
+    dest_home = dest / "home" / rel
+
+    shutil.move(str(node_dir), str(dest_topology))
+    try:
+        if home_dir.is_dir():
+            dest_home.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(home_dir), str(dest_home))
+    except BaseException:
+        # Don't leave the node's topology archived while its home/ stays
+        # live (or vice versa) — move the topology half back too so the
+        # whole archive_node call is all-or-nothing.
+        shutil.move(str(dest_topology), str(node_dir))
+        raise
 
 
 def archive_topology(name: str | None = None, node_path: str | None = None) -> str:
@@ -154,12 +162,26 @@ def archive_topology(name: str | None = None, node_path: str | None = None) -> s
     dest.mkdir(parents=True)
 
     shutil.move(str(TOPOLOGY_ROOT), str(dest / "topology"))
-    TOPOLOGY_ROOT.mkdir()
-    (TOPOLOGY_ROOT / "__init__.py").write_text(_TOPOLOGY_INIT_PY, encoding="utf-8")
+    try:
+        TOPOLOGY_ROOT.mkdir()
+        (TOPOLOGY_ROOT / "__init__.py").write_text(_TOPOLOGY_INIT_PY, encoding="utf-8")
 
-    if HOME_ROOT.is_dir():
-        shutil.move(str(HOME_ROOT), str(dest / "home"))
-    HOME_ROOT.mkdir(parents=True, exist_ok=True)
+        if HOME_ROOT.is_dir():
+            shutil.move(str(HOME_ROOT), str(dest / "home"))
+        HOME_ROOT.mkdir(parents=True, exist_ok=True)
+    except BaseException:
+        # The whole-topology archive is "move out, then recreate fresh" —
+        # if the fresh-recreate half fails, undo the move too rather than
+        # leaving the live topology gone with only a half-made archive to
+        # show for it.
+        if TOPOLOGY_ROOT.is_dir():
+            force_rmtree(TOPOLOGY_ROOT, ignore_errors=True)
+        shutil.move(str(dest / "topology"), str(TOPOLOGY_ROOT))
+        if (dest / "home").is_dir():
+            if HOME_ROOT.is_dir():
+                force_rmtree(HOME_ROOT, ignore_errors=True)
+            shutil.move(str(dest / "home"), str(HOME_ROOT))
+        raise
 
     return dir_name
 
@@ -167,16 +189,50 @@ def archive_topology(name: str | None = None, node_path: str | None = None) -> s
 def _restore(src: Path) -> None:
     """Copy an archived snapshot's topology/ and home/ back into place,
     over the current (already-fresh-and-empty) ones — a copy, not a move,
-    so the archive stays available for a later retrieve."""
-    shutil.rmtree(TOPOLOGY_ROOT)
-    shutil.copytree(src / "topology", TOPOLOGY_ROOT)
+    so the archive stays available for a later retrieve.
+
+    Copies into temporary siblings *first*, and only swaps them into
+    place (via rename, not delete-then-copy) once both copies have fully
+    succeeded — a failed copytree (disk full, a bad file in the archive)
+    must never leave TOPOLOGY_ROOT/HOME_ROOT deleted with nothing to
+    replace them, which the old rmtree-then-copytree order risked."""
+    tmp_topology = TOPOLOGY_ROOT.with_name(TOPOLOGY_ROOT.name + ".fatass-restore-tmp")
+    if tmp_topology.exists():
+        force_rmtree(tmp_topology)
+    shutil.copytree(src / "topology", tmp_topology)
+
+    tmp_home = None
+    if (src / "home").is_dir():
+        tmp_home = HOME_ROOT.with_name(HOME_ROOT.name + ".fatass-restore-tmp")
+        if tmp_home.exists():
+            force_rmtree(tmp_home)
+        shutil.copytree(src / "home", tmp_home)
+
+    # Both copies are complete and verified on disk — now do the actual
+    # swap. Rename (not rmtree-then-copy) so each step is a single,
+    # low-risk op; the discarded old content is only cleaned up after the
+    # swap has already succeeded, so a failure there is harmless leftover
+    # cruft, not lost state.
+    old_topology_backup = TOPOLOGY_ROOT.with_name(TOPOLOGY_ROOT.name + ".fatass-restore-old")
+    old_home_backup = HOME_ROOT.with_name(HOME_ROOT.name + ".fatass-restore-old")
+    if old_topology_backup.exists():
+        force_rmtree(old_topology_backup)
+    if old_home_backup.exists():
+        force_rmtree(old_home_backup)
+
+    TOPOLOGY_ROOT.rename(old_topology_backup)
+    tmp_topology.rename(TOPOLOGY_ROOT)
 
     if HOME_ROOT.is_dir():
-        shutil.rmtree(HOME_ROOT)
-    if (src / "home").is_dir():
-        shutil.copytree(src / "home", HOME_ROOT)
+        HOME_ROOT.rename(old_home_backup)
+    if tmp_home is not None:
+        tmp_home.rename(HOME_ROOT)
     else:
         HOME_ROOT.mkdir(parents=True, exist_ok=True)
+
+    force_rmtree(old_topology_backup, ignore_errors=True)
+    if old_home_backup.exists():
+        force_rmtree(old_home_backup, ignore_errors=True)
 
 
 def retrieve_topology(name: str | None = None) -> str:
@@ -242,12 +298,22 @@ def retrieve_node(name: str, node_path: str) -> str:
         )
 
     node_dir.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(src_topology, node_dir)
-
     src_home = src / "home" / rel
-    if src_home.is_dir():
-        home_dir = HOME_ROOT / rel
-        home_dir.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copytree(src_home, home_dir)
+    home_dir = HOME_ROOT / rel
+
+    shutil.copytree(src_topology, node_dir)
+    try:
+        if src_home.is_dir():
+            home_dir.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copytree(src_home, home_dir)
+    except BaseException:
+        # Same reasoning as move_node/copy_node: never leave a node
+        # restored into topology/ without its matching home/ (or vice
+        # versa) — remove what did get created and surface the error.
+        if node_dir.is_dir():
+            force_rmtree(node_dir, ignore_errors=True)
+        if home_dir.is_dir():
+            force_rmtree(home_dir, ignore_errors=True)
+        raise
 
     return src.name

@@ -12,8 +12,8 @@ from .._internal.naming import pascal_case
 from .._internal.paths import REPO_ROOT
 from ..errors import TopologyValidationError
 from .free import _current_node
-from .node import Node
-from .chain import Chain
+from ..node.node import Node
+from ..node.chain import Chain
 
 _CACHE_PATH = REPO_ROOT / ".fatass" / "cache.json"
 

@@ -1,20 +1,62 @@
 import dataclasses
 from pathlib import Path
 
-from .core.node import Node
-from .core.chain import Chain
+import importlib
+import pkgutil
+
+from . import node as _node_pkg
+from .node.node import Node
 from .core.transform import _import_node, discover
 from .errors import TopologyValidationError
 from .topology_ops.scaffold import _all_node_paths, _node_dir
 
 
+def _load_all_node_modules() -> None:
+    """Import every fatass/node/*.py module — so each framework node
+    kind it defines (Chain, Single, Array, Tuple, Repo, and any future
+    one) is registered on `Node.__subclasses__()` before
+    `_direct_node_subclasses()` reads it, without this file having to
+    name them one by one."""
+    for module_info in pkgutil.iter_modules(_node_pkg.__path__, prefix=f"{_node_pkg.__name__}."):
+        importlib.import_module(module_info.name)
+
+
+_load_all_node_modules()
+
+
+def _direct_node_subclasses() -> tuple[type[Node], ...]:
+    """Every fatass-framework base kind a node can be built on — Node's
+    own *direct* subclasses that are themselves defined under the
+    `fatass.node` package (Chain, Single, Array, Tuple, Repo, ...), as
+    opposed to either a typed variant like SingleCsv (a subclass of
+    Single, not of Node itself) or an ordinary topology-defined node
+    (e.g. `class Cv(fatass.Node)`, which subclasses Node directly too,
+    but lives under `fatass.topology.*` — exactly the "no special kind"
+    case this is meant to fall back to "Node" for). Discovered from the
+    live class hierarchy plus module path rather than a hardcoded list,
+    so a new `fatass/node/<name>.py` direct subclass of Node is picked up
+    here automatically."""
+    prefix = f"{_node_pkg.__name__}."
+    return tuple(
+        sub for sub in Node.__subclasses__() if sub.__module__.startswith(prefix)
+    )
+
+
 def _base_class_name(node_cls: type[Node]) -> str:
-    """"Chain" or "Node" — the fatass base class a node is built on,
-    not its own specific subclass name (which is just the PascalCase of
-    its own path segment and so adds no information the path doesn't
-    already carry). This is what `fatass ls` shows: it tells you the
-    node's *kind* (indexable list vs. plain node) at a glance."""
-    return "Chain" if issubclass(node_cls, Chain) else "Node"
+    """The fatass base class a node is built on ("Chain"/"Single"/
+    "Array"/"Tuple"/"Node"), not its own specific subclass name (which is
+    just the PascalCase of its own path segment and so adds no
+    information the path doesn't already carry) — nor a typed variant
+    like "SingleCsv" (collapsed to "Single"). This is what `fatass ls`
+    shows: it tells you the node's *kind* at a glance. Walks `node_cls`'s
+    MRO (most specific first) for the first ancestor that's one of
+    `_direct_node_subclasses()` — e.g. for a class built on SingleCsv,
+    that's Single itself, not SingleCsv."""
+    direct = _direct_node_subclasses()
+    for base in node_cls.__mro__:
+        if base in direct:
+            return base.__name__
+    return "Node"
 
 
 @dataclasses.dataclass
@@ -131,7 +173,7 @@ def list_root_tree() -> NodeTree:
 
 
 def list_dir(path: Path) -> list[str]:
-    """Directory entry names, sorted — the raw `ls` view used for a '/'
+    """Directory entry names, sorted — the raw `ls` view used for a '('
     (home/ asset directory) target. Unlike `list_node`'s subnodes (which
     aren't literally directories in the topology sense), these entries
     are real filesystem content, so a subdirectory gets a trailing "/"
@@ -142,7 +184,7 @@ def list_dir(path: Path) -> list[str]:
 
 
 def list_dir_tree(path: Path, _prefix: str = "") -> list[str]:
-    """Recursive raw `ls -r` view for a '/'/'@' target — same trailing
+    """Recursive raw `ls -r` view for a '('/'@' target — same trailing
     "/" convention as list_dir(), but descending into every subdirectory
     too, each already indented four spaces per nesting level so the
     command layer can just print the lines as given."""

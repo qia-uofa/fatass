@@ -16,7 +16,7 @@ Full design docs: [blueprint/](blueprint/README.md).
 ```
 python -m fatass run <node.path>[.transforms.<name>] [--force]   # run transform(s), cache-aware
 python -m fatass apply <transform>@<node.path> [key=value ...]    # run one transform with explicit args, ignoring cache
-python -m fatass create <node.path | transform@node.path>[(NodeSubclass)]  # scaffold if missing; e.g. members(Chain) subclasses fatass.Chain instead of fatass.Node
+python -m fatass create <node.path | transform@node.path>[(NodeSubclass)]  # scaffold if missing; e.g. members(Chain) subclasses fatass.Chain instead of fatass.Node; an Array subclass also takes ,dim=<int>x<int>x... e.g. grid(ArrayTxt,dim=2x2x2)
 python -m fatass create <transform>(<dep.path>[,<dep.path> ...])@<node.path>   # scaffold a transform and bind the given deps onto it in the same call (no agent call for the binding — same as a `bind` right after)
 python -m fatass modify <node.path | transform@node.path> ["..."] [--silent] [--permission-mode M] [--model M]    # edit an existing node/transform file; prompt is positional and optional — omitted or "" both become the literal text "<no instructions given — wait for further input>"
 python -m fatass debug <transform>@<node.path> ["..."] [--silent] [--permission-mode M] [--model M]    # like modify, but framed around root-causing a failure: inlines the relevant tail of ./log for this transform (past dispatches and free() calls' args/exit codes/stdout/stderr) plus a tail of `fatass shell`'s own persisted `>>> ` command history (.fatass/shell_history — not the OS terminal's), and grants read access to only the transform's input (declared dependency) and output (home/) nodes
@@ -39,26 +39,41 @@ python -m fatass len <node.path>                                    # print a Ch
 python -m fatass push <node.path>                                   # append one item to a Chain, seeded as a copy of the dummy head's own content (no agent call)
 python -m fatass insert <n> <node.path> [path1 path2 ...]           # insert an item into a Chain at index n, shifting the rest back; with no paths, seeds from a copy of the dummy head's content, else from those files/dirs (leaf lists only — each path is either an absolute real filesystem path, or a fatass target expression) (no agent call)
 python -m fatass pop <node.path> [n]                                # remove a Chain's tail item, or item n if given, shifting anything after it forward (no agent call)
-python -m fatass vim <node.path | transform@node.path | node.path/rel/path>  # open a node's class file, a transform file, or a home/ file in vim
+python -m fatass vim <node.path | transform@node.path | node.path(rel/path)>  # open a node's class file, a transform file, or a home/ file in vim
 python -m fatass shell                                              # interactive REPL, one command per line
 ```
 
 Node/transform paths are `.`-separated, matching Python module addressing
 (`node1.node2`, `node1.node2.transforms.synthesize`).
 
-`sh`, `free`, and `ls`'s `/`/`@` targets share one `<target>` grammar
+`sh`, `free`, and `ls`'s `(`/`@` targets share one `<target>` grammar
 (`fatass.resolve.targets.resolve`): `node1.node2` (that node's own
 directory under `fatass/topology/`), `transform@node1.node2` (that same
 node directory too — a transform file sits directly in it, no separate
-subdirectory), or `node1.node2/dir1/dir2/file.txt` (a path relative to the node's `home/`
-assets directory — `node1.node2/./` (or a trailing `/`) names that
-directory itself; a file path resolves to its parent dir). The node-path
-portion before the first `/` must be non-empty — a target starting with
-`/` is rejected rather than silently resolving against the current node,
-since an unquoted `~/rel/path` gets shell-tilde-expanded into an
-absolute filesystem path (dropping the leading `~` entirely) before
-fatass ever sees the argument; write `~.` (or quote the argument) for an
-explicit root-relative target. `ls`'s bare `node1.node2` form (no `/`
+subdirectory), or `node1.node2(dir1/dir2/file.txt)` (a path relative to the node's `home/`
+assets directory — `node1.node2()`, `node1.node2(.)`, or `node1.node2(./)`
+name that directory itself; a file path resolves to its parent dir). The
+node-path portion before the first `(` must be non-empty — a target
+starting with `(` is rejected rather than silently resolving against the
+current node, since an unquoted `~/rel/path` gets shell-tilde-expanded
+into an absolute filesystem path (dropping the leading `~` entirely)
+before fatass ever sees the argument; write `~.` (or quote the argument)
+for an explicit root-relative target.
+
+An empty call, `node1.node2()`, means "the home dir itself" for an
+ordinary `Node`/`Chain` — but a `Single`/`Array` node (see below)
+overrides what a *bare* `()` means: on a `Single` it resolves straight to
+that node's one managed file instead; on an `Array`, `node1.node2()`
+alone still means the home dir, but `node1.node2()[i,j,...]` resolves to
+the file at that index. Giving an explicit path inside the parens (e.g.
+`node1.node2(.)` for the home dir on a `Single`) behaves identically
+across every subclass — only the empty-call shorthand's meaning depends
+on the node's class. This composes with `Chain`'s own `node[i]` item
+indexing (always on the bare node, before any `(`) rather than
+conflicting with it: `members[i]()` resolves item `i`'s own home dir/file
+the same way, per that item's own schema child's class.
+
+`ls`'s bare `node1.node2` form (no `(`
 or `@`) doesn't resolve through this — it takes the fast path in
 `fatass/ls.py:list_node`, which imports the node itself (via
 `fatass.core.transform._import_node`) to get its *base* fatass class
@@ -106,7 +121,7 @@ tests : Node(
 )
 ```
 
-For a `:`/`@` target, `-r` instead walks the real filesystem tree
+For a `(`/`@` target, `-r` instead walks the real filesystem tree
 (`fatass.ls.list_dir_tree`), same trailing-`/`-for-directories convention
 as the non-`-r` form, each nesting level indented four spaces further.
 
@@ -114,9 +129,11 @@ as the non-`-r` form, each nesting level indented four spaces further.
 `fatass.resolve.targets.resolve_file`, which keeps the actual file instead
 of collapsing it to its parent directory: `node1.node2` opens that node's
 own `<name>.py` class file, `transform@node1.node2` opens that transform's
-`.py` file, and `node1.node2/rel/path` opens that path under the node's
+`.py` file, and `node1.node2(rel/path)` opens that path under the node's
 `home/` directory (need not already exist — vim creates it on save, same
-as `vim newfile.txt` at a shell).
+as `vim newfile.txt` at a shell). `node1.node2()` on a `Single` node opens
+its one managed file directly; `node1.node2()[i,j,...]` on an `Array`
+node opens the file at that index.
 
 ### `Chain`
 
@@ -198,6 +215,63 @@ members/
   the same item (e.g. `contribution` reading the same item's `info`) does
   not auto-resolve to the same index — schema-node dependencies should
   point outside their own list.
+
+### `Single` / `Array`
+
+`fatass.Single` (`fatass/core/single.py`) and `fatass.Array`
+(`fatass/core/array.py`) manage a fixed, deterministic set of plain files
+directly under a node's own `home/` directory — no arbitrary
+agent-written content, no dynamic growth (unlike `Chain`).
+
+- **`Single`** manages exactly one file, named `_` (or `_<EXT>` for a
+  typed subclass — `SingleTxt` -> `_.txt`, `SinglePdf` -> `_.pdf`).
+  `Single.write(content: str)` writes straight to it, creating the file
+  (and the node's `home/` dir) first if either doesn't exist yet — never
+  raises for a missing file. `fatass purge` on a `Single` node clears the
+  file in place instead of deleting it (a no-op, not an error, if the
+  file doesn't currently exist).
+- **`Array`** manages a fixed-shape grid of files, one per index in
+  `range(DIM[0]) x range(DIM[1]) x ...`, named `_<i>_<j>_...` (or
+  `_<i>_<j>_...<EXT>` for a typed subclass — `ArrayTxt`, `ArrayPdf`).
+  `DIM` is a tuple declared on the concrete node subclass, e.g.
+  `class Grid(fatass.ArrayTxt): DIM = (2, 2, 2)`. `Array.write([i, j,
+  ...], content: str)` writes to the file at that index, same
+  create-if-missing behavior as `Single.write`. `fatass purge` clears
+  whichever files currently exist in place, silently skipping any that
+  are missing (never raises, never creates one just to purge it).
+- `fatass create <node.path>(SingleTxt)` etc. scaffolds a `Single`
+  subclass the same way as any other `(NodeSubclass)` target. An `Array`
+  additionally needs `DIM` known *before* its files can be created, so
+  the create-target grammar accepts an extra `,dim=<int>x<int>x...`
+  (`x`-separated, not comma-separated — that would collide with the
+  outer `(NodeSubclass,...)` split), e.g. `fatass create
+  grid(ArrayTxt,dim=2x2x2)` — this is baked into the generated class
+  as `DIM = (2, 2, 2)` instead of a bare `pass` body
+  (`scaffold.create_node`'s `class_kwargs`).
+- Both override `Node.on_created()` — a hook, no-op on plain `Node`,
+  that `fatass create` calls (via `CreateCommand.after_reload`, once the
+  topology tree has been reloaded and the new class is actually
+  importable) right after scaffolding a node — to touch their managed
+  file(s) into existence blank immediately, rather than waiting for
+  first access. This is why `Array`'s shape has to be known at create
+  time: `on_created()` needs `DIM` to know which files to create.
+- Both override `Node.purge_self()` — a hook, `None` by default (meaning
+  "no override, use `fatass purge`'s generic delete-everything-in-this-
+  node's-own-home-dir behavior") — to clear their file(s) in place
+  instead.
+- **Transform convention:** a transform that populates a `Single`/`Array`
+  node must never let `fatass.free(...)` write into that node's `home/`
+  directory directly (e.g. via `writable=` or by just letting the agent
+  edit files there) — capture the agent's result with `returns=str` and
+  call `NodeClass.write(...)` (or `NodeClass.write([i, j, ...], ...)`)
+  yourself instead. `Single`/`Array` teach this via their own
+  `modify_sys_prompt()` override (same mechanism `Chain` uses for its own
+  conventions), so editing a transform bound to one of these nodes gets
+  this guidance appended automatically.
+- Grammar sugar for direct access (see the `sh`/`free`/`ls`/`vim` target
+  grammar above): `node.path()` on a `Single` resolves to its one managed
+  file; `node.path()[i,j,...]` on an `Array` resolves to the file at that
+  index. `node.path(.)` still reaches the home dir explicitly on either.
 
 ### `bind`/`unbind`
 
@@ -328,42 +402,46 @@ real `claude` CLI goes through it, and it takes four orthogonal knobs:
   free`, and `transform.md` backs every `fatass.free()` call made from
   inside a running transform (i.e. what `run`/`apply`/`build` trigger
   indirectly, through whatever transform code they execute — they don't
-  call the agent directly themselves). `create` and `modify` instead go
-  through `fatass._internal.prompts.load_topology_edit_system_prompt`,
-  which prepends `conventions.md` (the static node/transform/
-  `fatass.free()` reference — how to declare a dependency, the
+  call the agent directly themselves). `modify` instead goes through
+  `fatass._internal.prompts.load_topology_edit_system_prompt`, which
+  prepends `conventions.md` (the static node/transform/`fatass.free()`
+  reference — how to declare a dependency, the
   `readable=[...]`/`silent`/`model`/`tools` conventions, etc.) ahead of
-  `create.md`/`modify.md`'s own command-specific framing; see why under
+  `modify.md`'s own command-specific framing; see why under
   `free_topology` below. A missing prompt file is fine; it just means no
-  extra guidance is appended. On top of that, `create`/`modify` append a
-  third, class-specific block: `Node.create_sys_prompt()`/
-  `Node.modify_sys_prompt()` are classmethods returning `str | None`
-  (`None` on `Node` itself), called on the node's actual class — for
-  `create`, whichever class the `(NodeSubclass)` target suffix names (see
-  below); for `modify`, the existing node's real class, imported for this
-  purpose alone (best-effort: import failure — e.g. the node's own file
-  being fixed is currently broken — just means no extra block, not a
-  command failure). `Chain` overrides both to teach the `.next`-chain
-  conventions only when the node being created/modified is actually one,
-  instead of paying for that guidance on every plain-`Node` edit.
+  extra guidance is appended. On top of that, `modify` appends a third,
+  class-specific block: `Node.modify_sys_prompt()` is a classmethod
+  returning `str | None` (`None` on `Node` itself), called on the
+  existing node's real class, imported for this purpose alone
+  (best-effort: import failure — e.g. the node's own file being fixed is
+  currently broken — just means no extra block, not a command failure).
+  `Chain`/`Single`/`Array`/`Repo` override it to teach conventions
+  specific to that kind of node (`Single`/`Array` build the text
+  per-class off their own `EXT`/`DIM`/`FIELDS`, so it reflects the
+  concrete subclass rather than generic placeholder text) only when the
+  node being modified is actually one, instead of paying for that
+  guidance on every plain-`Node` edit. `create` is fully deterministic
+  template scaffolding (`topology_ops/scaffold.py`'s `create_node`/
+  `create_transform`) — it never calls the agent, so it has no
+  `system_prompt`/`--silent`/`--permission-mode`/`--model` of its own.
 - **`model`** (default `None`): passed straight through as `--model` when
   given (an alias like `"opus"`/`"sonnet"`, or a full model name) —
   omitted entirely when `None`, so every existing call keeps using
   whatever the `claude` CLI is already configured/defaulted to. Unlike
   `permission_mode`, this has no fatass-side default of its own.
 
-`create`, `modify`, and `free` all expose `--silent`, `--permission-mode`,
-and `--model` on the CLI; a transform's own `fatass.free(...)` call sets
+`modify` and `free` both expose `--silent`, `--permission-mode`, and
+`--model` on the CLI; a transform's own `fatass.free(...)` call sets
 these as ordinary keyword arguments.
 
-`free_topology` (behind `create`/`modify`) grants **no directory besides
-its own `cwd`**, with one narrow exception — not the whole topology tree,
-unlike an earlier version. On a topology with several populated example
+`free_topology` (behind `modify`) grants **no directory besides its own
+`cwd`**, with one narrow exception — not the whole topology tree, unlike
+an earlier version. On a topology with several populated example
 pipelines, passing the whole tree meant every single-function edit paid
 to read hundreds of thousands of cache tokens' worth of unrelated nodes
 just to infer file conventions by example (see a real run's numbers in
 `./log`, `2026-08-25 00:1x`). Those conventions are static now, so they
-moved into `conventions.md` (prepended to `create.md`/`modify.md` via
+moved into `conventions.md` (prepended to `modify.md` via
 `load_topology_edit_system_prompt`, see above) instead of being taught by
 letting the agent browse sibling/dependency nodes it has no real need to
 read. The exception: `modify`'s `refine_transform` (only — `refine_node`

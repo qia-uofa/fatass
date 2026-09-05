@@ -1,7 +1,8 @@
-import shutil
 from pathlib import Path
 
-from ..core.transform import discover
+from .._internal.fs import force_rmtree
+from ..node.node import Node
+from ..core.transform import _import_node, discover
 from ..errors import TopologyValidationError
 from .scaffold import _assets_dir, _node_dir
 
@@ -69,12 +70,26 @@ def _content_entries(node_path: str) -> list[Path]:
 
 
 def _purge_one(node_path: str) -> int:
-    """Delete node_path's own content. Returns how many entries were
-    removed."""
+    """Delete node_path's own content — unless its class overrides
+    `purge_self()` (e.g. Single/Array, which clear their fixed-name
+    file(s) in place instead of deleting them), in which case that's used
+    instead. Best-effort import: a node whose class fails to import (e.g.
+    it's mid-edit) just falls back to the generic behavior below, same as
+    before this override existed. Returns how many entries were purged."""
+    try:
+        node_cls = _import_node(node_path)
+    except Exception:
+        node_cls = None
+
+    if node_cls is not None and node_cls.purge_self is not Node.purge_self:
+        result = node_cls.purge_self()
+        if result is not None:
+            return result
+
     removed = 0
     for entry in _content_entries(node_path):
         if entry.is_dir():
-            shutil.rmtree(entry)
+            force_rmtree(entry)
         else:
             entry.unlink()
         removed += 1

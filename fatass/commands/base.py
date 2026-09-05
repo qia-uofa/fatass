@@ -21,3 +21,12 @@ class Command(ABC):
     @abstractmethod
     def run(self, args: argparse.Namespace) -> int:
         """Execute the command. Returns the process exit code."""
+
+    def after_reload(self, args: argparse.Namespace) -> None:
+        """Called by cli.main() right after fatass.topology is reloaded
+        post-command (only for a mutates_topology command) — a chance to
+        do something that needs the just-changed topology tree actually
+        importable, which wasn't true yet during run() itself (e.g.
+        CreateCommand calling a freshly-scaffolded node class's own
+        on_created()). No-op by default."""
+        return None

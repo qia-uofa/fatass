@@ -1,7 +1,7 @@
 import ast
 
 from ..errors import TopologyValidationError
-from .scaffold import _node_dir
+from .scaffold import _is_node_dir, _node_dir
 
 _TOPOLOGY_IMPORT_PREFIX = "fatass.topology."
 
@@ -183,6 +183,19 @@ def bind_transform(node_path: str, transform_name: str, dep_node_paths: list[str
     bound_paths = set(deps.values())
 
     to_bind = [p for p in dep_node_paths if p not in bound_paths]
+
+    # Validate every dependency actually exists *before* touching the
+    # file at all — binding a path with no real node behind it would
+    # write an import to a module that doesn't exist, which only fails
+    # later (at `import fatass` time) and, because the whole topology
+    # tree is imported eagerly, takes down every other command with it
+    # until someone notices and fixes the file by hand.
+    for dep_path in to_bind:
+        if not _is_node_dir(_node_dir(dep_path)):
+            raise TopologyValidationError(
+                f"can't bind {dep_path!r} to {transform_name}@{node_path}: "
+                f"no such node"
+            )
 
     seen_params = dict(deps)  # param_name -> dep_path, extended as we validate
     new_params: list[tuple[str, str, str]] = []  # (param_name, alias, dep_path)

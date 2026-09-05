@@ -12,3 +12,10 @@ SHELL_HISTORY_PATH = STATE_DIR / "shell_history"
 FileHistory format) — shared across every `fatass shell` invocation, past
 and present, so `fatass debug` can show what was actually typed at the
 `>>> ` prompt, not the OS terminal's own (bash/PowerShell) history."""
+SHELL_OUTPUT_PATH = STATE_DIR / "shell_output"
+"""Persisted transcript of `fatass shell`'s own console output (plain
+text, one `>>> <line>` header followed by whatever that command printed
+to stdout/stderr) — shared across every `fatass shell` invocation, same
+append-only convention as SHELL_HISTORY_PATH, so `fatass debug` can also
+see what a command actually *printed* (errors, results), not just what
+was typed."""

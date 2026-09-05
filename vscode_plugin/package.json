@@ -26,15 +26,15 @@
           "name": "Topology"
         },
         {
-          "id": "fatassContent",
-          "name": "Node Content"
+          "id": "fatassNode",
+          "name": "Node"
         }
       ]
     },
     "commands": [
       { "command": "fatass.refreshTopology", "title": "Refresh", "icon": "$(refresh)" },
-      { "command": "fatass.toggleContentSource", "title": "Toggle home/topology", "icon": "$(arrow-swap)" },
-      { "command": "fatass.cd", "title": "fatass: cd here" },
+      { "command": "fatass.toggleNodeViewSource", "title": "Toggle home/topology", "icon": "$(arrow-swap)" },
+      { "command": "fatass.cd", "title": "fatass: cd here", "icon": "$(arrow-right)" },
       { "command": "fatass.run", "title": "fatass: run" },
       { "command": "fatass.build", "title": "fatass: build" },
       { "command": "fatass.modify", "title": "fatass: modify..." },
@@ -45,14 +45,29 @@
       { "command": "fatass.purge", "title": "fatass: purge" },
       { "command": "fatass.vim", "title": "fatass: open (vim)" },
       { "command": "fatass.openFile", "title": "Open" },
-      { "command": "fatass.revealInExplorer", "title": "Reveal in File Explorer" }
+      { "command": "fatass.revealInExplorer", "title": "Reveal in File Explorer" },
+      { "command": "fatass.revealInTopology", "title": "Reveal in Topology View" },
+      { "command": "fatass.newFile", "title": "New File...", "icon": "$(new-file)" },
+      { "command": "fatass.newFolder", "title": "New Folder...", "icon": "$(new-folder)" },
+      { "command": "fatass.rename", "title": "Rename..." },
+      { "command": "fatass.delete", "title": "Delete" },
+      { "command": "fatass.copyPath", "title": "Copy Path" },
+      { "command": "fatass.copyRelativePath", "title": "Copy Relative Path" },
+      { "command": "fatass.openToSide", "title": "Open to the Side" },
+      { "command": "fatass.cutFile", "title": "Cut" },
+      { "command": "fatass.copyFile", "title": "Copy" },
+      { "command": "fatass.pasteFile", "title": "Paste" }
     ],
     "menus": {
       "view/title": [
         { "command": "fatass.refreshTopology", "when": "view == fatassTopology", "group": "navigation" },
-        { "command": "fatass.toggleContentSource", "when": "view == fatassContent", "group": "navigation" }
+        { "command": "fatass.toggleNodeViewSource", "when": "view == fatassNode", "group": "navigation" },
+        { "command": "fatass.newFile", "when": "view == fatassNode", "group": "navigation" },
+        { "command": "fatass.newFolder", "when": "view == fatassNode", "group": "navigation" },
+        { "command": "fatass.pasteFile", "when": "view == fatassNode", "group": "6_fatass@1" }
       ],
       "view/item/context": [
+        { "command": "fatass.cd", "when": "view == fatassTopology && viewItem == node", "group": "inline" },
         { "command": "fatass.cd", "when": "view == fatassTopology && viewItem == node", "group": "1_fatass@1" },
         { "command": "fatass.run", "when": "view == fatassTopology && viewItem == node", "group": "1_fatass@2" },
         { "command": "fatass.build", "when": "view == fatassTopology && viewItem == node", "group": "1_fatass@3" },
@@ -63,8 +78,19 @@
         { "command": "fatass.remove", "when": "view == fatassTopology && viewItem == node", "group": "3_fatass@1" },
         { "command": "fatass.purge", "when": "view == fatassTopology && viewItem == node", "group": "3_fatass@2" },
         { "command": "fatass.vim", "when": "view == fatassTopology && viewItem == node", "group": "4_fatass@1" },
-        { "command": "fatass.openFile", "when": "view == fatassContent && viewItem == file", "group": "1_fatass@1" },
-        { "command": "fatass.revealInExplorer", "when": "view == fatassContent", "group": "1_fatass@2" }
+        { "command": "fatass.openFile", "when": "view == fatassNode && viewItem == file", "group": "1_fatass@1" },
+        { "command": "fatass.openToSide", "when": "view == fatassNode && viewItem == file", "group": "1_fatass@2" },
+        { "command": "fatass.revealInExplorer", "when": "view == fatassNode", "group": "1_fatass@3" },
+        { "command": "fatass.revealInTopology", "when": "view == fatassNode", "group": "1_fatass@4" },
+        { "command": "fatass.newFile", "when": "view == fatassNode && (viewItem == dir || viewItem == root)", "group": "2_fatass@1" },
+        { "command": "fatass.newFolder", "when": "view == fatassNode && (viewItem == dir || viewItem == root)", "group": "2_fatass@2" },
+        { "command": "fatass.cutFile", "when": "view == fatassNode && viewItem != root && viewItem != chainItem", "group": "3_fatass@1" },
+        { "command": "fatass.copyFile", "when": "view == fatassNode && viewItem != root && viewItem != chainItem", "group": "3_fatass@2" },
+        { "command": "fatass.pasteFile", "when": "view == fatassNode && (viewItem == dir || viewItem == root)", "group": "3_fatass@3" },
+        { "command": "fatass.rename", "when": "view == fatassNode && viewItem != root && viewItem != chainItem", "group": "4_fatass@1" },
+        { "command": "fatass.delete", "when": "view == fatassNode && viewItem != root && viewItem != chainItem", "group": "4_fatass@2" },
+        { "command": "fatass.copyPath", "when": "view == fatassNode", "group": "5_fatass@1" },
+        { "command": "fatass.copyRelativePath", "when": "view == fatassNode", "group": "5_fatass@2" }
       ]
     }
   },

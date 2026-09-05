@@ -26,7 +26,7 @@ def _resolve_path_arg(raw: str) -> Path:
     """One of `insert`'s `path1 path2 ...` arguments: an absolute real
     filesystem path is used as-is (must exist); anything else is a
     fatass target expression (node.path / transform@node.path /
-    node.path/rel/path), resolved via resolve_file() to the actual file
+    node.path(rel/path)), resolved via resolve_file() to the actual file
     or directory it names."""
     if _is_real_fs_path(raw):
         path = Path(raw)
@@ -49,7 +49,7 @@ class InsertCommand(Command):
             help="files/dirs to seed the new item with (leaf lists only) — "
             "each either an absolute real filesystem path, or a fatass "
             "target expression (node.path / transform@node.path / "
-            "node.path/rel/path); omit to instead copy the dummy head's "
+            "node.path(rel/path)); omit to instead copy the dummy head's "
             "own current content",
         )
 
