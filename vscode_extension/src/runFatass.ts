@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { execFile } from "child_process";
 
 /** Terminals currently sitting inside `fatass shell`'s own REPL -- a
  * long-running "python -m fatass shell" process reading one command per
@@ -104,6 +105,24 @@ function runInTerminal(t: vscode.Terminal, commandLine: string, onDone?: () => v
  * Without shell integration -- or while inside the REPL, where a single
  * line isn't its own trackable shell execution -- `onDone` is not called.
  */
+/**
+ * Runs `python -m fatass <args...>` without touching any terminal at all --
+ * for commands (like the Topology view's inline "->" button) that should
+ * apply silently rather than being typed/shown anywhere, regardless of
+ * whether a terminal is active or sitting inside the REPL. `onDone` fires
+ * once the process exits successfully; a failure is reported via an error
+ * message instead of being silently swallowed.
+ */
+export function runFatassBackground(cwd: string, args: string[], onDone?: () => void): void {
+  execFile("python", ["-m", "fatass", ...args], { cwd }, (error, _stdout, stderr) => {
+    if (error) {
+      vscode.window.showErrorMessage(`fatass ${args.join(" ")} failed: ${stderr || error.message}`);
+      return;
+    }
+    onDone?.();
+  });
+}
+
 export function runFatass(cwd: string, args: string[], onDone?: () => void): void {
   const commandLine = fatassCommandLine(args);
 

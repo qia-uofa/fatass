@@ -52,7 +52,7 @@ export function registerFileOps(
       }
       await vscode.workspace.fs.writeFile(vscode.Uri.file(target), new Uint8Array());
       refresh();
-      vscode.window.showTextDocument(vscode.Uri.file(target));
+      vscode.commands.executeCommand("vscode.open", vscode.Uri.file(target));
     }),
 
     vscode.commands.registerCommand("fatass.newFolder", async (item?: FileItem) => {
@@ -114,7 +114,7 @@ export function registerFileOps(
     }),
 
     vscode.commands.registerCommand("fatass.openToSide", (item: FileItem) => {
-      vscode.window.showTextDocument(vscode.Uri.file(item.fsPath), {
+      vscode.commands.executeCommand("vscode.open", vscode.Uri.file(item.fsPath), {
         viewColumn: vscode.ViewColumn.Beside,
       });
     }),

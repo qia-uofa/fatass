@@ -2,8 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isInShellRepl = isInShellRepl;
 exports.fatassCommandLine = fatassCommandLine;
+exports.runFatassBackground = runFatassBackground;
 exports.runFatass = runFatass;
 const vscode = require("vscode");
+const child_process_1 = require("child_process");
 /** Terminals currently sitting inside `fatass shell`'s own REPL -- a
  * long-running "python -m fatass shell" process reading one command per
  * line from stdin, with no "python -m fatass" prefix on each line (see
@@ -98,6 +100,23 @@ function runInTerminal(t, commandLine, onDone) {
  * Without shell integration -- or while inside the REPL, where a single
  * line isn't its own trackable shell execution -- `onDone` is not called.
  */
+/**
+ * Runs `python -m fatass <args...>` without touching any terminal at all --
+ * for commands (like the Topology view's inline "->" button) that should
+ * apply silently rather than being typed/shown anywhere, regardless of
+ * whether a terminal is active or sitting inside the REPL. `onDone` fires
+ * once the process exits successfully; a failure is reported via an error
+ * message instead of being silently swallowed.
+ */
+function runFatassBackground(cwd, args, onDone) {
+    (0, child_process_1.execFile)("python", ["-m", "fatass", ...args], { cwd }, (error, _stdout, stderr) => {
+        if (error) {
+            vscode.window.showErrorMessage(`fatass ${args.join(" ")} failed: ${stderr || error.message}`);
+            return;
+        }
+        onDone?.();
+    });
+}
 function runFatass(cwd, args, onDone) {
     const commandLine = fatassCommandLine(args);
     if (args[0] === "shell") {
@@ -113,3 +132,4 @@ function runFatass(cwd, args, onDone) {
     }
     runInTerminal(t, commandLine, onDone);
 }
+//# sourceMappingURL=runFatass.js.map

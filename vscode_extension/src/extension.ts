@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { findFatassRoot } from "./workspaceRoot";
 import { TopologyProvider, TopologyDragAndDropController, NodeItem } from "./topologyProvider";
 import { NodeViewProvider, FileItem, nodeLabel } from "./nodeViewProvider";
-import { runFatass, fatassCommandLine, isInShellRepl } from "./runFatass";
+import { runFatass, runFatassBackground, fatassCommandLine, isInShellRepl } from "./runFatass";
 import { registerFileOps } from "./fileOps";
 
 export function activate(context: vscode.ExtensionContext): void {
@@ -109,6 +109,9 @@ export function activate(context: vscode.ExtensionContext): void {
 
     vscode.commands.registerCommand("fatass.toggleNodeViewSource", () => nodeViewProvider.toggleSource()),
 
+    // Context-menu "cd": typed into the active terminal, same as every
+    // other confirmed command -- bare "cd ..." if that terminal is sitting
+    // inside the REPL, else the full "python -m fatass cd ...".
     vscode.commands.registerCommand("fatass.cd", (node: NodeItem) => {
       runNoConfirm(["cd", nodePathArg(node)]);
       // The REPL's own `cd` is in-memory only (see shell.py's
@@ -118,6 +121,13 @@ export function activate(context: vscode.ExtensionContext): void {
       if (isInShellRepl()) {
         nodeViewProvider.setCurrentPath(node.dotPath);
       }
+    }),
+
+    // The Topology view's inline "->" button: applies silently in the
+    // background regardless of terminal state -- never typed into a
+    // terminal, unlike the context-menu "cd" above.
+    vscode.commands.registerCommand("fatass.cdBackground", (node: NodeItem) => {
+      runFatassBackground(root, ["cd", nodePathArg(node)], refreshAll);
     }),
 
     vscode.commands.registerCommand("fatass.run", (node: NodeItem) => run(node, ["run", nodePathArg(node)])),
@@ -178,7 +188,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("fatass.vim", (node: NodeItem) => run(node, ["vim", nodePathArg(node)])),
 
     vscode.commands.registerCommand("fatass.openFile", (file: FileItem) => {
-      vscode.window.showTextDocument(vscode.Uri.file(file.fsPath));
+      vscode.commands.executeCommand("vscode.open", vscode.Uri.file(file.fsPath));
     }),
 
     vscode.commands.registerCommand("fatass.revealInExplorer", (file: FileItem) => {

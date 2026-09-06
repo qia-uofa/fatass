@@ -14,6 +14,9 @@ _BASE_CLASS_SUFFIX = re.compile(
 _TRANSFORM_WITH_DEPS = re.compile(
     r"^(?P<transform>[A-Za-z_][A-Za-z0-9_]*)\((?P<deps>[^()]*)\)@(?P<node>.+)$"
 )
+_TRANSFORM_WITH_OPTIONAL_DEPS = re.compile(
+    r"^(?P<transform>[A-Za-z_][A-Za-z0-9_]*)(?:\((?P<deps>[^()]*)\))?@(?P<node>.+)$"
+)
 
 
 def resolve_node_path(raw: str) -> str:
@@ -137,6 +140,59 @@ def _parse_subclass_args(raw: str | None, target: str) -> dict[str, tuple]:
     return kwargs
 
 
+def _parse_deps_and_params(raw: str, target: str) -> tuple[list[str], list[tuple[str, str]]]:
+    """Shared by `create`'s "<transform>(<deps>)@<node>" form and
+    `modify`'s optional "<transform>(<deps>)@<node>" verification form:
+    a comma-separated list mixing dependency node.paths with plain
+    typed parameters (name:type). An entry containing ":" is a plain
+    parameter; anything else is a dependency node.path."""
+    dep_paths: list[str] = []
+    plain_params: list[tuple[str, str]] = []
+    for item in raw.split(","):
+        item = item.strip()
+        if not item:
+            continue
+        if ":" in item:
+            name, type_str = item.split(":", 1)
+            name, type_str = name.strip(), type_str.strip()
+            if not name or not type_str:
+                raise ValueError(f"invalid parameter {item!r} in {target!r}")
+            plain_params.append((name, type_str))
+        else:
+            dep_paths.append(resolve_node_path(item))
+    return dep_paths, plain_params
+
+
+def parse_modify_target(
+    target: str,
+) -> tuple[str, str | None, list[str] | None, list[tuple[str, str]] | None]:
+    """Same as parse_maybe_at_target, but also accepts `modify`'s own
+    "<transform>(<dep1>,<dep2>,<name>:<type>,...)@<node.path>" form (the
+    same syntax `create` uses to wire up a transform's dependencies and
+    plain parameters at creation time — see `parse_create_target`).
+
+    Returns (node_path, transform_name, dep_node_paths, plain_params).
+    `dep_node_paths`/`plain_params` are `None` when no "(...)" was given
+    at all (a bare "<transform>@<node>" or plain "<node>" target) — the
+    caller should skip signature verification in that case. When "(...)"
+    was given (even empty, "()"), both are real (possibly empty) lists,
+    to be checked by the caller against the transform's actual current
+    signature — `modify` raises if they don't match, since a stale or
+    typo'd "(...)" would otherwise be silently ignored."""
+    if "@" not in target:
+        return resolve_node_path(target), None, None, None
+    match = _TRANSFORM_WITH_OPTIONAL_DEPS.match(target)
+    if not match:
+        raise ValueError(f"expected <transform>[(...)]@<node>, got {target!r}")
+    transform_name = match.group("transform")
+    node_path = resolve_node_path(match.group("node"))
+    deps_raw = match.group("deps")
+    if deps_raw is None:
+        return node_path, transform_name, None, None
+    dep_paths, plain_params = _parse_deps_and_params(deps_raw, target)
+    return node_path, transform_name, dep_paths, plain_params
+
+
 def parse_create_target(
     target: str,
 ) -> tuple[str, str | None, str, list[str], list[tuple[str, str]], dict[str, tuple]]:
@@ -179,20 +235,7 @@ def parse_create_target(
     deps_match = _TRANSFORM_WITH_DEPS.match(target)
     if deps_match:
         transform_name = deps_match.group("transform")
-        dep_paths: list[str] = []
-        plain_params: list[tuple[str, str]] = []
-        for item in deps_match.group("deps").split(","):
-            item = item.strip()
-            if not item:
-                continue
-            if ":" in item:
-                name, type_str = item.split(":", 1)
-                name, type_str = name.strip(), type_str.strip()
-                if not name or not type_str:
-                    raise ValueError(f"invalid parameter {item!r} in {target!r}")
-                plain_params.append((name, type_str))
-            else:
-                dep_paths.append(resolve_node_path(item))
+        dep_paths, plain_params = _parse_deps_and_params(deps_match.group("deps"), target)
         node_path = resolve_node_path(deps_match.group("node"))
         return node_path, transform_name, "Node", dep_paths, plain_params, {}
 

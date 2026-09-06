@@ -86,7 +86,11 @@ function activate(context) {
     envWatcher.onDidDelete(syncPwd);
     context.subscriptions.push(topologyView, nodeView, envWatcher);
     (0, fileOps_1.registerFileOps)(context, root, nodeViewProvider);
-    context.subscriptions.push(vscode.commands.registerCommand("fatass.refreshTopology", () => topologyProvider.refresh()), vscode.commands.registerCommand("fatass.toggleNodeViewSource", () => nodeViewProvider.toggleSource()), vscode.commands.registerCommand("fatass.cd", (node) => {
+    context.subscriptions.push(vscode.commands.registerCommand("fatass.refreshTopology", () => topologyProvider.refresh()), vscode.commands.registerCommand("fatass.toggleNodeViewSource", () => nodeViewProvider.toggleSource()), 
+    // Context-menu "cd": typed into the active terminal, same as every
+    // other confirmed command -- bare "cd ..." if that terminal is sitting
+    // inside the REPL, else the full "python -m fatass cd ...".
+    vscode.commands.registerCommand("fatass.cd", (node) => {
         runNoConfirm(["cd", nodePathArg(node)]);
         // The REPL's own `cd` is in-memory only (see shell.py's
         // enter_session) -- it never touches .fatass/.env, so
@@ -95,6 +99,12 @@ function activate(context) {
         if ((0, runFatass_1.isInShellRepl)()) {
             nodeViewProvider.setCurrentPath(node.dotPath);
         }
+    }), 
+    // The Topology view's inline "->" button: applies silently in the
+    // background regardless of terminal state -- never typed into a
+    // terminal, unlike the context-menu "cd" above.
+    vscode.commands.registerCommand("fatass.cdBackground", (node) => {
+        (0, runFatass_1.runFatassBackground)(root, ["cd", nodePathArg(node)], refreshAll);
     }), vscode.commands.registerCommand("fatass.run", (node) => run(node, ["run", nodePathArg(node)])), vscode.commands.registerCommand("fatass.build", (node) => run(node, ["build", nodePathArg(node)])), vscode.commands.registerCommand("fatass.modify", async (node) => {
         const prompt = await vscode.window.showInputBox({
             prompt: `Instructions for modifying ${nodePathArg(node)}`,
@@ -135,7 +145,7 @@ function activate(context) {
         }
         run(node, ["copy", nodePathArg(node), dest]);
     }), vscode.commands.registerCommand("fatass.remove", (node) => run(node, ["remove", nodePathArg(node)])), vscode.commands.registerCommand("fatass.purge", (node) => run(node, ["purge", nodePathArg(node)])), vscode.commands.registerCommand("fatass.vim", (node) => run(node, ["vim", nodePathArg(node)])), vscode.commands.registerCommand("fatass.openFile", (file) => {
-        vscode.window.showTextDocument(vscode.Uri.file(file.fsPath));
+        vscode.commands.executeCommand("vscode.open", vscode.Uri.file(file.fsPath));
     }), vscode.commands.registerCommand("fatass.revealInExplorer", (file) => {
         if (file) {
             vscode.commands.executeCommand("revealFileInOS", vscode.Uri.file(file.fsPath));

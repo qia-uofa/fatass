@@ -42,7 +42,7 @@ function registerFileOps(context, root, nodeViewProvider) {
         }
         await vscode.workspace.fs.writeFile(vscode.Uri.file(target), new Uint8Array());
         refresh();
-        vscode.window.showTextDocument(vscode.Uri.file(target));
+        vscode.commands.executeCommand("vscode.open", vscode.Uri.file(target));
     }), vscode.commands.registerCommand("fatass.newFolder", async (item) => {
         const dir = dirFor(item, nodeViewProvider);
         const name = await vscode.window.showInputBox({ prompt: `New folder in ${dir}` });
@@ -88,7 +88,7 @@ function registerFileOps(context, root, nodeViewProvider) {
     }), vscode.commands.registerCommand("fatass.copyRelativePath", (item) => {
         vscode.env.clipboard.writeText(path.relative(root, item.fsPath).split(path.sep).join("/"));
     }), vscode.commands.registerCommand("fatass.openToSide", (item) => {
-        vscode.window.showTextDocument(vscode.Uri.file(item.fsPath), {
+        vscode.commands.executeCommand("vscode.open", vscode.Uri.file(item.fsPath), {
             viewColumn: vscode.ViewColumn.Beside,
         });
     }), vscode.commands.registerCommand("fatass.cutFile", (item) => {

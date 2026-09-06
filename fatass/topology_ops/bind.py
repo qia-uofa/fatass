@@ -167,6 +167,31 @@ def bound_dep_paths(node_path: str, transform_name: str) -> list[str]:
     return list(_existing_deps(func, imports).values())
 
 
+def existing_plain_params(node_path: str, transform_name: str) -> list[tuple[str, str]]:
+    """[(param_name, type_annotation)] for every parameter on
+    `transform_name` that isn't a `Node`-typed dependency (see
+    `_existing_deps`) — the plain typed parameters previously added by
+    `add_plain_params` (or hand-written the same way). Used by `modify`
+    to verify a "<transform>(...)@<node>" target's plain-parameter
+    entries against the transform's actual current signature."""
+    _file_path, _source, tree, func = _parse_transform(node_path, transform_name)
+    imports = _existing_imports(tree)
+    dep_names = set(_existing_deps(func, imports))
+    params = []
+    for arg in func.args.args:
+        if arg.arg in dep_names:
+            continue
+        if arg.annotation is None:
+            continue
+        annotation = (
+            arg.annotation.id
+            if isinstance(arg.annotation, ast.Name)
+            else ast.unparse(arg.annotation)
+        )
+        params.append((arg.arg, annotation))
+    return params
+
+
 def bind_transform(node_path: str, transform_name: str, dep_node_paths: list[str]) -> list[str]:
     """Add each of `dep_node_paths` as a declared `Node`-typed parameter
     (and matching import) on `transform_name`'s function — the

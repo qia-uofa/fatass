@@ -34,7 +34,8 @@
     "commands": [
       { "command": "fatass.refreshTopology", "title": "Refresh", "icon": "$(refresh)" },
       { "command": "fatass.toggleNodeViewSource", "title": "Toggle home/topology", "icon": "$(arrow-swap)" },
-      { "command": "fatass.cd", "title": "fatass: cd here", "icon": "$(arrow-right)" },
+      { "command": "fatass.cd", "title": "fatass: cd here" },
+      { "command": "fatass.cdBackground", "title": "fatass: cd here", "icon": "$(arrow-right)" },
       { "command": "fatass.run", "title": "fatass: run" },
       { "command": "fatass.build", "title": "fatass: build" },
       { "command": "fatass.modify", "title": "fatass: modify..." },
@@ -67,7 +68,7 @@
         { "command": "fatass.pasteFile", "when": "view == fatassNode", "group": "6_fatass@1" }
       ],
       "view/item/context": [
-        { "command": "fatass.cd", "when": "view == fatassTopology && viewItem == node", "group": "inline" },
+        { "command": "fatass.cdBackground", "when": "view == fatassTopology && viewItem == node", "group": "inline" },
         { "command": "fatass.cd", "when": "view == fatassTopology && viewItem == node", "group": "1_fatass@1" },
         { "command": "fatass.run", "when": "view == fatassTopology && viewItem == node", "group": "1_fatass@2" },
         { "command": "fatass.build", "when": "view == fatassTopology && viewItem == node", "group": "1_fatass@3" },

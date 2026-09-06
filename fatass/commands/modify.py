@@ -5,9 +5,9 @@ from .._internal.prompts import load_topology_edit_system_prompt
 from ..core.free import DEFAULT_ALLOWED_TOOLS, DEFAULT_PERMISSION_MODE, NO_PROMPT_TEXT
 from ..core.transform import _import_node
 from ..errors import FreeError, TopologyValidationError
-from ..topology_ops.bind import bound_dep_paths
+from ..topology_ops.bind import bound_dep_paths, existing_plain_params
 from ..topology_ops.scaffold import refine_node, refine_transform
-from ._targets import parse_maybe_at_target
+from ._targets import parse_modify_target
 from .base import Command
 
 
@@ -38,6 +38,32 @@ def _transform_extra_sys_prompt(node_path: str, transform_name: str) -> str | No
     return "\n\n".join(parts) or None
 
 
+def _verify_transform_signature(
+    node_path: str,
+    transform_name: str,
+    dep_paths: list[str],
+    plain_params: list[tuple[str, str]],
+) -> None:
+    """Raises unless `dep_paths`/`plain_params` (parsed off a
+    "<transform>(...)@<node>" `modify` target — see
+    `_targets.parse_modify_target`) exactly match `transform_name`'s
+    actual current dependencies/plain parameters. Order doesn't matter,
+    only membership."""
+    actual_deps = set(bound_dep_paths(node_path, transform_name))
+    actual_params = set(existing_plain_params(node_path, transform_name))
+    given_deps = set(dep_paths)
+    given_params = set(plain_params)
+    if given_deps == actual_deps and given_params == actual_params:
+        return
+    expected = ", ".join(
+        sorted(actual_deps) + [f"{name}:{type_str}" for name, type_str in sorted(actual_params)]
+    )
+    raise TopologyValidationError(
+        f"{transform_name}(...) doesn't match {transform_name}@{node_path}'s "
+        f"actual signature — expected {transform_name}({expected})"
+    )
+
+
 class ModifyCommand(Command):
     name = "modify"
     help = "edit an existing node's class file or transform file with a prompt"
@@ -45,7 +71,15 @@ class ModifyCommand(Command):
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
-            "target", help="node.path, or <transform>@<node.path> to target a transform file"
+            "target",
+            help=(
+                "node.path, or <transform>@<node.path> to target a transform "
+                "file, optionally followed by the same "
+                "\"(dep1,dep2,name:type,...)\" signature parens `create` "
+                "uses (e.g. \"build(node1,prompt:str)@node\") to verify "
+                "that's still the transform's actual signature before "
+                "modifying it"
+            ),
         )
         parser.add_argument(
             "prompt",
@@ -79,8 +113,10 @@ class ModifyCommand(Command):
     def run(self, args: argparse.Namespace) -> int:
         prompt = args.prompt if args.prompt else NO_PROMPT_TEXT
         try:
-            node_path, transform_name = parse_maybe_at_target(args.target)
+            node_path, transform_name, dep_paths, plain_params = parse_modify_target(args.target)
             if transform_name is not None:
+                if dep_paths is not None:
+                    _verify_transform_signature(node_path, transform_name, dep_paths, plain_params)
                 extra = _transform_extra_sys_prompt(node_path, transform_name)
                 refine_transform(
                     node_path,
