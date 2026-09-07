@@ -1,10 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.NodeDragAndDropController = void 0;
 exports.registerFileOps = registerFileOps;
 const fs = require("fs");
 const path = require("path");
 const vscode = require("vscode");
 let clipboard;
+const NODE_FILE_MIME_TYPE = "application/vnd.code.tree.fatassnode";
 function dirFor(item, nodeViewProvider) {
     if (!item) {
         return nodeViewProvider.getBaseDir();
@@ -24,6 +26,59 @@ function uniqueDestination(destDir, name) {
     }
     return candidate;
 }
+/**
+ * Drag-and-drop for the Node view's own file listing -- dragging an entry
+ * onto a folder (or the root row, for the node's own directory) moves it
+ * there, same as cut+paste. Dragging files in from the OS file explorer
+ * (or another VS Code window) instead copies them in, since there's no
+ * "original" location within this tree to remove them from -- VS Code
+ * exposes those as a plain "text/uri-list" transfer rather than the
+ * internal FileItem-carrying mime type used for drags that originate here.
+ */
+class NodeDragAndDropController {
+    constructor(nodeViewProvider, refresh) {
+        this.nodeViewProvider = nodeViewProvider;
+        this.refresh = refresh;
+        this.dragMimeTypes = [NODE_FILE_MIME_TYPE];
+        this.dropMimeTypes = [NODE_FILE_MIME_TYPE, "text/uri-list"];
+    }
+    handleDrag(source, dataTransfer) {
+        const items = source.filter((item) => item.contextValue !== "root");
+        dataTransfer.set(NODE_FILE_MIME_TYPE, new vscode.DataTransferItem(items));
+    }
+    async handleDrop(target, dataTransfer) {
+        const destDir = dirFor(target, this.nodeViewProvider);
+        let changed = false;
+        const internal = dataTransfer.get(NODE_FILE_MIME_TYPE);
+        if (internal) {
+            const sources = internal.value;
+            for (const source of sources) {
+                if (path.dirname(source.fsPath) === destDir || destDir.startsWith(source.fsPath + path.sep)) {
+                    continue;
+                }
+                const dest = uniqueDestination(destDir, path.basename(source.fsPath));
+                await vscode.workspace.fs.rename(vscode.Uri.file(source.fsPath), vscode.Uri.file(dest));
+                changed = true;
+            }
+        }
+        const uriList = await dataTransfer.get("text/uri-list")?.asString();
+        if (uriList) {
+            for (const line of uriList.split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"))) {
+                const srcPath = vscode.Uri.parse(line).fsPath;
+                if (!fs.existsSync(srcPath) || srcPath === destDir) {
+                    continue;
+                }
+                const dest = uniqueDestination(destDir, path.basename(srcPath));
+                fs.cpSync(srcPath, dest, { recursive: true });
+                changed = true;
+            }
+        }
+        if (changed) {
+            this.refresh();
+        }
+    }
+}
+exports.NodeDragAndDropController = NodeDragAndDropController;
 /** Registers file-management commands for the Node view -- the
  * same operations the native file explorer offers (new file/folder,
  * rename, delete, cut/copy/paste, copy path, open to the side). */

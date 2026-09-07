@@ -65,6 +65,7 @@ function activate(context) {
     });
     const nodeView = vscode.window.createTreeView("fatassNode", {
         treeDataProvider: nodeViewProvider,
+        dragAndDropController: new fileOps_1.NodeDragAndDropController(nodeViewProvider, () => nodeViewProvider.refresh()),
     });
     // The view's own title stays the static "Node" (matching the Topology
     // view's own static title) -- the current node and home/topology

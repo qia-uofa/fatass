@@ -3,7 +3,7 @@ import { findFatassRoot } from "./workspaceRoot";
 import { TopologyProvider, TopologyDragAndDropController, NodeItem } from "./topologyProvider";
 import { NodeViewProvider, FileItem, nodeLabel } from "./nodeViewProvider";
 import { runFatass, runFatassBackground, fatassCommandLine, isInShellRepl } from "./runFatass";
-import { registerFileOps } from "./fileOps";
+import { registerFileOps, NodeDragAndDropController } from "./fileOps";
 
 export function activate(context: vscode.ExtensionContext): void {
   const root = findFatassRoot();
@@ -75,6 +75,7 @@ export function activate(context: vscode.ExtensionContext): void {
   });
   const nodeView = vscode.window.createTreeView("fatassNode", {
     treeDataProvider: nodeViewProvider,
+    dragAndDropController: new NodeDragAndDropController(nodeViewProvider, () => nodeViewProvider.refresh()),
   });
 
   // The view's own title stays the static "Node" (matching the Topology

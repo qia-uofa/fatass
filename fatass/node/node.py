@@ -3,9 +3,46 @@ from pathlib import Path
 from .._internal.paths import HOME_ROOT
 
 _TOPOLOGY_PREFIX = "fatass.topology."
+_NODE_PREFIX = "fatass.node."
 
 
-class Node:
+class NodeMeta(type):
+    """A `Node` subclass is almost always referred to as a class object
+    itself (`Education.length()`, `Info.write(...)`), never instantiated
+    (`Chain` is the one exception) — so a plain instance `__repr__` would
+    never actually be seen. Overriding `__repr__` here, on the metaclass,
+    is what makes `repr(SomeNodeClass)` itself show something useful
+    (`fatass ls` and any debugging print of a node class) instead of
+    Python's default `<class 'module.Name'>`.
+
+    Shows the fatass framework kind the class is built on — its nearest
+    `fatass.node.*`-defined ancestor in `__mro__` (most-specific first,
+    so a typed variant like `SingleCsv`/`ArrayCsv` is picked over the
+    plain `Single`/`Array` it's built on, and a bare `Node` subclass
+    falls all the way back to `Node` itself) — plus that kind's own
+    configuration: `DIM` (`Array`/its typed variants) and/or `FIELDS`
+    (`Tuple`, `SingleCsv`, `ArrayCsv`), whichever the kind actually
+    defines non-empty."""
+
+    def __repr__(cls) -> str:
+        kind = cls
+        for base in cls.__mro__:
+            if base.__module__.startswith(_NODE_PREFIX):
+                kind = base
+                break
+
+        parts = []
+        dim = getattr(cls, "DIM", ())
+        if dim:
+            parts.append("x".join(str(d) for d in dim))
+        fields = getattr(cls, "FIELDS", ())
+        if fields:
+            parts.append(", ".join(fields))
+
+        return f"{kind.__name__}({', '.join(parts)})"
+
+
+class Node(metaclass=NodeMeta):
     """Base class for a node's definition.
 
     Subclassed once per `fatass/topology/.../<name>/<name>.py`. Carries no
