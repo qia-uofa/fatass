@@ -48,6 +48,14 @@ class Single(Node):
         path.write_text(content, encoding="utf-8")
 
     @classmethod
+    def write_bytes(cls, content: bytes) -> None:
+        """Same as `write()`, for a `Single` subclass whose managed file
+        is binary (e.g. `SinglePng`/`SingleJpg`) rather than text."""
+        path = cls._file_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+
+    @classmethod
     def _sys_prompt(cls) -> str:
         """Built fresh per class rather than a shared constant, so it
         reflects this concrete subclass's own `EXT` instead of generic
@@ -92,6 +100,14 @@ class SingleJson(Single):
 
 class SingleHtml(Single):
     EXT = ".html"
+
+
+class SinglePng(Single):
+    EXT = ".png"
+
+
+class SingleJpg(Single):
+    EXT = ".jpg"
 
 
 class SingleCsv(Single):

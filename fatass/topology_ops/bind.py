@@ -257,15 +257,42 @@ def bind_transform(node_path: str, transform_name: str, dep_node_paths: list[str
     return [dep_path for _name, _alias, dep_path in new_params]
 
 
+def _param_text(name: str, type_str: str) -> str:
+    """`type_str` may itself carry a "=default" suffix (e.g. "str=" from
+    `create f(x:str="")@node`, or "int=0"). Split that off and treat the
+    raw text after "=" as literal default *content*, not as pre-quoted
+    Python source: the fatass shell reads each line through
+    `shlex.split()` (needed so multi-word args work at all), which — same
+    as a POSIX shell — consumes a matching pair of quote characters as
+    tokenizing syntax rather than passing them through. `x:str="hello"`
+    reaches this function as `x:str=hello`, `x:str=""` as `x:str=`; if we
+    assumed the default were already valid Python and spliced it in
+    as-is, both would produce broken code (`str=hello` references an
+    undefined name; `str=` isn't a value at all). Re-quoting a `str`
+    default with `repr()` here instead sidesteps the shell layer
+    entirely — it's correct regardless of whether the original quotes
+    survived. A non-str type's default (int/float/bool) is inserted
+    as-is, since a bare numeric/boolean literal was never quoted in the
+    first place and shlex leaves it untouched."""
+    type_part, sep, default_raw = type_str.partition("=")
+    type_part = type_part.strip()
+    if not sep:
+        return f"{name}: {type_part}"
+    default_raw = default_raw.strip()
+    default_text = repr(default_raw) if type_part == "str" else default_raw
+    return f"{name}: {type_part}={default_text}"
+
+
 def add_plain_params(
     node_path: str, transform_name: str, params: list[tuple[str, str]]
 ) -> list[str]:
-    """Add each of `params` (param_name, type_annotation) as an ordinary,
-    non-default, import-free parameter on `transform_name`'s function —
-    e.g. ("prompt", "str"), ("n", "int"). Unlike `bind_transform`, these
-    aren't `Node`-typed dependencies: no import is added, and nothing is
-    resolved against the topology. Raises if a name collides with an
-    existing parameter (of any kind).
+    """Add each of `params` (param_name, type_annotation, optionally with
+    its own "=default" suffix on the type string — see `_param_text`) as
+    an ordinary, import-free parameter on `transform_name`'s function —
+    e.g. ("prompt", "str"), ("n", "int"), ("x", "str="). Unlike
+    `bind_transform`, these aren't `Node`-typed dependencies: no import is
+    added, and nothing is resolved against the topology. Raises if a name
+    collides with an existing parameter (of any kind).
 
     Returns the param names actually added."""
     file_path, source, tree, func = _parse_transform(node_path, transform_name)
@@ -283,7 +310,7 @@ def add_plain_params(
         return []
 
     insert_pos, needs_leading, needs_trailing = _new_param_insertion(source, func)
-    joined = ", ".join(f"{name}: {type_str}" for name, type_str in params)
+    joined = ", ".join(_param_text(name, type_str) for name, type_str in params)
     param_text = (", " if needs_leading else "") + joined + (", " if needs_trailing else "")
     new_source = source[:insert_pos] + param_text + source[insert_pos:]
 

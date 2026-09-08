@@ -19,7 +19,7 @@ def _framework_node_classes(cls: type[Node]) -> dict[str, type[Node]]:
     `Node` itself so a new subclass (e.g. a new `SingleCsv`) is picked up
     automatically without a matching entry here. Restricted to classes
     defined in `fatass.node.*` so an actual topology node (e.g. a user's own
-    `Papers(Chain)`) never counts as a valid `(NodeSubclass)` target."""
+    `Papers(Chain)`) never counts as a valid `<NodeSubclass>` target."""
     result: dict[str, type[Node]] = {}
     for sub in cls.__subclasses__():
         if sub.__module__.startswith("fatass.node."):
@@ -44,13 +44,19 @@ class CreateCommand(Command):
             "target",
             help=(
                 "node.path, or <transform>@<node.path> to create a transform "
-                "(optionally with dependency node.paths and/or plain "
-                "name:type parameters in parens, e.g. "
-                "\"build(node1,node2,prompt:str,n:int)@node\"); a node.path "
-                "may end with (NodeSubclass) (e.g. \"members(Chain)\") to "
+                "(a bare \"f@node\", with no parens at all, binds `node` "
+                "itself as the transform's one input; write \"f()@node\" "
+                "with explicit empty parens for no input; or give explicit "
+                "dependency node.paths and/or plain name:type parameters in "
+                "parens, e.g. \"build(node1,node2,prompt:str,n:int)@node\"; "
+                "a plain parameter's type may add \"=default\" for a "
+                "default value, e.g. \"f(x:str=hello)@node\" — a str "
+                "default is re-quoted by fatass itself, so it survives the "
+                "shell's own quote-stripping); a node.path "
+                "may end with <NodeSubclass> (e.g. \"members<Chain>\") to "
                 "subclass fatass.<NodeSubclass> instead of fatass.Node, "
                 "optionally followed by \",dim=<int>x<int>x...\" for an "
-                "Array subclass (e.g. \"grid(ArrayTxt,dim=2x2x2)\")"
+                "Array subclass (e.g. \"grid<ArrayTxt,dim=2x2x2>\")"
             ),
         )
 
@@ -70,7 +76,7 @@ class CreateCommand(Command):
             if transform_name is not None:
                 if base_class != "Node":
                     raise ValueError(
-                        f"(NodeSubclass) only applies to creating a node, not a "
+                        f"<NodeSubclass> only applies to creating a node, not a "
                         f"transform: {args.target!r}"
                     )
                 created = create_transform(node_path, transform_name)

@@ -69,7 +69,7 @@ def _register_framework_node_classes(cls: type[Node]) -> None:
     explicitly imported above -- a generated node class body always reads
     as `fatass.<base_class>` (see topology_ops/scaffold.py), so a subclass
     that `create`'s programmatic discovery (commands/create.py) accepts as
-    a `(NodeSubclass)` target must actually be reachable here too, without
+    a `<NodeSubclass>` target must actually be reachable here too, without
     a matching import having to be added by hand each time."""
     for sub in cls.__subclasses__():
         if sub.__module__.startswith(f"{__name__}.node.") and sub.__name__ not in __all__:

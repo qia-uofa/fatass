@@ -418,7 +418,25 @@ class _ChainItem:
         indexed_cls = type(
             f"{schema_cls.__name__}@{self._index}",
             (schema_cls,),
-            {"_assets_dir": classmethod(lambda cls, _dir=target_dir: _dir)},
+            {
+                "_assets_dir": classmethod(lambda cls, _dir=target_dir: _dir),
+                # The general primitive: which list, and which index into
+                # it, this indexed class was derived from. Enough on its
+                # own to reach ANY other schema child at the same index
+                # from anywhere — not just from within this class itself —
+                # via `list_cls()[index].other_child`, the exact same way
+                # indexing the list normally already works.
+                "_chain_index": classmethod(lambda cls, _i=self._index: _i),
+                "_chain_list_cls": classmethod(lambda cls, _lc=self._list_cls: _lc),
+                # `_sibling` is pure sugar over the two primitives above —
+                # equivalent to `cls._chain_list_cls()()[cls._chain_index()].sib_name`,
+                # just shorter to write from inside a transform that only
+                # has `current_node()` (itself one of these indexed
+                # classes) in hand.
+                "_sibling": classmethod(
+                    lambda cls, sib_name: getattr(cls._chain_list_cls()()[cls._chain_index()], sib_name)
+                ),
+            },
         )
         if is_new:
             # First-ever access of this item's schema child: mirror what

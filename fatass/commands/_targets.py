@@ -6,10 +6,10 @@ from ..errors import TopologyValidationError
 from ..resolve.cwd import ROOT, expand
 
 _BASE_CLASS_SUFFIX = re.compile(
-    r"\((?P<name>[A-Za-z_][A-Za-z0-9_]*)"
+    r"<(?P<name>[A-Za-z_][A-Za-z0-9_]*)"
     r"(?:\((?P<args>[^()]*)\))?"
-    r"(?:,(?P<kwargs>[^()]*))?"
-    r"\)$"
+    r"(?:,(?P<kwargs>[^<>]*))?"
+    r">$"
 )
 _TRANSFORM_WITH_DEPS = re.compile(
     r"^(?P<transform>[A-Za-z_][A-Za-z0-9_]*)\((?P<deps>[^()]*)\)@(?P<node>.+)$"
@@ -64,9 +64,9 @@ def parse_maybe_at_target(target: str) -> tuple[str, str | None]:
 
 
 def _parse_class_kwargs(raw: str | None, target: str) -> dict[str, tuple]:
-    """The "(NodeSubclass,dim=2x2x2)" suffix's legacy extra part — just
+    """The "<NodeSubclass,dim=2x2x2>" suffix's legacy extra part — just
     Array's `dim=<int>x<int>x...`, "x"-separated (not comma-separated,
-    which would collide with the outer "(NodeSubclass,...)" split)."""
+    which would collide with the outer "<NodeSubclass,...>" split)."""
     if not raw:
         return {}
     kwargs: dict[str, tuple] = {}
@@ -113,9 +113,9 @@ def _split_top_level(raw: str) -> list[str]:
 
 
 def _parse_subclass_args(raw: str | None, target: str) -> dict[str, tuple]:
-    """The "(NodeSubclass(...))" suffix's constructor-style args — e.g.
-    "my_node(SingleCsv(field1,field2))" or
-    "my_node(ArrayCsv([2,2,4],field1,field2))". A leading "[i,j,...]"
+    """The "<NodeSubclass(...)>" suffix's constructor-style args — e.g.
+    "my_node<SingleCsv(field1,field2)>" or
+    "my_node<ArrayCsv([2,2,4],field1,field2)>". A leading "[i,j,...]"
     positional argument is Array's `dim` (its own "x"-separated
     "dim=2x2x2" keyword form still works too, see `_parse_class_kwargs`);
     every remaining positional argument is a field name, collected as
@@ -198,21 +198,26 @@ def parse_create_target(
 ) -> tuple[str, str | None, str, list[str], list[tuple[str, str]], dict[str, tuple]]:
     """Same as parse_maybe_at_target, but also accepts:
 
-    - a trailing "(NodeSubclass)" on the target — e.g. "members(Chain)"
-      or "build@members(Chain)" — naming the `fatass.<NodeSubclass>`
+    - a bare "<transform>@<node.path>" with NO "(...)" at all — e.g.
+      "f@mynode" — binds the transform to a single input: `mynode` itself
+      (for a transform that reads/refines its own node's already-existing
+      content). Write "f()@mynode" (explicit, empty parens) instead for a
+      transform that takes no input at all.
+    - a trailing "<NodeSubclass>" on the target — e.g. "members<Chain>"
+      or "build@members<Chain>" — naming the `fatass.<NodeSubclass>`
       base class a newly-created node should subclass instead of the
       default `fatass.Node`. The suffix is only meaningful for creating a
       node, so it's stripped before the rest of the target is parsed.
       Optionally followed by ",<key>=<value>" extra class arguments —
       currently just "dim=<int>x<int>x..." for an Array subclass, e.g.
-      "grid(ArrayTxt,dim=2x2x2)" — baked into the generated class as
+      "grid<ArrayTxt,dim=2x2x2>" — baked into the generated class as
       `DIM = (2, 2, 2)` (see `scaffold.create_node`'s `class_kwargs`) so
       the node's shape is known immediately, before `on_created()` runs.
     - Or the NodeSubclass itself followed by its own parens of
       constructor-style positional args (see `_parse_subclass_args`) —
-      e.g. "my_node(SingleCsv(field1,field2))" bakes `FIELDS = ("field1",
+      e.g. "my_node<SingleCsv(field1,field2)>" bakes `FIELDS = ("field1",
       "field2")` onto the class, written as that Single's header row on
-      creation; "my_node(ArrayCsv([2,2,4],field1,field2))" bakes both
+      creation; "my_node<ArrayCsv([2,2,4],field1,field2)>" bakes both
       `DIM = (2, 2, 4)` (from the leading "[...]") and the same `FIELDS`,
       written as every one of that Array's files' header row.
     - "<transform>(<dep1>,<dep2>,<name>:<type>,...)@<node.path>" — e.g.
@@ -220,13 +225,21 @@ def parse_create_target(
       mixing dependency node.paths (bound the same way as `bind`, a
       deterministic operation, not an agent call) with plain typed
       parameters (added as ordinary, import-free parameters with that
-      annotation — no default, no binding). An entry containing ":" is a
-      plain parameter (name:type); anything else is a dependency
-      node.path. Whitespace around each comma-separated entry is
-      stripped, so "build(node1, node2)@node" works the same as
-      "build(node1,node2)@node". Mutually exclusive with the
-      "(NodeSubclass)" suffix (that one only applies to a bare node
-      target, this one only to a "<transform>@..." one).
+      annotation — no binding). An entry containing ":" is a plain
+      parameter (name:type); anything else is a dependency node.path.
+      A plain parameter's type may itself carry a "=default" suffix —
+      e.g. "x:str=hello" or "n:int=0" — to give it a default value; see
+      `topology_ops.bind._param_text` for exactly how that's turned into
+      real Python (in short: a `str` default's raw text is `repr()`-
+      quoted by fatass itself, since this whole line is first read
+      through the shell's `shlex.split()`, which strips any quote
+      characters you type around the default before `create` ever sees
+      them — so `x:str=""` and `x:str="hello"` both work as expected
+      without needing to fight that layer's quoting rules). Whitespace
+      around each comma-separated entry is stripped, so
+      "build(node1, node2)@node" works the same as "build(node1,node2)@node".
+      Mutually exclusive with the "<NodeSubclass>" suffix (that one only
+      applies to a bare node target, this one only to a "<transform>@..." one).
 
     Returns (node_path, transform_name, base_class, dep_node_paths,
     plain_params, class_kwargs) — the last three always falsy except for
@@ -251,7 +264,15 @@ def parse_create_target(
         base_class = "Node"
         class_kwargs = {}
     node_path, transform_name = parse_maybe_at_target(target)
-    return node_path, transform_name, base_class, [], [], class_kwargs
+    # A bare "<transform>@<node>" (no parens at all — this branch is only
+    # reached when _TRANSFORM_WITH_DEPS didn't match, i.e. there was no
+    # "(...)" immediately after the transform name) means "this transform
+    # takes its own node as its one input" — e.g. "f@mynode" binds `mynode`
+    # itself, for a transform that reads/refines its own node's already-
+    # existing content. Write "f()@mynode" (explicit, empty parens) for a
+    # transform with no input at all.
+    dep_paths = [node_path] if transform_name is not None else []
+    return node_path, transform_name, base_class, dep_paths, [], class_kwargs
 
 
 def resolve_move_target(raw_new: str, old_path: str) -> str:

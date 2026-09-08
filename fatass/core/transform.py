@@ -286,11 +286,40 @@ def invalidate_index_cache(list_path: str, from_index: int) -> int:
     return len(to_drop)
 
 
+def _resolve_dependency(owning_node: type[Node], dep_cls: type[Node]) -> Node:
+    """Normally just `dep_cls()` — the literal, non-indexed class a
+    static `from fatass.topology... import X` always gives. But when
+    `owning_node` is itself one of `Chain`'s dynamically-derived per-index
+    schema-child classes (has `_sibling`, see `_ChainItem.__getattr__`)
+    and `dep_cls` names another schema child of that SAME list at the
+    SAME depth — a sibling — that literal class would be the wrong one:
+    every item's transform would read the shared dummy head instead of
+    its own sibling's actual content, no matter which item is running.
+    Detected by comparing `dep_cls`'s own real topology path against
+    `owning_node`'s owning list's path + one more segment; when it
+    matches, resolve through `owning_node._sibling(...)` instead, which
+    is index-aware. This is what makes a normal `source: Source`-style
+    declared dependency usable on a per-item Chain schema-child transform
+    (e.g. `init(source)@projects.info`) without the caller having to know
+    or care that it's running per-item at all."""
+    sibling = getattr(owning_node, "_sibling", None)
+    if sibling is not None:
+        try:
+            list_path = owning_node._chain_list_cls()._topology_path()
+            dep_path = dep_cls._topology_path()
+            prefix = list_path + "."
+            if dep_path.startswith(prefix) and "." not in dep_path[len(prefix):]:
+                return sibling(dep_path[len(prefix):])()
+        except Exception:
+            pass
+    return dep_cls()
+
+
 def _call(owning_node: type[Node], spec: TransformSpec, context: dict[str, Any]) -> None:
     for dep_cls in spec.dependencies.values():
         validate_node(dep_cls)
 
-    kwargs = {name: dep_cls() for name, dep_cls in spec.dependencies.items()}
+    kwargs = {name: _resolve_dependency(owning_node, dep_cls) for name, dep_cls in spec.dependencies.items()}
     kwargs.update(context)
 
     token = _current_node.set(owning_node)

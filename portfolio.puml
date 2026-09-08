@@ -1,0 +1,206 @@
+@startuml
+class "Portfolio" as n_portfolio {
+  <Node()>
+  --
+  main(portfolio)
+}
+together {
+  class "Cv" as n_portfolio_cv {
+    <Node()>
+  }
+  class "Profile" as n_portfolio_profile {
+    <Node()>
+    --
+    fetch(checkpoint)
+    list(profile)
+  }
+  class "Projects" as n_portfolio_projects {
+    <Chain()>
+    --
+    audit(projects, i: int = -1)
+    audit_info(projects, i: int = -1)
+    audit_summary(projects, i: int = -1)
+    fetch(checkpoints)
+    list(projects)
+    purge_summary(projects, i: int = -1)
+    push(projects, path: str = '', url: str = '')
+  }
+  class "Website" as n_portfolio_website {
+    <Node()>
+    --
+    build(profile, projects, prompt: str = '')
+  }
+}
+n_portfolio_cv .up.> n_portfolio
+together {
+  class "Checkpoints" as n_portfolio_cv_checkpoints {
+    <Chain()>
+    --
+    push(draft)
+  }
+  class "Draft" as n_portfolio_cv_draft {
+    <Node()>
+    --
+    build(profile, projects, templates, template: str = '', scope: str = 'present')
+  }
+  class "Templates" as n_portfolio_cv_templates {
+    <Chain()>
+    --
+    push(templates, prompt: str, name: str = '', description: str = '')
+  }
+}
+n_portfolio_cv_checkpoints .up.> n_portfolio_cv
+together {
+  class "File" as n_portfolio_cv_checkpoints_file {
+    <SinglePdf()>
+  }
+}
+n_portfolio_cv_checkpoints_file .up.> n_portfolio_cv_checkpoints
+n_portfolio_cv_draft .up.> n_portfolio_cv
+n_portfolio_cv_templates .up.> n_portfolio_cv
+together {
+  class "Info" as n_portfolio_cv_templates_info {
+    <Tuple(name, description)>
+  }
+  class "Source" as n_portfolio_cv_templates_source {
+    <Node()>
+  }
+}
+n_portfolio_cv_templates_info .up.> n_portfolio_cv_templates
+n_portfolio_cv_templates_source .up.> n_portfolio_cv_templates
+n_portfolio_profile .up.> n_portfolio
+together {
+  class "Awards" as n_portfolio_profile_awards {
+    <Chain()>
+  }
+  class "BasicInfo" as n_portfolio_profile_basic_info {
+    <Tuple(name, email, phone, location, website, linkedin, github)>
+  }
+  class "Certifications" as n_portfolio_profile_certifications {
+    <Chain()>
+  }
+  class "Courseworks" as n_portfolio_profile_courseworks {
+    <SingleCsv(course)>
+  }
+  class "Education" as n_portfolio_profile_education {
+    <Chain()>
+  }
+  class "Interests" as n_portfolio_profile_interests {
+    <SingleMd()>
+  }
+  class "Languages" as n_portfolio_profile_languages {
+    <Chain()>
+  }
+  class "Photo" as n_portfolio_profile_photo {
+    <SinglePng()>
+  }
+  class "Publications" as n_portfolio_profile_publications {
+    <Chain()>
+  }
+  class "ResearchExperience" as n_portfolio_profile_research_experience {
+    <Chain()>
+  }
+  class "Skills" as n_portfolio_profile_skills {
+    <SingleMd()>
+  }
+  class "Summary" as n_portfolio_profile_summary {
+    <SingleMd()>
+  }
+  class "WorkingExperience" as n_portfolio_profile_working_experience {
+    <Chain()>
+  }
+}
+n_portfolio_profile_awards .up.> n_portfolio_profile
+together {
+  class "Entry" as n_portfolio_profile_awards_entry {
+    <Tuple(title, issuer, date, description)>
+  }
+}
+n_portfolio_profile_awards_entry .up.> n_portfolio_profile_awards
+n_portfolio_profile_basic_info .up.> n_portfolio_profile
+n_portfolio_profile_certifications .up.> n_portfolio_profile
+together {
+  class "Entry" as n_portfolio_profile_certifications_entry {
+    <Tuple(name, issuer, date, credential_id, detail)>
+  }
+}
+n_portfolio_profile_certifications_entry .up.> n_portfolio_profile_certifications
+n_portfolio_profile_courseworks .up.> n_portfolio_profile
+n_portfolio_profile_education .up.> n_portfolio_profile
+together {
+  class "Entry" as n_portfolio_profile_education_entry {
+    <Tuple(institution, degree, field_of_study, start_time, end_time, location, honors)>
+  }
+}
+n_portfolio_profile_education_entry .up.> n_portfolio_profile_education
+n_portfolio_profile_interests .up.> n_portfolio_profile
+n_portfolio_profile_languages .up.> n_portfolio_profile
+together {
+  class "Entry" as n_portfolio_profile_languages_entry {
+    <Tuple(language, proficiency)>
+  }
+}
+n_portfolio_profile_languages_entry .up.> n_portfolio_profile_languages
+n_portfolio_profile_photo .up.> n_portfolio_profile
+n_portfolio_profile_publications .up.> n_portfolio_profile
+together {
+  class "Entry" as n_portfolio_profile_publications_entry {
+    <Tuple(title, venue, date, authors, url)>
+  }
+}
+n_portfolio_profile_publications_entry .up.> n_portfolio_profile_publications
+n_portfolio_profile_research_experience .up.> n_portfolio_profile
+together {
+  class "Entry" as n_portfolio_profile_research_experience_entry {
+    <Tuple(lab, advisor, institution, role, start_time, end_time, description)>
+  }
+}
+n_portfolio_profile_research_experience_entry .up.> n_portfolio_profile_research_experience
+n_portfolio_profile_skills .up.> n_portfolio_profile
+n_portfolio_profile_summary .up.> n_portfolio_profile
+n_portfolio_profile_working_experience .up.> n_portfolio_profile
+together {
+  class "Entry" as n_portfolio_profile_working_experience_entry {
+    <Tuple(company, role, location, start_time, end_time, description)>
+  }
+}
+n_portfolio_profile_working_experience_entry .up.> n_portfolio_profile_working_experience
+n_portfolio_projects .up.> n_portfolio
+together {
+  class "Info" as n_portfolio_projects_info {
+    <Tuple(titile, role, start_time, end_time, context, url)>
+    --
+    init(source)
+  }
+  class "Source" as n_portfolio_projects_source {
+    <Node()>
+  }
+  class "Summary" as n_portfolio_projects_summary {
+    <SingleMd()>
+    --
+    init(source, info, word_count: int = 500)
+  }
+}
+n_portfolio_projects_info .up.> n_portfolio_projects
+n_portfolio_projects_source .up.> n_portfolio_projects
+n_portfolio_projects_summary .up.> n_portfolio_projects
+n_portfolio_website .up.> n_portfolio
+
+class "None" as none_node
+
+n_portfolio --> n_portfolio
+n_portfolio_cv_draft -right-> n_portfolio_cv_checkpoints::push
+n_portfolio_profile -[bold]right-> n_portfolio_cv_draft::build
+n_portfolio_projects -[bold]right-> n_portfolio_cv_draft::build
+n_portfolio_cv_templates -[bold]right-> n_portfolio_cv_draft::build
+n_portfolio_cv_templates --> n_portfolio_cv_templates
+n_portfolio_cv_checkpoints -right-> n_portfolio_profile::fetch
+n_portfolio_profile --> n_portfolio_profile
+n_portfolio_cv_checkpoints -right-> n_portfolio_projects::fetch
+n_portfolio_projects --> n_portfolio_projects
+n_portfolio_projects_source -right-> n_portfolio_projects_info::init
+n_portfolio_projects_source -right-> n_portfolio_projects_summary::init
+n_portfolio_projects_info -right-> n_portfolio_projects_summary::init
+n_portfolio_profile -[bold]right-> n_portfolio_website::build
+n_portfolio_projects -[bold]right-> n_portfolio_website::build
+@enduml
