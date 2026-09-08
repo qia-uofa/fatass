@@ -127,6 +127,53 @@ python -m fatass apply build@build style=terse
 too — `python -m fatass ...` is used above since it needs no `$PATH`
 setup.
 
+## Example: `examples.portfolio`
+
+The Quickstart above is a two-node toy; `fatass/topology/examples/portfolio`
+is a complete, runnable pipeline instead — tracked in git along with its
+own already-populated sample data under `home/examples/portfolio/` — that
+turns a person's profile and project data into a built CV and portfolio
+site. It's the best single place to see most of fatass's node kinds and
+conventions working together in one real project:
+
+```text
+examples.portfolio
+├── profile/          basic_info (Tuple), photo (SinglePng), summary/
+│                     skills/interests (SingleMd), and one Chain per
+│                     repeated section (education, working_experience,
+│                     research_experience, certifications, languages,
+│                     awards, publications) — plus a fetch transform that
+│                     extracts all of it from an old CV PDF checkpoint
+├── projects/         a Chain of project entries, each with its own info
+│                     (Tuple) and summary (SingleMd), init'd from a
+│                     sibling source node — see `init@projects.info`
+├── cv/
+│   ├── templates/    a Chain of pushable CV templates (LaTeX + HTML)
+│   ├── draft/        build() renders the current template + profile +
+│   │                 projects into main.tex/main.pdf/main.html
+│   └── checkpoints/  a Chain of saved CV PDF snapshots
+├── website/          build() turns the finished CV into a portfolio site
+└── main              an interactive transform that reports the
+                      portfolio's current state and prompts for what to
+                      do next (add a checkpoint, extract info, ...)
+```
+
+Try it:
+
+```bash
+# report current state, then walk through an interactive menu
+python -m fatass apply main@examples.portfolio
+
+# or drive pieces individually
+python -m fatass run examples.portfolio.cv.draft
+python -m fatass graph examples.portfolio
+```
+
+`fatass graph` writes a PlantUML diagram of the whole subtree — each node
+labeled with its own class name and kind, its transforms listed as members
+with their real signatures, and an arrow from every dependency straight to
+the specific transform that depends on it (see [`graph`](#commands) below).
+
 ## Commands
 
 | Command | What it does |
