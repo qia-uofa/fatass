@@ -1,9 +1,10 @@
 import argparse
 import sys
 
+from .._internal.naming import pascal_node_path
 from ..errors import TopologyValidationError
 from ..topology_ops.purge import purge_node
-from ._targets import resolve_node_path
+from ._targets import resolve_and_validate_node_path
 from .base import Command
 
 
@@ -33,7 +34,7 @@ class PurgeCommand(Command):
 
     def run(self, args: argparse.Namespace) -> int:
         try:
-            node_path = resolve_node_path(args.node_path)
+            node_path = resolve_and_validate_node_path(args.node_path)
             result = purge_node(node_path, rs=args.rs, rd=args.rd, rsd=args.rsd)
         except TopologyValidationError as exc:
             print(f"error: {exc}", file=sys.stderr)
@@ -42,7 +43,7 @@ class PurgeCommand(Command):
         for node_path in sorted(result):
             count = result[node_path]
             noun = "entry" if count == 1 else "entries"
-            print(f"{node_path}: purged {count} {noun}")
+            print(f"{pascal_node_path(node_path)}: purged {count} {noun}")
 
         total = sum(result.values())
         print(f"purged {total} entries across {len(result)} node(s)")

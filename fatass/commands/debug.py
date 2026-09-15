@@ -1,11 +1,12 @@
 import argparse
 import sys
 
+from .._internal.naming import pascal_node_path
 from .._internal.prompts import load_topology_edit_system_prompt
 from ..core.free import DEFAULT_ALLOWED_TOOLS, DEFAULT_PERMISSION_MODE, NO_PROMPT_TEXT
 from ..errors import FreeError, TopologyValidationError
 from ..topology_ops.scaffold import debug_transform
-from ._targets import parse_at_target
+from ._targets import parse_transform_target
 from .base import Command
 
 
@@ -15,7 +16,7 @@ class DebugCommand(Command):
     mutates_topology = True
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
-        parser.add_argument("target", help="<transform>@<node.path> to debug")
+        parser.add_argument("target", help="Node.transform to debug")
         parser.add_argument(
             "prompt",
             nargs="?",
@@ -48,7 +49,7 @@ class DebugCommand(Command):
     def run(self, args: argparse.Namespace) -> int:
         prompt = args.prompt if args.prompt else NO_PROMPT_TEXT
         try:
-            node_path, transform_name = parse_at_target(args.target)
+            node_path, transform_name = parse_transform_target(args.target)
             summary = debug_transform(
                 node_path,
                 transform_name,
@@ -65,5 +66,5 @@ class DebugCommand(Command):
 
         if summary:
             print(summary)
-        print(f"{node_path}.transforms.{transform_name}: debugged")
+        print(f"{pascal_node_path(node_path)}.transforms.{transform_name}: debugged")
         return 0

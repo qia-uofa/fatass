@@ -1,6 +1,7 @@
 import argparse
 import sys
 
+from .._internal.naming import pascal_node_path
 from ..errors import TopologyValidationError
 from ..core.transform import run_transform
 from ._targets import parse_node_path
@@ -23,11 +24,12 @@ class RunCommand(Command):
             print(f"error: {exc}", file=sys.stderr)
             return 1
 
+        display = pascal_node_path(node_path)
         if not results:
-            print(f"no transforms found under {node_path}")
+            print(f"no transforms found under {display}")
             return 0
 
         for name, ran in results.items():
             status = "ran" if ran else "skipped (cache hit)"
-            print(f"{node_path}.transforms.{name}: {status}")
+            print(f"{display}.transforms.{name}: {status}")
         return 0

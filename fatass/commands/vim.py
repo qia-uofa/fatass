@@ -37,8 +37,8 @@ class VimCommand(Command):
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             "target",
-            help="node.path (class file) | transform@node.path (transform file) | "
-            "node.path(relative/file/path) (home/ file)",
+            help="Node.Path (class file) | Node.Path.transformName (transform file) | "
+            "Node.Path/relative/file/path (home/ file)",
         )
 
     def run(self, args: argparse.Namespace) -> int:

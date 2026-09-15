@@ -3,10 +3,19 @@ from abc import ABC, abstractmethod
 
 
 class Command(ABC):
-    """One `fatass <name>` subcommand."""
+    """One `fatass <name>` subcommand — or, if `group` is set, one
+    `fatass <group> <name>` subcommand nested under that node-type
+    group."""
 
     name: str
     help: str
+    group: str | None = None
+    """Lowercase name of the specific node kind this command's primary
+    argument must be (e.g. "chain" for a command that only makes sense
+    against a `Chain`) — `None` (the default) for a command with no such
+    restriction, registered directly at the top level. A non-`None`
+    value nests this command one level down: `fatass <group> <name>`
+    instead of a bare `fatass <name>` — see `cli.main()`."""
     mutates_topology: bool = False
     """True for a command that changes fatass/topology/ itself (creating,
     editing, moving, removing, archiving, or retrieving node/transform

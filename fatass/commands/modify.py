@@ -1,6 +1,7 @@
 import argparse
 import sys
 
+from .._internal.naming import pascal_node_path
 from .._internal.prompts import load_topology_edit_system_prompt
 from ..core.free import DEFAULT_ALLOWED_TOOLS, DEFAULT_PERMISSION_MODE, NO_PROMPT_TEXT
 from ..core.transform import _import_node
@@ -45,7 +46,7 @@ def _verify_transform_signature(
     plain_params: list[tuple[str, str]],
 ) -> None:
     """Raises unless `dep_paths`/`plain_params` (parsed off a
-    "<transform>(...)@<node>" `modify` target — see
+    "Node.transform<params>(deps)" `modify` target — see
     `_targets.parse_modify_target`) exactly match `transform_name`'s
     actual current dependencies/plain parameters. Order doesn't matter,
     only membership."""
@@ -56,11 +57,13 @@ def _verify_transform_signature(
     if given_deps == actual_deps and given_params == actual_params:
         return
     expected = ", ".join(
-        sorted(actual_deps) + [f"{name}:{type_str}" for name, type_str in sorted(actual_params)]
+        [pascal_node_path(p) for p in sorted(actual_deps)]
+        + [f"{name}:{type_str}" for name, type_str in sorted(actual_params)]
     )
     raise TopologyValidationError(
-        f"{transform_name}(...) doesn't match {transform_name}@{node_path}'s "
-        f"actual signature — expected {transform_name}({expected})"
+        f"{transform_name}(...) doesn't match {pascal_node_path(node_path)}."
+        f"transforms.{transform_name}'s actual signature — expected "
+        f"{transform_name}({expected})"
     )
 
 
@@ -73,12 +76,12 @@ class ModifyCommand(Command):
         parser.add_argument(
             "target",
             help=(
-                "node.path, or <transform>@<node.path> to target a transform "
-                "file, optionally followed by the same "
-                "\"(dep1,dep2,name:type,...)\" signature parens `create` "
-                "uses (e.g. \"build(node1,prompt:str)@node\") to verify "
-                "that's still the transform's actual signature before "
-                "modifying it"
+                "node.path, or PathedNodeSignature.transformName to target "
+                "a transform file (same grammar `create` uses — see "
+                "`fatass create --help`), optionally followed by "
+                "\"<params>\" and/or \"(deps)\" to verify those are still "
+                "the transform's actual signature before modifying it, "
+                "e.g. \"Node.build<prompt:str>(Dep1,Dep2)\""
             ),
         )
         parser.add_argument(
@@ -128,7 +131,7 @@ class ModifyCommand(Command):
                     model=args.model,
                     tools=args.tools,
                 )
-                label = f"{node_path}.transforms.{transform_name}"
+                label = f"{pascal_node_path(node_path)}.transforms.{transform_name}"
             else:
                 # Best-effort: the node's own file might currently be
                 # broken (e.g. the very thing this modify call is meant
@@ -145,7 +148,7 @@ class ModifyCommand(Command):
                     model=args.model,
                     tools=args.tools,
                 )
-                label = node_path
+                label = pascal_node_path(node_path)
         except (TopologyValidationError, FreeError) as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1

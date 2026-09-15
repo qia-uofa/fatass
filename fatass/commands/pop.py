@@ -1,6 +1,7 @@
 import argparse
 import sys
 
+from .._internal.naming import pascal_node_path
 from ..errors import TopologyValidationError
 from ._targets import resolve_chain
 from .base import Command
@@ -8,6 +9,7 @@ from .base import Command
 
 class PopCommand(Command):
     name = "pop"
+    group = "chain"
     help = "remove a Chain's tail item, or item n if given"
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
@@ -29,5 +31,5 @@ class PopCommand(Command):
             print(f"error: {exc}", file=sys.stderr)
             return 1
 
-        print(f"{list_cls._topology_path()}: popped item {index}")
+        print(f"{pascal_node_path(list_cls._topology_path())}: popped item {index}")
         return 0

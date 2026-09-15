@@ -8,6 +8,7 @@ from .base import Command
 
 class LenCommand(Command):
     name = "len"
+    group = "chain"
     help = "print a Chain's current length"
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:

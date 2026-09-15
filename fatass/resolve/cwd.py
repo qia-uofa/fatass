@@ -1,13 +1,25 @@
 import re
 
+from .._internal.naming import pascal_node_path, snake_case
 from .._internal.paths import ENV_PATH as _ENV_PATH
 from ..errors import TopologyValidationError
 from . import dotenv
 
-ROOT = "~"
+ROOT = "@"
 """Sentinel meaning "the true topology root, not any specific node" — the
 value of FATASS_NODE when no prefix should be added, and the result of
-`expand()` when a path expression walks back to that root."""
+`expand()` when a path expression walks back to that root. Glues
+directly onto the path that follows with no separating dot ("@A.B.C",
+not "@.A.B.C") when used as a prefix; alone (nothing following, real or
+absolute) it's shown parenthesized ("(@)") — see `expand()` and
+`display_current_node()`."""
+
+PAREN_ROOT = f"({ROOT})"
+"""The parenthesized spelling of `ROOT` — the form `ls` itself renders
+for the synthetic root node (`(@)<Topology>(...)`), and (unlike the bare
+`ROOT` character, which glues straight onto a following name with no
+dot) the one that needs an explicit "." before further path segments:
+"(@).A.B.C". Also valid entirely on its own, e.g. `ls (@)`."""
 
 _ENV_KEY = "FATASS_NODE"
 
@@ -55,22 +67,27 @@ def write_current_node(node_path: str) -> None:
 
 
 def display_current_node(current: str | None = None) -> str:
-    """"~.tests.list2" (or just "~" at the root) — the current node in
-    the same absolute "~."-prefixed form used elsewhere (ls, resolve
-    targets), for anything that shows it to a human: the `shell` prompt,
-    and each dispatched command's line in ./log."""
+    """"@Tests.List2" (or "(@)" at the root) — the current node in the
+    same absolute, PascalCase form used elsewhere (ls, resolve targets),
+    for anything that shows it to a human: the `shell` prompt, each
+    dispatched command's line in out/log, and the GUI's own pwd display."""
     if current is None:
         current = read_current_node()
-    return current if current == ROOT else f"~.{current}"
+    return PAREN_ROOT if current == ROOT else f"{ROOT}{pascal_node_path(current)}"
 
 
 def expand(raw: str, current: str | None = None) -> str:
     """Resolve a node-path expression relative to the current node (the
     current FATASS_NODE, read fresh unless `current` is given explicitly).
 
-    - A leading "~" resets the base to the true topology root, ignoring
-      the current node entirely ("~.something" == "something", plain
-      "~" == ROOT).
+    - A leading "@" (glued directly onto what follows, no dot — "@Foo",
+      not "@.Foo") or the equivalent parenthesized "(@)" (which, unlike
+      bare "@", DOES need a "." before further segments: "(@).Foo" — the
+      form `ls` itself renders for the synthetic root label, and the one
+      that reads naturally standing alone, e.g. "(@)" itself) resets the
+      base to the true topology root, ignoring the current node entirely
+      ("@Foo" == "Foo" when already at the root, plain "@"/"(@)" ==
+      ROOT).
     - Otherwise the expression is resolved against the current node
       (itself just ROOT, i.e. no prefix, if that's what it is).
     - A run of N>=1 consecutive dots means: ascend (N-1) levels from
@@ -90,27 +107,47 @@ def expand(raw: str, current: str | None = None) -> str:
       Ordinary indexing already glued onto a name in the same run (e.g.
       "members[0]" typed out in full) was never affected by this — only
       a bracket reached via dot-navigation shorthand needed this fix.
+    - Every real name segment (a bare one, or the name part of
+      "name[idx]") must be PascalCase — matching that node's own class
+      name, not its snake_case directory name — and is converted back
+      via `snake_case()` (see `Node` naming conventions/`fatass touch`)
+      before being pushed onto the walk. This is the single choke point
+      almost every command's own node.path argument passes through
+      (directly, or via `commands._targets.resolve_node_path` and
+      friends, which just call this), so enforcing/converting it here
+      makes it universal without needing every call site of its own to
+      remember to.
 
     Returns the resolved absolute node path, or ROOT if the walk lands
     back at the topology root (there's no node there). Raises
-    TopologyValidationError if it tries to go above the root, or if a
+    TopologyValidationError if it tries to go above the root, if a
     leading "[" segment has no node to attach to (the walk is at the
-    root)."""
+    root), or if a real name segment isn't PascalCase."""
     if current is None:
         current = read_current_node()
 
-    parts = _SPLIT.split(raw)
-
-    if parts[0] == ROOT:
+    paren_prefix = PAREN_ROOT + "."
+    if raw == PAREN_ROOT:
         stack: list[str] = []
+        remainder = ""
+    elif raw.startswith(paren_prefix):
+        stack = []
+        remainder = raw[len(paren_prefix):]
+    elif raw.startswith(ROOT):
+        stack = []
+        remainder = raw[len(ROOT):]
     elif current == ROOT:
         stack = []
+        remainder = raw
     else:
         stack = current.split(".")
+        remainder = raw
+
+    parts = _SPLIT.split(remainder)
 
     for i, part in enumerate(parts):
         if i % 2 == 0:
-            if not part or (i == 0 and part == ROOT):
+            if not part:
                 continue
             if part.startswith("["):
                 if not stack:
@@ -120,7 +157,13 @@ def expand(raw: str, current: str | None = None) -> str:
                     )
                 stack[-1] += part
             else:
-                stack.append(part)
+                name, bracket, index = part.partition("[")
+                if not name[0].isupper():
+                    raise TopologyValidationError(
+                        f"{raw!r}: node-path segment {name!r} must be "
+                        f"PascalCase (start with an uppercase letter)"
+                    )
+                stack.append(snake_case(name) + bracket + index)
         else:
             hops = len(part) - 1
             for _ in range(hops):

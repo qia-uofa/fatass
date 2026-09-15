@@ -49,6 +49,6 @@ else
 fi
 
 echo "== installing $VSIX =="
-code --install-extension "$VSIX"
+code --install-extension "$VSIX" --force
 
 echo "== done -- reload the VS Code window to pick up the new build =="

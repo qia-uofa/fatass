@@ -4,7 +4,7 @@ from pathlib import Path
 
 from ..errors import TopologyValidationError
 from ..graph import write_graph
-from ._targets import resolve_node_path
+from ._targets import resolve_and_validate_node_path
 from .base import Command
 
 
@@ -23,12 +23,12 @@ class GraphCommand(Command):
             "-o",
             "--output",
             default=None,
-            help="output file path (default: ./<root>.puml, or ./topology.puml with no node given)",
+            help="output file path (default: out/<root>.puml, or out/topology.puml with no node given)",
         )
 
     def run(self, args: argparse.Namespace) -> int:
         try:
-            root = resolve_node_path(args.node_path) if args.node_path is not None else None
+            root = resolve_and_validate_node_path(args.node_path) if args.node_path is not None else None
             output = Path(args.output) if args.output is not None else None
             output_path = write_graph(output, root)
         except TopologyValidationError as exc:

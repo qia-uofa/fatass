@@ -6,7 +6,13 @@ HOME_ROOT = REPO_ROOT / "home"
 ARCHIVE_ROOT = REPO_ROOT / "archive"
 STATE_DIR = REPO_ROOT / ".fatass"
 ENV_PATH = STATE_DIR / ".env"
-LOG_PATH = REPO_ROOT / "log"
+OUT_ROOT = REPO_ROOT / "out"
+"""Where anything generated for a human to read (not a node's own content,
+which belongs under `HOME_ROOT`, and not fatass's own internal session
+state, which belongs under `STATE_DIR`) gets written — the dispatch log
+(`LOG_PATH`), and `fatass graph`'s own default `.puml` output
+(`fatass.graph.write_graph`)."""
+LOG_PATH = OUT_ROOT / "log"
 SHELL_HISTORY_PATH = STATE_DIR / "shell_history"
 """Persisted `>>> ` line history for `fatass shell` (prompt_toolkit
 FileHistory format) — shared across every `fatass shell` invocation, past

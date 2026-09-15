@@ -1,8 +1,11 @@
+import dataclasses
 import re
 from pathlib import Path
 
-from .core.transform import discover, _import_node
+from ._internal.paths import OUT_ROOT
+from .core.transform import discover
 from .errors import TopologyValidationError
+from .signature import FULL_TYPED, build_sig_data, render_signature
 from .topology_ops.scaffold import _all_node_paths
 
 _NONE_ALIAS = "none_node"
@@ -39,18 +42,19 @@ def _class_block(node_path: str, alias: str, specs_cache: dict[str, list], inden
     """A full PlantUML class declaration for `node_path`: header is just
     the node's own real Python class name (falling back to the bare
     node_path if the class can't be imported) — NOT combined with its
-    repr in the class name itself: PlantUML treats a "<...>" inside a
-    quoted class name as a generic-type stereotype badge, not literal
+    signature in the class name itself: PlantUML treats a "<...>" inside
+    a quoted class name as a generic-type stereotype badge, not literal
     text, which renders as a stray floating tag rather than the intended
-    label. The repr is instead the body's own first member line, followed
-    by each defined transform's signature (alphabetical by name) — the
-    transform equivalent of a UML class's methods, letting a dependency
-    arrow target a specific transform (`alias::name`) instead of the
-    class as a whole."""
+    label. The signature (base kind + constructor args — see
+    `fatass.signature`) is instead the body's own first member line,
+    followed by each defined transform's signature (alphabetical by
+    name) — the transform equivalent of a UML class's methods, letting a
+    dependency arrow target a specific transform (`alias::name`) instead
+    of the class as a whole."""
     try:
-        node_cls = _import_node(node_path)
-        header = node_cls.__name__
-        kind_line = f"<{node_cls!r}>"
+        data = build_sig_data(node_path, max_depth=0)
+        header = data.class_name
+        kind_line = render_signature(data, dataclasses.replace(FULL_TYPED, show_class_name=False))
     except Exception:
         header = node_path
         kind_line = None
@@ -108,23 +112,32 @@ def _render_tree(tree: dict, prefix: str, lines: list[str], specs_cache: dict[st
         _render_tree(tree[name], full_path, lines, specs_cache)
 
 
-def _dep_arrow(transform_name: str, *, self_loop: bool) -> str:
+def _dep_arrow(transform_name: str, *, skip_direction_hint: bool) -> str:
     """The "build" transform is the one every node is expected to define,
     so its dependency edges are drawn bold to stand out from the rest.
 
-    A cross-class edge always gets an explicit "right" direction hint —
-    never left as a default top-down arrow — so it connects side-to-side
-    (left/right edge of one box to left/right edge of the other) rather
-    than competing with the inclusion tree's own vertical (".up.>") edges
-    for top/bottom rank and connection points. A self-loop is the one
-    exception: forcing "right" on an edge whose two ends are the SAME
-    box makes PlantUML route it as a large arc swinging out and back —
-    with several self-loops on neighboring classes, those arcs cross
-    right over each other and any box in between. Left with no direction
-    hint, PlantUML draws a small loop directly on the box instead."""
+    A cross-class edge gets an explicit "right" direction hint by
+    default — never left as a default top-down arrow — so it connects
+    side-to-side (left/right edge of one box to left/right edge of the
+    other) rather than competing with the inclusion tree's own vertical
+    (".up.>") edges for top/bottom rank and connection points.
+    `skip_direction_hint` turns that off for the two cases where a
+    forced "right" would instead work against the layout: a self-loop
+    (both ends are the SAME box — forcing "right" makes PlantUML route
+    it as a large arc swinging out and back, and several such arcs on
+    neighboring classes cross right over each other and any box in
+    between; with no direction hint, PlantUML draws a small loop
+    directly on the box instead), and an edge between a node and its own
+    ancestor/descendant (the inclusion tree's ".up.>" edges already
+    order those two boxes vertically — forcing "right" competes with
+    that existing relationship instead of complementing it)."""
     style = "[bold]" if transform_name == "build" else ""
-    direction = "" if self_loop else "right"
+    direction = "" if skip_direction_hint else "right"
     return f"-{style}{direction}->"
+
+
+def _is_ancestor_or_descendant(a: str, b: str) -> bool:
+    return a.startswith(b + ".") or b.startswith(a + ".")
 
 
 def build_graph(root: str | None = None) -> str:
@@ -189,7 +202,7 @@ def build_graph(root: str | None = None) -> str:
         for spec in sorted(_discover_cached(node_path, specs_cache), key=lambda s: s.name):
             target = f"{owner_alias}::{spec.name}"
             if not spec.dependencies:
-                arrow = _dep_arrow(spec.name, self_loop=False)
+                arrow = _dep_arrow(spec.name, skip_direction_hint=False)
                 lines.append(f"{_NONE_ALIAS} {arrow} {target}")
                 continue
             for dep_cls in spec.dependencies.values():
@@ -210,11 +223,12 @@ def build_graph(root: str | None = None) -> str:
                     self_dep_names.append(spec.name)
                     continue
                 dep_alias = _alias(dep_path)
-                arrow = _dep_arrow(spec.name, self_loop=False)
+                skip_hint = _is_ancestor_or_descendant(dep_path, node_path)
+                arrow = _dep_arrow(spec.name, skip_direction_hint=skip_hint)
                 lines.append(f"{dep_alias} {arrow} {target}")
         if self_dep_names:
             bold_name = "build" if "build" in self_dep_names else ""
-            arrow = _dep_arrow(bold_name, self_loop=True)
+            arrow = _dep_arrow(bold_name, skip_direction_hint=True)
             lines.append(f"{owner_alias} {arrow} {owner_alias}")
 
     lines.append("@enduml")
@@ -223,7 +237,7 @@ def build_graph(root: str | None = None) -> str:
 
 def write_graph(output: Path | None, root: str | None = None) -> Path:
     if output is None:
-        output = Path(f"./{root if root is not None else 'topology'}.puml")
+        output = OUT_ROOT / f"{root if root is not None else 'topology'}.puml"
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(build_graph(root), encoding="utf-8")
     return output

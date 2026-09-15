@@ -2,10 +2,13 @@ from .core.adhoc import free_at
 from .core.free import current_node, free, free_topology
 from .node.node import Node
 from .node.chain import Chain
+from .node.dictionary import Dictionary
 from .node.single import Single, SingleTxt, SinglePdf, SingleMd, SingleJson, SingleCsv
 from .node.array import Array, ArrayTxt, ArrayPdf, ArrayMd, ArrayJson, ArrayCsv
 from .node.tuple import Tuple
 from .node.repo import Repo
+from .node.dir import Dir
+from .node.chat import Chat
 from .core.transform import apply_transform, discover, run_transform
 from .errors import FreeCoercionError, FreeError, TopologyValidationError
 from .topology_ops.archive import archive_topology, retrieve_topology
@@ -24,6 +27,7 @@ from .topology_ops.scaffold import (
 __all__ = [
     "Node",
     "Chain",
+    "Dictionary",
     "Single",
     "SingleTxt",
     "SinglePdf",
@@ -38,6 +42,8 @@ __all__ = [
     "ArrayCsv",
     "Tuple",
     "Repo",
+    "Dir",
+    "Chat",
     "free",
     "free_topology",
     "current_node",

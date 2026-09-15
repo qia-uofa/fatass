@@ -1,68 +1,28 @@
 import dataclasses
 from pathlib import Path
 
-import importlib
-import pkgutil
-
-from . import node as _node_pkg
 from .node.node import Node
 from .core.transform import _import_node, discover
 from .errors import TopologyValidationError
 from .topology_ops.scaffold import _all_node_paths, _node_dir
 
 
-def _load_all_node_modules() -> None:
-    """Import every fatass/node/*.py module — so each framework node
-    kind it defines (Chain, Single, Array, Tuple, Repo, and any future
-    one) is registered on `Node.__subclasses__()` before
-    `_direct_node_subclasses()` reads it, without this file having to
-    name them one by one."""
-    for module_info in pkgutil.iter_modules(_node_pkg.__path__, prefix=f"{_node_pkg.__name__}."):
-        importlib.import_module(module_info.name)
-
-
-_load_all_node_modules()
-
-
-def _direct_node_subclasses() -> tuple[type[Node], ...]:
-    """Every fatass-framework base kind a node can be built on — Node's
-    own *direct* subclasses that are themselves defined under the
-    `fatass.node` package (Chain, Single, Array, Tuple, Repo, ...), as
-    opposed to either a typed variant like SingleCsv (a subclass of
-    Single, not of Node itself) or an ordinary topology-defined node
-    (e.g. `class Cv(fatass.Node)`, which subclasses Node directly too,
-    but lives under `fatass.topology.*` — exactly the "no special kind"
-    case this is meant to fall back to "Node" for). Discovered from the
-    live class hierarchy plus module path rather than a hardcoded list,
-    so a new `fatass/node/<name>.py` direct subclass of Node is picked up
-    here automatically."""
-    prefix = f"{_node_pkg.__name__}."
-    return tuple(
-        sub for sub in Node.__subclasses__() if sub.__module__.startswith(prefix)
-    )
-
-
 def _base_class_name(node_cls: type[Node]) -> str:
-    """The fatass base class a node is built on ("Chain"/"Single"/
-    "Array"/"Tuple"/"Node"), not its own specific subclass name (which is
-    just the PascalCase of its own path segment and so adds no
-    information the path doesn't already carry) — nor a typed variant
-    like "SingleCsv" (collapsed to "Single"). This is what `fatass ls`
-    shows: it tells you the node's *kind* at a glance. Walks `node_cls`'s
-    MRO (most specific first) for the first ancestor that's one of
-    `_direct_node_subclasses()` — e.g. for a class built on SingleCsv,
-    that's Single itself, not SingleCsv."""
-    direct = _direct_node_subclasses()
-    for base in node_cls.__mro__:
-        if base in direct:
-            return base.__name__
-    return "Node"
+    """The fatass framework kind a node is built on ("Chain"/"Single"/
+    "SingleCsv"/"Array"/"Tuple"/"Node"/...), not its own specific
+    subclass name (just the PascalCase of its own path segment, which
+    adds no information the path doesn't already carry). This is what
+    `fatass ls` shows: it tells you the node's *kind* at a glance.
+    Delegates to `Node._base_kind()` — the one canonical implementation
+    of this MRO walk, also used by `NodeMeta.__repr__` and
+    `fatass.signature`."""
+    return node_cls._base_kind().__name__
 
 
 @dataclasses.dataclass
 class DependencySummary:
     path: str
-    """Absolute topology path (no `~.` prefix — that's a display concern)."""
+    """Absolute topology path (no `@` prefix — that's a display concern)."""
     class_name: str
     children: list[str]
     """Direct subnode names (bare, not full paths) of this dependency."""
@@ -99,7 +59,7 @@ class NodeTree:
 
 def list_root() -> list[str]:
     """Top-level node names directly under fatass/topology/ — the listing
-    for the true topology root (FATASS_NODE unset / expanded to "~"),
+    for the true topology root (FATASS_NODE unset / expanded to "@"),
     which has no node file of its own and thus no class or transforms."""
     return sorted(path for path in _all_node_paths() if "." not in path)
 
@@ -166,7 +126,7 @@ def list_node_tree(node_path: str) -> NodeTree:
 
 
 def list_root_tree() -> NodeTree:
-    """The recursive `fatass ls -r ~` view — the whole topology, rooted
+    """The recursive `fatass ls -r (@)` view — the whole topology, rooted
     at the synthetic "topology" class (matching `graph`'s root label)."""
     children = [list_node_tree(name) for name in list_root()]
     return NodeTree(path="", class_name="topology", children=children)

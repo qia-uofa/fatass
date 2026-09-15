@@ -10,15 +10,15 @@ asking `logger.handlers` "is anything attached at all" — a test runner (or
 any other code sharing this process) can attach its own foreign handler to
 the same named logger, and a bare "if not logger.handlers" would mistake
 that for "already configured" and skip creating our FileHandler entirely,
-silently dropping every write to ./log."""
+silently dropping every write to out/log."""
 
 
 def get_logger() -> logging.Logger:
     """The shared logger every CLI command dispatch and every
-    fatass.free() call writes through — a FileHandler appending to ./log
-    at the repo root. Configured once per process (idempotent: repeat
-    calls, including across commands in one `shell` REPL session, reuse
-    the same handler rather than reopening the file)."""
+    fatass.free() call writes through — a FileHandler appending to
+    out/log (see `_internal.paths.OUT_ROOT`). Configured once per process
+    (idempotent: repeat calls, including across commands in one `shell`
+    REPL session, reuse the same handler rather than reopening the file)."""
     global _handler
     logger = logging.getLogger(_LOGGER_NAME)
     if _handler is None or _handler not in logger.handlers:

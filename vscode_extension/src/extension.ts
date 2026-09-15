@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
-import { findFatassRoot } from "./workspaceRoot";
+import { findFatassRoot, PAREN_ROOT } from "./workspaceRoot";
 import { TopologyProvider, TopologyDragAndDropController, NodeItem } from "./topologyProvider";
 import { NodeViewProvider, FileItem, nodeLabel } from "./nodeViewProvider";
+import { OutputViewProvider } from "./outputViewProvider";
 import { runFatass, runFatassBackground, fatassCommandLine, isInShellRepl } from "./runFatass";
 import { registerFileOps, NodeDragAndDropController } from "./fileOps";
 
@@ -13,10 +14,14 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const topologyProvider = new TopologyProvider(root);
   const nodeViewProvider = new NodeViewProvider(root);
+  const outputViewProvider = new OutputViewProvider(root);
 
-  // Always absolute ("~."-prefixed) -- FATASS_NODE (the fatass "pwd") can be
-  // anywhere, and a bare dotted path resolves relative to it, not to root.
-  const nodePathArg = (node: NodeItem) => (node.dotPath ? `~.${node.dotPath}` : "~");
+  // Always absolute -- FATASS_NODE (the fatass "pwd") can be anywhere, and
+  // a bare dotted path resolves relative to it, not to root. NodeItem's
+  // own `absolutePath` (see topologyProvider.ts) is server-computed (the
+  // node's real PascalCase form comes from `fatass._internal.naming`
+  // itself, not a local reimplementation of that rule).
+  const nodePathArg = (node: NodeItem) => node.absolutePath;
 
   const refreshAll = () => {
     topologyProvider.refresh();
@@ -55,7 +60,7 @@ export function activate(context: vscode.ExtensionContext): void {
     const targetDotPath = target ? target.dotPath : "";
     if (targetDotPath === source.dotPath || targetDotPath.startsWith(`${source.dotPath}.`)) {
       vscode.window.showErrorMessage(
-        `Can't move ${source.dotPath || "~"} into itself or its own subtree.`
+        `Can't move ${source.absolutePath} into itself or its own subtree.`
       );
       return;
     }
@@ -65,7 +70,12 @@ export function activate(context: vscode.ExtensionContext): void {
     if (targetDotPath === currentParent) {
       return;
     }
-    const dest = targetDotPath ? `~.${targetDotPath}.*` : "~.*";
+    // `move`'s own "*" shorthand (keep the source's leaf name) needs a "."
+    // right before it (see `resolve_move_target`) -- `absolutePath` never
+    // supplies one on its own when it returns the bare, un-prefixed
+    // PAREN_ROOT, so the root case is spelled out here instead of reusing
+    // it for the whole `dest`.
+    const dest = target ? `${target.absolutePath}.*` : `${PAREN_ROOT}.*`;
     run(source, ["move", nodePathArg(source), dest]);
   };
 
@@ -76,6 +86,9 @@ export function activate(context: vscode.ExtensionContext): void {
   const nodeView = vscode.window.createTreeView("fatassNode", {
     treeDataProvider: nodeViewProvider,
     dragAndDropController: new NodeDragAndDropController(nodeViewProvider, () => nodeViewProvider.refresh()),
+  });
+  const outputView = vscode.window.createTreeView("fatassOutput", {
+    treeDataProvider: outputViewProvider,
   });
 
   // The view's own title stays the static "Node" (matching the Topology
@@ -102,11 +115,25 @@ export function activate(context: vscode.ExtensionContext): void {
   envWatcher.onDidCreate(syncPwd);
   envWatcher.onDidDelete(syncPwd);
 
-  context.subscriptions.push(topologyView, nodeView, envWatcher);
+  // out/ changes on every command dispatch (the log) and every `fatass
+  // graph` run -- keep the Output view live without needing a manual
+  // refresh for the common case, same idea as the Node view's own
+  // envWatcher above.
+  const outWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(root, "out/**"));
+  const refreshOutput = () => outputViewProvider.refresh();
+  outWatcher.onDidChange(refreshOutput);
+  outWatcher.onDidCreate(refreshOutput);
+  outWatcher.onDidDelete(refreshOutput);
+
+  context.subscriptions.push(topologyView, nodeView, outputView, envWatcher, outWatcher);
   registerFileOps(context, root, nodeViewProvider);
 
   context.subscriptions.push(
     vscode.commands.registerCommand("fatass.refreshTopology", () => topologyProvider.refresh()),
+
+    vscode.commands.registerCommand("fatass.refreshNodeView", () => nodeViewProvider.refreshAll()),
+
+    vscode.commands.registerCommand("fatass.refreshOutput", () => outputViewProvider.refresh()),
 
     vscode.commands.registerCommand("fatass.toggleNodeViewSource", () => nodeViewProvider.toggleSource()),
 
@@ -158,7 +185,7 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
       }
       const base = nodePathArg(node);
-      const target = base === "~" ? `~.${child}` : `${base}.${child}`;
+      const target = base === PAREN_ROOT ? `${PAREN_ROOT}.${child}` : `${base}.${child}`;
       run(node, ["create", target]);
     }),
 

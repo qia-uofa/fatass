@@ -4,6 +4,28 @@ import stat
 from pathlib import Path
 
 
+def copy_dir_contents(src: Path, dst: Path, *, exclude: set[str] = frozenset()) -> None:
+    """Copy every child of `src` (skipping names in `exclude`) into
+    `dst`, keeping each child's own basename. `dst` is assumed to already
+    exist (created empty by the caller). Shared by `Chain.insert()` and
+    `Dictionary.set()` — both seed a freshly-created item/entry as a copy
+    of their own dummy head's current content (its `.entry` and/or
+    declared schema-child directories), skipping whatever reserved,
+    kind-specific bookkeeping name(s) the caller's own dummy head might
+    also have alongside that real content (Chain's `.next`/temp dirs,
+    Dictionary's `.items`)."""
+    if not src.is_dir():
+        return
+    for child in src.iterdir():
+        if child.name in exclude:
+            continue
+        target = dst / child.name
+        if child.is_dir():
+            shutil.copytree(child, target)
+        else:
+            shutil.copy2(child, target)
+
+
 def force_rmtree(path: Path | str, *, ignore_errors: bool = False) -> None:
     """`shutil.rmtree`, but tolerant of Windows' read-only file attribute —
     set on every file inside a `.git/objects/` directory, for one, so a

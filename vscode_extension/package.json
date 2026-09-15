@@ -10,6 +10,25 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "languages": [
+      {
+        "id": "fatass-signature",
+        "aliases": ["fatass Signature", "sig"],
+        "extensions": [".sig"],
+        "icon": {
+          "light": "./media/sig-icon-light.svg",
+          "dark": "./media/sig-icon-dark.svg"
+        },
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "fatass-signature",
+        "scopeName": "source.fatass-sig",
+        "path": "./syntaxes/fatass-signature.tmLanguage.json"
+      }
+    ],
     "viewsContainers": {
       "activitybar": [
         {
@@ -28,11 +47,17 @@
         {
           "id": "fatassNode",
           "name": "Node"
+        },
+        {
+          "id": "fatassOutput",
+          "name": "Output"
         }
       ]
     },
     "commands": [
       { "command": "fatass.refreshTopology", "title": "Refresh", "icon": "$(refresh)" },
+      { "command": "fatass.refreshNodeView", "title": "Refresh", "icon": "$(refresh)" },
+      { "command": "fatass.refreshOutput", "title": "Refresh", "icon": "$(refresh)" },
       { "command": "fatass.toggleNodeViewSource", "title": "Toggle home/topology", "icon": "$(arrow-swap)" },
       { "command": "fatass.cd", "title": "fatass: cd here" },
       { "command": "fatass.cdBackground", "title": "fatass: cd here", "icon": "$(arrow-right)" },
@@ -62,6 +87,8 @@
     "menus": {
       "view/title": [
         { "command": "fatass.refreshTopology", "when": "view == fatassTopology", "group": "navigation" },
+        { "command": "fatass.refreshNodeView", "when": "view == fatassNode", "group": "navigation" },
+        { "command": "fatass.refreshOutput", "when": "view == fatassOutput", "group": "navigation" },
         { "command": "fatass.toggleNodeViewSource", "when": "view == fatassNode", "group": "navigation" },
         { "command": "fatass.newFile", "when": "view == fatassNode", "group": "navigation" },
         { "command": "fatass.newFolder", "when": "view == fatassNode", "group": "navigation" },
@@ -83,13 +110,16 @@
         { "command": "fatass.openToSide", "when": "view == fatassNode && viewItem == file", "group": "1_fatass@2" },
         { "command": "fatass.revealInExplorer", "when": "view == fatassNode", "group": "1_fatass@3" },
         { "command": "fatass.revealInTopology", "when": "view == fatassNode", "group": "1_fatass@4" },
+        { "command": "fatass.openFile", "when": "view == fatassOutput && viewItem == file", "group": "1_fatass@1" },
+        { "command": "fatass.openToSide", "when": "view == fatassOutput && viewItem == file", "group": "1_fatass@2" },
+        { "command": "fatass.revealInExplorer", "when": "view == fatassOutput", "group": "1_fatass@3" },
         { "command": "fatass.newFile", "when": "view == fatassNode && (viewItem == dir || viewItem == root)", "group": "2_fatass@1" },
         { "command": "fatass.newFolder", "when": "view == fatassNode && (viewItem == dir || viewItem == root)", "group": "2_fatass@2" },
-        { "command": "fatass.cutFile", "when": "view == fatassNode && viewItem != root && viewItem != chainItem", "group": "3_fatass@1" },
-        { "command": "fatass.copyFile", "when": "view == fatassNode && viewItem != root && viewItem != chainItem", "group": "3_fatass@2" },
+        { "command": "fatass.cutFile", "when": "view == fatassNode && viewItem != root && viewItem != chainItem && viewItem != dictItem", "group": "3_fatass@1" },
+        { "command": "fatass.copyFile", "when": "view == fatassNode && viewItem != root && viewItem != chainItem && viewItem != dictItem", "group": "3_fatass@2" },
         { "command": "fatass.pasteFile", "when": "view == fatassNode && (viewItem == dir || viewItem == root)", "group": "3_fatass@3" },
-        { "command": "fatass.rename", "when": "view == fatassNode && viewItem != root && viewItem != chainItem", "group": "4_fatass@1" },
-        { "command": "fatass.delete", "when": "view == fatassNode && viewItem != root && viewItem != chainItem", "group": "4_fatass@2" },
+        { "command": "fatass.rename", "when": "view == fatassNode && viewItem != root && viewItem != chainItem && viewItem != dictItem", "group": "4_fatass@1" },
+        { "command": "fatass.delete", "when": "view == fatassNode && viewItem != root && viewItem != chainItem && viewItem != dictItem", "group": "4_fatass@2" },
         { "command": "fatass.copyPath", "when": "view == fatassNode", "group": "5_fatass@1" },
         { "command": "fatass.copyRelativePath", "when": "view == fatassNode", "group": "5_fatass@2" }
       ]

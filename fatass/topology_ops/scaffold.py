@@ -70,22 +70,48 @@ def _reference_pattern(node_path: str) -> re.Pattern:
     return re.compile(r"(?<!\w)fatass\.topology\." + re.escape(node_path) + r"(?!\w)")
 
 
+def _param_default_repr(type_str: str, value_str: str) -> str:
+    """A `params` entry's raw `value_str` (shell/shlex-stripped-of-quotes
+    text, same as a transform's own plain-parameter defaults — see
+    `topology_ops.bind._param_text`'s own docstring for the full
+    reasoning) as real Python source: a `str`-typed default is `repr()`-
+    quoted (so `x:str=hello` and `x:str=` both become valid, correctly-
+    quoted string literals regardless of whether shell quoting survived);
+    any other type's default is inserted as-is, since a bare numeric/
+    boolean literal was never quoted in the first place."""
+    return repr(value_str) if type_str == "str" else value_str
+
+
 def _class_body(class_kwargs: dict[str, tuple] | None) -> str:
-    """Render `class_kwargs` (Array's `dim=...`, and any subclass's
-    constructor-style `fields=...` — see `_targets._parse_subclass_args`)
-    as class-body assignment lines — e.g. `{"dim": (2, 2, 2)}` ->
-    `"    DIM = (2, 2, 2)"`. Empty/None renders as a bare `pass` body."""
-    if not class_kwargs:
-        return "    pass"
+    """Render `class_kwargs` (Array's `dim=...`, any subclass's
+    constructor-style `fields=...`, or one or more named/typed
+    `params=...` (see `fatass.signature._parse_type_args`'s own
+    docstring for the "argvar:argtype=argval" grammar this covers) — a
+    `Dir`'s `path=...` (see `_parse_dir_arg`) is handled separately by
+    `create_node()` itself, as a `.path` file rather than a class-body
+    line, since `Dir.PATH` is a computed property, not a plain class
+    attribute (see `fatass.node.dir.DirMeta`) — as class-body assignment
+    lines — e.g. `{"dim": (2, 2, 2)}` -> `"    DIM = (2, 2, 2)"`. A
+    `params` entry renders as an *annotated* assignment (`NAME: type =
+    value`), unlike every other key's plain `NAME = value` —
+    deliberately, so `Node._type_args()` can later discover it again
+    generically via `__annotations__` (see that method's own docstring).
+    Empty/None (also true once `path` is the only key, since that one
+    isn't rendered here at all) renders as a bare `pass` body."""
     lines = []
-    for key, value in class_kwargs.items():
+    for key, value in (class_kwargs or {}).items():
         if key == "dim":
             lines.append(f"    DIM = {tuple(value)!r}")
         elif key == "fields":
             lines.append(f"    FIELDS = {tuple(value)!r}")
+        elif key == "path":
+            continue
+        elif key == "params":
+            for name, type_str, value_str in value:
+                lines.append(f"    {name.upper()}: {type_str} = {_param_default_repr(type_str, value_str)}")
         else:
             raise TopologyValidationError(f"unknown create-target class argument {key!r}")
-    return "\n".join(lines)
+    return "\n".join(lines) if lines else "    pass"
 
 
 def create_node(
@@ -104,6 +130,15 @@ def create_node(
     immediately — needed before `on_created()` can create the right files.
     Doesn't call free(). Returns True if it created something, False if
     the node already existed."""
+    file_stem = node_path.rsplit(".", 1)[-1]
+    if not file_stem.isidentifier():
+        raise TopologyValidationError(
+            f"{file_stem!r} isn't a valid node name (must be a plain Python "
+            f"identifier) — {node_path!r} likely came from a malformed "
+            f"target, e.g. using '(...)' instead of '<...>' for a "
+            f"NodeSubclass suffix (write 'name<Chain>', not 'name(Chain)')"
+        )
+
     node_dir = _node_dir(node_path)
     if node_dir.is_dir():
         return False
@@ -115,7 +150,6 @@ def create_node(
             f"create it first"
         )
 
-    file_stem = node_path.rsplit(".", 1)[-1]
     class_name = pascal_case(file_stem)
 
     assets_dir = _HOME_ROOT / node_path.replace(".", "/")
@@ -133,6 +167,13 @@ def create_node(
         )
 
         assets_dir.mkdir(parents=True, exist_ok=True)
+        if class_kwargs and "path" in class_kwargs:
+            # A `Dir`'s initial real path (`<Dir somewhere>`'s own
+            # argument) — written as the `.path` file `Dir.PATH` itself
+            # reads (see `fatass.node.dir.DirMeta`), not baked into the
+            # class body: `PATH` is a computed property now, so there's
+            # no class attribute left to assign here.
+            (assets_dir / ".path").write_text(str(class_kwargs["path"]), encoding="utf-8")
         if not any(assets_dir.iterdir()):
             (assets_dir / ".gitkeep").write_text("", encoding="utf-8")
     except BaseException:
@@ -797,20 +838,20 @@ def refine_transform(
 _LOG_EXCERPT_MAX_LINES = 400
 _LOG_EXCERPT_MAX_CHARS = 20_000
 
-_DEBUG_PROMPT_MARKER = "Recent history for this transform from ./log"
+_DEBUG_PROMPT_MARKER = "Recent history for this transform from out/log"
 """Unique text `debug_transform` puts in every prompt it builds (see
-`log_section` below) — `_log_excerpt` skips any ./log line containing it,
+`log_section` below) — `_log_excerpt` skips any out/log line containing it,
 since that line *is* a previous `debug` call's own logged prompt, not
 genuine history about the transform. Without this, each debug call's
-prompt embeds ./log, which then logs that same prompt right back into
-./log — so the next debug call would re-embed the previous one's already-
+prompt embeds out/log, which then logs that same prompt right back into
+out/log — so the next debug call would re-embed the previous one's already-
 embedded copy, compounding every single call (observed in practice:
 27k -> 139k -> 329k -> 810k characters over four calls) until the
 resulting command line is too long for the OS to launch at all."""
 
 
 def _log_excerpt(node_path: str, transform_name: str) -> str | None:
-    """The tail of ./log's lines relevant to this transform — both its own
+    """The tail of out/log's lines relevant to this transform — both its own
     command-dispatch lines (`<current> run <transform>@<node> -> exit ...`)
     and any free() call it made (cwd=<its home dir>, prompt=..., stdout=...,
     stderr=...) — read directly here and spliced into the debug prompt,
@@ -822,7 +863,7 @@ def _log_excerpt(node_path: str, transform_name: str) -> str | None:
     call's own logged prompt — see there) to avoid runaway self-embedding,
     and hard-caps the final excerpt's total length at
     `_LOG_EXCERPT_MAX_CHARS` (keeping the tail) as a second, independent
-    backstop against any other way a single ./log line could end up huge."""
+    backstop against any other way a single out/log line could end up huge."""
     if not _LOG_PATH.is_file():
         return None
     home_dir = str(_assets_dir(node_path))
@@ -913,7 +954,7 @@ def debug_transform(
     refine_transform) plus its own home/ output directory (to inspect
     whatever it already wrote, including any partial/broken output) —
     input and output nodes only, nothing else. Also inlines three sources
-    of history directly into the prompt: the relevant tail of ./log (this
+    of history directly into the prompt: the relevant tail of out/log (this
     transform's own past command-dispatch and free() call history — cwd,
     args, exit code, stdout/stderr), the tail of the real shell's command
     history (see _shell_history_excerpt — unfiltered, not scoped to this
@@ -941,11 +982,11 @@ def debug_transform(
 
     log_excerpt = _log_excerpt(node_path, transform_name)
     log_section = (
-        f"\n\n{_DEBUG_PROMPT_MARKER} (the repo root's fatass invocation "
-        f"log — past command dispatches and free() call arguments/exit "
+        f"\n\n{_DEBUG_PROMPT_MARKER} (fatass's own invocation log, out/log —"
+        f" past command dispatches and free() call arguments/exit "
         f"codes/stdout/stderr):\n\n{log_excerpt}"
         if log_excerpt
-        else "\n\nNo matching history was found in ./log for this transform."
+        else "\n\nNo matching history was found in out/log for this transform."
     )
 
     shell_history = _shell_history_excerpt()
@@ -987,7 +1028,7 @@ def debug_transform(
             f"{prompt}\n\n"
             f"Recent history relevant to this failure has been written to "
             f"{debug_context_path.name}, in the granted home/ output "
-            f"directory ({home_dir}) — read it for: the tail of ./log "
+            f"directory ({home_dir}) — read it for: the tail of out/log "
             f"(past command dispatches and free() call arguments/exit "
             f"codes/stdout/stderr), the tail of the real shell's "
             f"unfiltered command history, and that same shell's "

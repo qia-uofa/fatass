@@ -1,8 +1,9 @@
 import argparse
 import sys
 
+from .._internal.naming import pascal_node_path
 from ..errors import TopologyValidationError
-from ..resolve.cwd import ROOT, expand, write_current_node
+from ..resolve.cwd import PAREN_ROOT, ROOT, expand, write_current_node
 from ..topology_ops.scaffold import _node_dir
 from .base import Command
 
@@ -14,7 +15,7 @@ class CdCommand(Command):
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             "target",
-            help="node.path relative to the current node, '.', '..', or '~...' for an absolute path",
+            help="node.path relative to the current node, '.', '..', or '@...' for an absolute path",
         )
 
     def run(self, args: argparse.Namespace) -> int:
@@ -27,5 +28,5 @@ class CdCommand(Command):
             return 1
 
         write_current_node(node_path)
-        print(node_path)
+        print(PAREN_ROOT if node_path == ROOT else pascal_node_path(node_path))
         return 0

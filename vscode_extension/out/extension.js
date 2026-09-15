@@ -6,6 +6,7 @@ const vscode = require("vscode");
 const workspaceRoot_1 = require("./workspaceRoot");
 const topologyProvider_1 = require("./topologyProvider");
 const nodeViewProvider_1 = require("./nodeViewProvider");
+const outputViewProvider_1 = require("./outputViewProvider");
 const runFatass_1 = require("./runFatass");
 const fileOps_1 = require("./fileOps");
 function activate(context) {
@@ -15,9 +16,13 @@ function activate(context) {
     }
     const topologyProvider = new topologyProvider_1.TopologyProvider(root);
     const nodeViewProvider = new nodeViewProvider_1.NodeViewProvider(root);
-    // Always absolute ("~."-prefixed) -- FATASS_NODE (the fatass "pwd") can be
-    // anywhere, and a bare dotted path resolves relative to it, not to root.
-    const nodePathArg = (node) => (node.dotPath ? `~.${node.dotPath}` : "~");
+    const outputViewProvider = new outputViewProvider_1.OutputViewProvider(root);
+    // Always absolute -- FATASS_NODE (the fatass "pwd") can be anywhere, and
+    // a bare dotted path resolves relative to it, not to root. NodeItem's
+    // own `absolutePath` (see topologyProvider.ts) is server-computed (the
+    // node's real PascalCase form comes from `fatass._internal.naming`
+    // itself, not a local reimplementation of that rule).
+    const nodePathArg = (node) => node.absolutePath;
     const refreshAll = () => {
         topologyProvider.refresh();
         nodeViewProvider.syncCurrentNode();
@@ -47,7 +52,7 @@ function activate(context) {
     const moveNode = (source, target) => {
         const targetDotPath = target ? target.dotPath : "";
         if (targetDotPath === source.dotPath || targetDotPath.startsWith(`${source.dotPath}.`)) {
-            vscode.window.showErrorMessage(`Can't move ${source.dotPath || "~"} into itself or its own subtree.`);
+            vscode.window.showErrorMessage(`Can't move ${source.absolutePath} into itself or its own subtree.`);
             return;
         }
         const currentParent = source.dotPath.includes(".")
@@ -56,7 +61,12 @@ function activate(context) {
         if (targetDotPath === currentParent) {
             return;
         }
-        const dest = targetDotPath ? `~.${targetDotPath}.*` : "~.*";
+        // `move`'s own "*" shorthand (keep the source's leaf name) needs a "."
+        // right before it (see `resolve_move_target`) -- `absolutePath` never
+        // supplies one on its own when it returns the bare, un-prefixed
+        // PAREN_ROOT, so the root case is spelled out here instead of reusing
+        // it for the whole `dest`.
+        const dest = target ? `${target.absolutePath}.*` : `${workspaceRoot_1.PAREN_ROOT}.*`;
         run(source, ["move", nodePathArg(source), dest]);
     };
     const topologyView = vscode.window.createTreeView("fatassTopology", {
@@ -66,6 +76,9 @@ function activate(context) {
     const nodeView = vscode.window.createTreeView("fatassNode", {
         treeDataProvider: nodeViewProvider,
         dragAndDropController: new fileOps_1.NodeDragAndDropController(nodeViewProvider, () => nodeViewProvider.refresh()),
+    });
+    const outputView = vscode.window.createTreeView("fatassOutput", {
+        treeDataProvider: outputViewProvider,
     });
     // The view's own title stays the static "Node" (matching the Topology
     // view's own static title) -- the current node and home/topology
@@ -85,9 +98,18 @@ function activate(context) {
     envWatcher.onDidChange(syncPwd);
     envWatcher.onDidCreate(syncPwd);
     envWatcher.onDidDelete(syncPwd);
-    context.subscriptions.push(topologyView, nodeView, envWatcher);
+    // out/ changes on every command dispatch (the log) and every `fatass
+    // graph` run -- keep the Output view live without needing a manual
+    // refresh for the common case, same idea as the Node view's own
+    // envWatcher above.
+    const outWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(root, "out/**"));
+    const refreshOutput = () => outputViewProvider.refresh();
+    outWatcher.onDidChange(refreshOutput);
+    outWatcher.onDidCreate(refreshOutput);
+    outWatcher.onDidDelete(refreshOutput);
+    context.subscriptions.push(topologyView, nodeView, outputView, envWatcher, outWatcher);
     (0, fileOps_1.registerFileOps)(context, root, nodeViewProvider);
-    context.subscriptions.push(vscode.commands.registerCommand("fatass.refreshTopology", () => topologyProvider.refresh()), vscode.commands.registerCommand("fatass.toggleNodeViewSource", () => nodeViewProvider.toggleSource()), 
+    context.subscriptions.push(vscode.commands.registerCommand("fatass.refreshTopology", () => topologyProvider.refresh()), vscode.commands.registerCommand("fatass.refreshNodeView", () => nodeViewProvider.refreshAll()), vscode.commands.registerCommand("fatass.refreshOutput", () => outputViewProvider.refresh()), vscode.commands.registerCommand("fatass.toggleNodeViewSource", () => nodeViewProvider.toggleSource()), 
     // Context-menu "cd": typed into the active terminal, same as every
     // other confirmed command -- bare "cd ..." if that terminal is sitting
     // inside the REPL, else the full "python -m fatass cd ...".
@@ -127,7 +149,7 @@ function activate(context) {
             return;
         }
         const base = nodePathArg(node);
-        const target = base === "~" ? `~.${child}` : `${base}.${child}`;
+        const target = base === workspaceRoot_1.PAREN_ROOT ? `${workspaceRoot_1.PAREN_ROOT}.${child}` : `${base}.${child}`;
         run(node, ["create", target]);
     }), vscode.commands.registerCommand("fatass.move", async (node) => {
         const dest = await vscode.window.showInputBox({

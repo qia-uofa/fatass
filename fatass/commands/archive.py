@@ -1,9 +1,10 @@
 import argparse
 import sys
 
+from .._internal.naming import pascal_node_path
 from ..errors import TopologyValidationError
 from ..topology_ops.archive import archive_topology
-from ._targets import resolve_node_path
+from ._targets import resolve_and_validate_node_path
 from .base import Command
 
 
@@ -31,14 +32,14 @@ class ArchiveCommand(Command):
 
     def run(self, args: argparse.Namespace) -> int:
         try:
-            node_path = resolve_node_path(args.node) if args.node else None
+            node_path = resolve_and_validate_node_path(args.node) if args.node else None
             dir_name = archive_topology(args.name, node_path=node_path)
         except TopologyValidationError as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1
 
         if node_path:
-            print(f"archived {node_path} to archive/{dir_name}")
+            print(f"archived {pascal_node_path(node_path)} to archive/{dir_name}")
         else:
             print(f"archived to archive/{dir_name}, topology and home are now empty")
         return 0

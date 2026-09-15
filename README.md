@@ -97,9 +97,10 @@ commands work from anywhere once installed:
   explicit override for the `claude` executable's path); safe to delete,
   already covered by `.gitignore`
 - `archive/` — snapshots created by `fatass archive`
-- `./log` — one line per CLI command dispatch (command + exit code), plus
+- `out/log` — one line per CLI command dispatch (command + exit code), plus
   full agent-call details (cwd, flags, prompt, and token usage/cost for
-  `--silent` calls) for every `fatass.free()` invocation
+  `--silent` calls) for every `fatass.free()` invocation; `out/` is also
+  where `fatass graph`'s own default `.puml` output goes
 
 No further configuration is required — once `claude` is authenticated
 and `fatass` is installed, the [Quickstart](#quickstart) below is a
@@ -109,18 +110,18 @@ working example.
 
 ```bash
 # scaffold a node, then flesh it out with an agent call
-python -m fatass create spec --prompt "a short spec for a hello-world CLI"
+python -m fatass create Spec --prompt "a short spec for a hello-world CLI"
 
 # scaffold a dependent node and a transform on it
-python -m fatass create build
-python -m fatass create build@build --prompt "add a spec: Node parameter, \
+python -m fatass create Build
+python -m fatass create Build.build --prompt "add a spec: Node parameter, \
   read spec/ and generate source files into the current directory"
 
 # run it — cache-aware, skips if spec/ hasn't changed since the last run
-python -m fatass run build
+python -m fatass run Build
 
 # run it again, with an explicit non-Node argument, ignoring the cache
-python -m fatass apply build@build style=terse
+python -m fatass apply Build.build style=terse
 ```
 
 `fatass` is a normal console script after install, so `fatass ...` works
@@ -146,7 +147,7 @@ examples.portfolio
 │                     extracts all of it from an old CV PDF checkpoint
 ├── projects/         a Chain of project entries, each with its own info
 │                     (Tuple) and summary (SingleMd), init'd from a
-│                     sibling source node — see `init@projects.info`
+│                     sibling source node — see `Projects.Info.init`
 ├── cv/
 │   ├── templates/    a Chain of pushable CV templates (LaTeX + HTML)
 │   ├── draft/        build() renders the current template + profile +
@@ -162,11 +163,11 @@ Try it:
 
 ```bash
 # report current state, then walk through an interactive menu
-python -m fatass apply main@examples.portfolio
+python -m fatass apply Examples.Portfolio.main
 
 # or drive pieces individually
-python -m fatass run examples.portfolio.cv.draft
-python -m fatass graph examples.portfolio
+python -m fatass run Examples.Portfolio.Cv.Draft
+python -m fatass graph Examples.Portfolio
 ```
 
 `fatass graph` writes a PlantUML diagram of the whole subtree — each node
@@ -179,48 +180,119 @@ the specific transform that depends on it (see [`graph`](#commands) below).
 | Command | What it does |
 | --- | --- |
 | `run <node.path>[.transforms.<name>] [--force]` | Run one or all of a node's transforms, cache-aware. |
-| `apply <transform>@<node.path> [key=value ...]` | Run one transform with explicit args, ignoring cache. |
-| `create <node.path \| transform@node.path>[(NodeSubclass)] [--prompt ""] [--silent] [--permission-mode M] [--model M]` | Scaffold a node or transform if it doesn't exist yet — all-or-nothing: a failure partway never leaves a half-scaffolded node behind. `(NodeSubclass)` subclasses `fatass.<NodeSubclass>` (e.g. `Chain`, `Single`/`Array`/`Tuple` and their typed variants) instead of the default `Node`; see [Node kinds](#node-kinds) below. |
-| `modify <node.path \| transform@node.path> ["..."] [--silent] [--permission-mode M] [--model M]` | Edit an existing node/transform file with an agent; prompt is positional and optional. |
-| `debug <transform>@<node.path> ["..."] [--silent] [--permission-mode M] [--model M]` | Like `modify`, but framed around root-causing a failing transform — inlines recent `./log` history, shell command history, and shell console output as a scratch file the agent reads (not raw CLI text, to stay well under any OS command-line length limit) alongside read access to the transform's declared dependencies and its own output directory. |
-| `move <old.node.path> <new.node.path>` | Move/rename a node, rewriting references to it. All-or-nothing: a failure partway restores the original, and any external files it already rewrote. `<new.node.path>` may end in `.*` (or be bare `*`) to mean "same name, reparented here" (like Unix `mv file dir/`). |
-| `copy <old.node.path> <new.node.path>` | Copy a node, rewriting the copy's internal references to itself; same all-or-nothing guarantee and `*` shorthand as `move`. |
-| `remove <node.path \| transform@node.path>` | Remove a node (and nested nodes) or a single transform. Refuses if anything outside the removed subtree still depends on it. |
-| `bind <transform>@<node.path> <dep.node.path ...>` | Add one or more nodes as declared `Node`-typed dependencies on a transform, without an agent call. Validates every dependency actually exists before writing anything. |
-| `unbind <transform>@<node.path> <dep.node.path ...>` | Remove declared dependencies from a transform, refusing if still referenced in its body. |
+| `apply Node.transform [key=value ...]` | Run one transform with explicit args, ignoring cache. |
+| `create <node.path[<NodeSubclass ...>] \| PathedNodeSignature.transformName[<params>][(deps)]> [--prompt ""] [--silent] [--permission-mode M] [--model M]` | Scaffold a node or transform if it doesn't exist yet — all-or-nothing: a failure partway never leaves a half-scaffolded node behind. `<NodeSubclass>` subclasses `fatass.<NodeSubclass>` (e.g. `Chain`, `Single`/`Array`/`Tuple` and their typed variants) instead of the default `Node`; see [Node kinds](#node-kinds) below. The transform-target form addresses a transform the way an OOP method call reads — see [Transform targets](#transform-targets) below. |
+| `touch <PathedNodeSignature>[<NodeType args>][(Child1<Type1>(...),Child2<Type2>)] \| PathedNodeSignature.transformName[<params>][(deps)] \| -p <file>` | Scaffold one or more nodes (recursively, from a signature string — the exact shape `fatass ls -r` itself renders) and/or transforms (same grammar as `create`'s own transform-target form) — multiple statements, separated by whitespace and/or commas, are processed independently and in order, so a later one may reference a node an earlier one just created. Each node/transform not already present is created (via `create`, same defaults); an already-existing one (subnodes included) is left alone — safe to re-run after editing/extending a tree. The top-level target's own node.path is PascalCase, same as a transform target's (converted back to snake_case) — a child's is its parent's plus its class name converted the same way (`Topics` -> `.topics`). May span multiple lines for readability, and a `#` starts a comment running to end of line; `-p <file>` reads it from a real file instead of giving it inline. |
+| `modify <node.path \| PathedNodeSignature.transformName[<params>][(deps)]> ["..."] [--silent] [--permission-mode M] [--model M]` | Edit an existing node/transform file with an agent; prompt is positional and optional. The optional `<params>`/`(deps)` verify (not create) that's still the transform's actual signature before modifying it. |
+| `debug Node.transform ["..."] [--silent] [--permission-mode M] [--model M]` | Like `modify`, but framed around root-causing a failing transform — inlines recent `out/log` history, shell command history, and shell console output as a scratch file the agent reads (not raw CLI text, to stay well under any OS command-line length limit) alongside read access to the transform's declared dependencies and its own output directory. |
+| `move <old.node.path> <target>` | Move/rename a node, rewriting references to it. All-or-nothing: a failure partway restores the original, and any external files it already rewrote. `<target>` (the not-yet-existing destination) may end in `.*` (or be bare `*`) to mean "same name, reparented here" (like Unix `mv file dir/`). |
+| `copy <old.node.path> <target>` | Copy a node, rewriting the copy's internal references to itself; same all-or-nothing guarantee and `*` shorthand as `move`. |
+| `remove <node.path \| Node.transform>` | Remove a node (and nested nodes) or a single transform. Refuses if anything outside the removed subtree still depends on it. |
+| `bind Node.transform <dep.node.path ...>` | Add one or more nodes as declared `Node`-typed dependencies on a transform, without an agent call. Validates every dependency actually exists before writing anything. |
+| `unbind Node.transform <dep.node.path ...>` | Remove declared dependencies from a transform, refusing if still referenced in its body. |
 | `purge <node.path> [-rs] [-rd] [-rsd]` | Empty a node's own `home/` content; flags reach subnodes/dependencies too. |
 | `archive [name] [--node <node.path>]` | Move the whole topology/home trees under `./archive/`, start fresh — or, with `--node`, archive just that node's subtree in place. All-or-nothing. |
 | `retrieve [name] [--node <node.path>]` | Restore an archived topology/home snapshot — or, with `--node` (requires a named archive), just that node back to its original path. |
-| `build <node.path> [key=value ...]` | Shorthand for `apply build@<node.path>`. |
-| `init <node.path> [key=value ...]` | Shorthand for `apply init@<node.path>`. |
+| `build <node.path> [key=value ...]` | Shorthand for `apply Node.build`. |
+| `init <node.path> [key=value ...]` | Shorthand for `apply Node.init`. |
 | `free <target> ["..."] [--silent] [--permission-mode M] [--model M]` | Ad-hoc agent call scoped to one resolved target directory; prompt is positional and optional. |
 | `sh <target> <command...>` | Run a shell command with its cwd resolved from a node, transform, or file target. |
 | `cd <expr>` | Change the current node (`FATASS_NODE`) that relative targets resolve against. |
 | `pwd` | Print the current node (`FATASS_NODE`). |
 | `graph [node.path] [-o/--output ...]` | Write a PlantUML diagram of node inclusion + transform dependencies, rooted at `node.path` (default: whole topology). |
-| `ls [-r] <node.path \| node.path/rel/path \| transform@node.path>` | List a node's subnodes and transforms (with each transform's input node) — or, for a `/`/`@` target, a raw directory listing like Linux `ls`. `-r` recurses. |
-| `len <node.path>` | Print a `Chain`'s current length. |
-| `insert <n> <node.path> [path1 path2 ...]` | Insert a `Chain` item at index `n`, shifting the rest back — seeded from the dummy head's template, or from the given files/paths (leaf lists only). |
-| `push <node.path>` | If the `Chain` has its own `push` transform, apply it (shorthand for `apply push@<node.path>`); otherwise append one item, seeded as a copy of the dummy head's own content. |
-| `pop <node.path> [n]` | Remove a `Chain`'s tail item, or item `n` if given, shifting anything after it forward. Tolerant of Windows read-only files (e.g. a git checkout pushed into an item). |
-| `vim <node.path \| transform@node.path \| node.path(rel/path)>` | Open a node's class file, a transform file, or a `home/` file in vim. |
+| `ls [-r] <node.path \| node.path/rel/path \| node.path.transformName>` | List a node's subnodes and transforms (with each transform's input node) — or, for a `/`-or-transform target, a raw directory listing like Linux `ls`. `-r` recurses. |
+| `chain len <node.path>` | Print a `Chain`'s current length. |
+| `chain insert <n> <node.path> [path1 path2 ...]` | Insert a `Chain` item at index `n`, shifting the rest back — seeded from the dummy head's template, or from the given files/paths (leaf lists only). |
+| `chain push <node.path>` | If the `Chain` has its own `push` transform, apply it (shorthand for `apply <node.path>.push`); otherwise append one item, seeded as a copy of the dummy head's own content. |
+| `chain pop <node.path> [n]` | Remove a `Chain`'s tail item, or item `n` if given, shifting anything after it forward. Tolerant of Windows read-only files (e.g. a git checkout pushed into an item). |
+| `dir path <node.path>` | Print a `Dir` node's resolved real filesystem path — may be chain-indexed (e.g. `Lectures[0].Assets`). |
+| `dir set-path <node.path> <real_path>` | Write a `Dir`'s own `.path` file, giving it a real filesystem directory (`PATH` is a computed property, not a class attribute — see `fatass.node.dir`) — independently settable per index if chain-indexed. |
+| `dir mirror <node.path>` | Re-run a `Dir`'s `on_created()` — re-scan a root's real directory for subdirectories that appeared since it was first mirrored (its own one-time mirror otherwise never notices them). |
+| `vim <node.path \| node.path.transformName \| node.path/rel/path>` | Open a node's class file, a transform file, or a `home/` file in vim. |
 | `shell` | Interactive REPL — one command per line, with history and node-path tab-completion. |
 
 Node and transform paths are `.`-separated, matching Python module
 addressing directly (`node1.node2`, `node1.node2.transforms.synthesize`) —
 no separate slash-path translation.
 
-`sh`, `free`, `ls`, and `vim` share one target grammar: `node1.node2`
-(that node's own directory or class file), `transform@node1.node2` (that
-same node directory/file — a transform file sits directly in it, no
-separate subdirectory), or `node1.node2(rel/path)` (a path relative to
-the node's `home/` directory — `node1.node2()` names the directory
-itself). The node-path portion before the first `(` must be non-empty —
-an unquoted `~/rel/path` gets shell-tilde-expanded into an absolute
-filesystem path before fatass ever sees it, so a target starting with
-`(` is rejected rather than silently resolving against the current node;
-write `~.` for an explicit root-relative target. `ls`'s bare
-`node1.node2` form (no `(`/`@`) is special — it lists subnodes/transforms
+Any `<node.path>` argument above that names a node which must already
+exist may carry an optional trailing `<NodeType args>` signature
+assertion — e.g. `ls "Foo.Bar<Chain>"`, `sh "Foo.Bar<Array dim=2x2>" pwd`
+— checked against the node's own real signature (see
+[Node kinds](#node-kinds)), raising if it doesn't match: only the parts
+you actually write are asserted (a bare `<Chain>` only checks the kind;
+`<Array dim=2x2>` checks the kind and `DIM`). Not supported on `sh`/
+`free`/`ls`/`vim`'s `node.path/rel/path` form, nor on an indexed
+(`Members[2]`) target. `create`'s own `<NodeSubclass ...>` suffix is the
+same grammar, for the opposite case — naming a not-yet-existing node's
+type instead of asserting an existing one's.
+
+### Transform targets
+
+`create`, `modify`, `apply`, `bind`, `unbind`, `debug`, and `remove`
+address a transform the way an OOP method call reads:
+
+```
+PathedNodeSignature.transformName<params>(deps)
+```
+
+`PathedNodeSignature` is an ordinary node-path expression (the same
+"."/".."/"~" relative navigation as everywhere else — see
+[Current node](#current-node-fatass_node) below), except every real
+name segment is PascalCase, matching that node's own class name
+(`Jrpg.Design.Overview`), not its snake_case topology-path segment
+(`jrpg.design.overview`) — converted back automatically, the same way
+`touch` already converts a child's class name back to its directory
+name. `transformName` (the trailing segment after the last `.`) is the
+transform's own name, lowerCamelCase (`build`, or a hypothetical
+`buildAssets` — converted to the real `build_assets` file/function
+name the same way).
+
+`<params>` (space-separated `name:type=value`/`name:type`/`name=value`
+entries — the same grammar a node's own named/typed type-args already
+use, e.g. `<Chat prompt:str="hi">`) and `(deps)` (comma-separated
+`PathedNodeSignature`s, each optionally carrying its own trailing
+`<NodeType(args)>` assertion) are both independently omittable, each
+defaulting to empty when the other is given but this one isn't:
+`Node.transform<params>` alone means `Node.transform<params>()`; a bare
+`Node.transform` means no params and no deps at all. A dependency's own
+navigation is relative to the transform's OWN target node's PARENT
+(not the node itself, and not the real current node) — a dep is
+overwhelmingly a sibling of the node it feeds, so that's the bare,
+dot-free case — e.g.
+
+```
+Jrpg.Design.Overview.build(BrainStorm)
+```
+
+means "build Overview from BrainStorm, a sibling of Overview under
+Design" — no `..` needed, since deps resolve relative to `Design`
+(Overview's own parent) already, regardless of where the command is
+actually invoked from. A dep that's instead a CHILD of the transform's
+own node (rare) has to repeat the node's own name to get back down to
+it, e.g. `Overview.build(Overview.SomeChild)`. `create`/`touch` create the
+dependency bindings/plain parameters the same way `bind` would (a
+deterministic operation, not an agent call); `modify` instead verifies
+`<params>`/`(deps)`, when given, still match the transform's actual
+current signature before editing it. `apply`/`bind`/`unbind`/`debug`/
+`remove` only ever need the bare `PathedNodeSignature.transformName`
+form (no `<params>`/`(deps)` — `apply` takes `key=value` context
+arguments separately, `bind`/`unbind` take dep paths as their own
+positional arguments).
+
+`sh`, `free`, `ls`, and `vim` share one target grammar: `Node1.Node2`
+(that node's own directory or class file), `Node1.Node2.transformName`
+(that same node directory/file — a transform file sits directly in it,
+no separate subdirectory; the dotted last segment's lowercase leading
+letter is what marks it as a transform name rather than a child node,
+since every real node-path segment is PascalCase), or
+`Node1.Node2/rel/path` (a path relative to the node's `home/` directory
+— `Node1.Node2/` names the directory itself). The node-path portion
+before the first `/` must be non-empty — a target starting with `/` is
+rejected rather than silently resolving against the current node, which
+is what an empty node-path expression would otherwise do; write `~/`
+for an explicit root-relative target. `ls`'s bare `Node1.Node2` form (no
+`/`, no dotted transform) is special — it lists subnodes/transforms
 instead of raw directory content, since that's more useful than a raw
 directory listing.
 
@@ -237,8 +309,9 @@ from `.fatass/.env` (so concurrent shells/commands don't step on each
 other's `cd`). In any node-path expression:
 
 - A bare path (`node1.node2`) resolves under the current node.
-- A leading `~` ignores the current node for an absolute path (`~` alone
-  is the root itself).
+- A leading `~` (or the equivalent `(~)`, as `ls` itself renders the
+  root's synthetic label) ignores the current node for an absolute path
+  (`~` alone is the root itself).
 - A run of *N* consecutive dots ascends *N*-1 levels before descending
   into whatever follows — `.` stays put, `..` goes to the parent,
   `node1..node2` means "node1's parent's child node2".
@@ -261,15 +334,15 @@ items live in `members`'s `home/` directory as a recursive `.next` chain:
   internally by `insert()`; growing this way still correctly
   materializes any `Single`/`Array`/`Tuple` schema child's managed
   file(s) blank on first access, same as a freshly-`create`d node would).
-- `Members.insert(index)` (`fatass insert`/`fatass push`, no custom
-  `push` transform) — additionally seeds the new item as a copy of the
-  dummy head's own template content.
+- `Members.insert(index)` (`fatass chain insert`/`fatass chain push`, no
+  custom `push` transform) — additionally seeds the new item as a copy
+  of the dummy head's own template content.
 - `Members.length()`, `Members.pop(index=None)` — count / remove
   (default: the tail), shifting the rest to fill the gap, O(1) via
   rename rather than a per-item copy.
 
 `run`/`apply`/`build`/`init` accept an indexed target directly, e.g.
-`fatass run "members[2].info"` (quote it — `[`/`]` are shell-glob
+`fatass run "Members[2].Info"` (quote it — `[`/`]` are shell-glob
 characters in some shells); `sh`/`free`/`ls`/`vim` understand an indexed
 segment too. Inside a transform on an indexed item's own schema child,
 use `fatass.current_node()` to get the correctly depth-scoped class —
@@ -281,21 +354,53 @@ writing every item's output to the same place.
 
 Besides the default `Node` and `Chain`, a node can subclass one of these
 to manage a fixed, deterministic set of files instead of arbitrary
-agent-written content — `fatass create <node.path>(<NodeSubclass>)`:
+agent-written content — `fatass create <node.path><NodeSubclass>`. A
+subclass's own constructor-like arguments go in that same suffix, in
+the exact shape `fatass.signature` renders an *existing* node's
+signature in — copy a node's own signature (see `fatass ls`) straight
+into a `create` call to scaffold another one the same way. One grammar
+for every argument kind — space-separated, after the type name:
+
+- A `Tuple`/`Array`'s bare field names (`title role`) and/or (for an
+  `Array`) `dim=2x2x2`: `foo<Tuple title role>`, `grid<ArrayTxt
+  dim=2x2x2>`.
+- A named, typed class attribute (e.g. `Chat`'s `PROMPT`), as a
+  `name:type=value` entry, baked into the scaffolded node as an
+  annotated attribute (`PROMPT: str = 'hi'`): `my_chat<Chat
+  prompt:str=hi>`. Either half is omittable (`name=value` defaults the
+  type to `str`; `name:type` defaults the value to `""`).
+- `Dir`'s own single path argument: `foo<Dir /abs/path>`.
+
+Quote an entry (double quotes, `\"`/`\\` escapes) if it needs to
+contain whitespace itself — a param's value, or a `Dir` path with a
+space in it — e.g. `prompt:str="hi, there"`, `foo<Dir "some path">`.
+Multiple entries are always space-, never comma-, separated.
 
 - **`Single`**/`SingleTxt`/`SinglePdf`/`SingleMd`/`SingleJson`/`SingleHtml`/`SingleCsv`
   — exactly one file, named `_` (or `_.<ext>`). `write(content)`
   replaces it, creating it if needed.
 - **`Array`**/`ArrayTxt`/`ArrayPdf`/`ArrayMd`/`ArrayJson`/`ArrayHtml`/`ArrayCsv`
   — a fixed-shape grid of files (`DIM = (2, 2, 2)`, set via
-  `fatass create grid(ArrayTxt,dim=2x2x2)`), named `_<i>_<j>_...`.
+  `fatass create grid<ArrayTxt dim=2x2x2>`), named `_<i>_<j>_...`.
   `write([i, j, ...], content)` writes one.
 - **`Tuple`** — a fixed set of *exactly*-named files, one per
   `FIELDS = ("field1", "field2")` (set via
-  `fatass create foo(Tuple(field1,field2))`) — no prefix, no extension.
+  `fatass create foo<Tuple field1 field2>`) — no prefix, no extension.
   `write(field, content)` writes one.
 - **`Repo`** — a node whose `home/` directory is its own git repository;
   `on_created()` runs `git init` there once, right after scaffolding.
+- **`Dir`** — a node whose `home/` (`_assets_dir()`) is a real external
+  filesystem directory (`PATH`) instead of the usual `home/<path>`
+  location; see `fatass dir path`/`set-path`/`mirror` above, and
+  `fatass.node.dir`'s own docstring for the full root/relative/chain-
+  indexed design.
+- **`Chat`** — manages a real, interactive `claude` CLI session (`fatass
+  chat new <node.path><Chat prompt:str=...>`, never a `fatass.free()`
+  call — no sandboxing) run with this node's own `home/` as its cwd (so
+  anything the session creates there is a tracked artifact) and its own
+  `.claude_config/` subdirectory as `CLAUDE_CONFIG_DIR`, so every
+  session's transcript/history accumulates there — see
+  `fatass.node.chat`'s own docstring.
 
 A transform populating any of these must never let `fatass.free(...)`
 write into the node's `home/` directory directly — capture the result

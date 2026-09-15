@@ -163,7 +163,7 @@ fatass.free(
 
 If the only thing an instruction asks for is adding or removing a
 `Node`-typed dependency — no other change to the file — prefer telling
-the user to run `fatass bind <transform>@<node.path> <dep.path>` (or
+the user to run `fatass bind Node.transform <dep.path>` (or
 `unbind`) instead of doing it yourself here. Those commands edit the
 signature and import mechanically, without an agent call, and are
 idempotent/safe (bind skips an already-bound dependency; unbind refuses

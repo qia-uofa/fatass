@@ -280,15 +280,29 @@ def _leaf_asset_dirs(node: type[Node]) -> list[Path]:
 
     Duck-typed like the rest of this module: a `Chain` item (a bare
     `_ChainItem`, or the dynamically-derived per-index subclass
-    `_ChainItem.__getattr__` returns — see core/chain.py) has no
-    resolvable fatass/topology/ path of its own, since it's already one
-    concrete, specific piece of data rather than a browsable subtree — so
-    it's always treated as its own single leaf. Note a bare
-    `_ChainItem` doesn't just lack `_topology_path()` — its own
-    `__getattr__` is a catch-all that turns *any* unrecognized attribute
-    probe (including this one) into an attempted schema-child lookup, so
-    the failure here isn't always a clean AttributeError; catching
-    Exception broadly is deliberate, not laziness."""
+    `_ChainItem.__getattr__` returns — see core/chain.py) may or may not
+    have a resolvable, real `_topology_path()` of its own — a bare
+    `_ChainItem` never does (its own `__getattr__` is a catch-all that
+    turns *any* unrecognized attribute probe, including this one, into an
+    attempted schema-child lookup, so the failure isn't always a clean
+    AttributeError; catching Exception broadly is deliberate) — but a
+    dynamically-derived per-index subclass DOES have one (overridden to
+    the real, unindexed schema path, so a second indexed hop off of it
+    can still resolve its own next schema child — see that override's own
+    docstring in core/chain.py).
+
+    That per-index subclass is also the one case where `_topology_path()`
+    succeeding is NOT license to rebuild a directory from `HOME_ROOT +
+    topology_path` — that would silently discard whatever index this
+    specific node was scoped to and land back on the shared, ignored
+    dummy head. Detected via `_sibling` (only ever stamped onto an
+    indexed subclass, never a plain `Node`): `node`'s own directory then
+    comes from `node._assets_dir()` directly, index and all, and each
+    descendant leaf is chased via `getattr` off `node` itself, so every
+    hop re-threads the same indexing. An ordinary (non-indexed) node has
+    no such concern — its own and every descendant's directory really is
+    just `HOME_ROOT` plus its own dotted topology path, cheaper and
+    simpler than importing anything to confirm it."""
     from ..topology_ops.scaffold import _all_node_paths  # local import: avoid a cycle
 
     try:
@@ -298,7 +312,20 @@ def _leaf_asset_dirs(node: type[Node]) -> list[Path]:
 
     subtree = [p for p in _all_node_paths() if p == root or p.startswith(root + ".")]
     leaves = [p for p in subtree if not any(q.startswith(p + ".") for q in subtree)]
-    return [HOME_ROOT / leaf.replace(".", "/") for leaf in leaves]
+
+    if not hasattr(node, "_sibling"):
+        return [HOME_ROOT / leaf.replace(".", "/") for leaf in leaves]
+
+    if leaves == [root]:
+        return [node._assets_dir()]
+
+    dirs = []
+    for leaf in leaves:
+        target = node
+        for part in leaf[len(root) + 1 :].split("."):
+            target = getattr(target, part)
+        dirs.append(target._assets_dir())
+    return dirs
 
 
 def free(

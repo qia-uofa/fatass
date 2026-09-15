@@ -1,98 +1,99 @@
 import argparse
+import dataclasses
 import sys
 
+from .._internal.naming import pascal_case
 from ..errors import TopologyValidationError
-from ..ls import (
-    NodeSummary,
-    NodeTree,
-    list_dir,
-    list_dir_tree,
-    list_node,
-    list_node_tree,
-    list_root,
-    list_root_tree,
-)
+from ..ls import list_dir, list_dir_tree, list_root
 from ..resolve.cwd import ROOT, expand
+from ..resolve.targets import is_raw_target
 from ..resolve.targets import resolve as resolve_target
+from ..signature import (
+    FULL_SIGNATURE,
+    SIMPLE_TYPED_SIMPLE_STRUCTURED,
+    _split_type_suffix,
+    build_sig_data,
+    render_signature,
+    validate_node_signature,
+)
 from .base import Command
 
-
-def _render_node(summary: NodeSummary) -> list[str]:
-    """Render a node's own class + subnodes (`name : ClassName(...)`,
-    "this is the node" — bare own name, it's obviously *this* node), then
-    each of its transforms (`name = transform(...)`, "this is how it's
-    built") as a call whose arguments are each dependency's own
-    `~.<full path> : ClassName(<children>)` — same "this is a node" `:`
-    shape, but full-path-addressed since a dependency can live anywhere
-    in the topology, so a dependency's shape is visible without a
-    separate `ls` call."""
-    own_name = summary.path.rsplit(".", 1)[-1]
-    lines = [f"{own_name} : {summary.class_name}({', '.join(summary.children)})"]
-
-    for spec in summary.transforms:
-        if not spec.dependencies:
-            lines.append(f"{own_name} = {spec.name}()")
-            continue
-        lines.append(f"{own_name} = {spec.name}(")
-        for dep in spec.dependencies:
-            dep_args = ", ".join(dep.children)
-            lines.append(f"    ~.{dep.path} : {dep.class_name}({dep_args}),")
-        lines.append(")")
-
-    return lines
+_NODE_SUMMARY_CONFIG = dataclasses.replace(SIMPLE_TYPED_SIMPLE_STRUCTURED, show_transforms=True)
 
 
-def _render_node_tree(tree: NodeTree, indent: str = "") -> list[str]:
-    """Render the full inclusion tree (`fatass ls -r`) the same
-    `name : ClassName(...)` way as `_render_node`'s own line, but with
-    each child recursively expanded in place — one nested block per
-    child, comma-terminated — instead of a flat list of bare names."""
-    own_name = "~" if not tree.path else tree.path.rsplit(".", 1)[-1]
+def _render_node(node_path: str) -> list[str]:
+    """Render a node's own full signature — real class name, base kind,
+    direct subnodes, and its own transforms — via `fatass.signature`'s
+    own "{...}" transforms-block grammar (see `FULL_SIGNATURE`), in the
+    exact shape `touch` itself accepts back as input, so an `ls` output
+    is directly reusable to recreate what it describes elsewhere. One
+    dense line (matching this view's own long-standing single-line
+    convention — `-r` is where pretty multi-line printing belongs).
+    Each transform's own dependency is shown as its bare pathed identity
+    ("@Foo.Bar") — `ls` that path directly for its own shape."""
+    data = build_sig_data(node_path, max_depth=1, with_transforms=True)
+    return render_signature(data, _NODE_SUMMARY_CONFIG).splitlines()
 
-    if not tree.children:
-        return [f"{indent}{own_name} : {tree.class_name}()"]
 
-    lines = [f"{indent}{own_name} : {tree.class_name}("]
-    for child in tree.children:
-        lines.extend(_render_node_tree(child, indent + "    "))
-        lines[-1] += ","
-    lines.append(f"{indent})")
-    return lines
+def _render_node_tree(node_path: str) -> str:
+    """The full inclusion tree (`fatass ls -r <node.path>`) as one
+    complete, recursively-typed-and-structured signature INCLUDING every
+    node's own transforms (see `fatass.signature`'s `FULL_SIGNATURE`) —
+    every subnode, all the way down, each with its own real class name,
+    base kind, constructor arguments, and "{...}" transforms block.
+    Pretty-printed (`pretty=True`) — one child/transform per line,
+    indented by nesting depth — since a real tree is too deep to read as
+    a single dense line; the same layout `touch -p` itself accepts back
+    as input."""
+    return render_signature(build_sig_data(node_path, with_transforms=True), FULL_SIGNATURE, pretty=True)
 
 
 class LsCommand(Command):
     name = "ls"
-    help = "list a node's own class, subnodes, and transforms, or (for a '('/'@' target) its directory content"
+    help = "list a node's own class, subnodes, and transforms, or (for a '/'-or-transform target) its directory content"
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument(
             "target",
             nargs="?",
             default=".",
-            help="node.path (class + subnodes + transforms) | node.path(rel/path) or "
-            "transform@node.path (raw directory listing); defaults to the "
+            help="Node.Path (class + subnodes + transforms) | Node.Path/rel/path or "
+            "Node.Path.transformName (raw directory listing); defaults to the "
             "current node ('.'), which lists all top-level nodes if no "
             "current node is set",
         )
         parser.add_argument(
             "-r",
             action="store_true",
-            help="recurse — show the full inclusion tree (or, for a '('/'@' "
-            "target, the full directory tree) instead of just one level",
+            help="recurse — show the full inclusion tree (or, for a '/'-or-"
+            "transform target, the full directory tree) instead of just one level",
         )
 
     def run(self, args: argparse.Namespace) -> int:
-        is_raw = "(" in args.target or "@" in args.target
+        # An optional trailing "<NodeType arg1 arg2>" signature assertion
+        # (e.g. "Foo.Bar<Chain>") may itself contain "(" (an unquoted
+        # param value can, e.g. "x=(1)") — stripping the whole suffix
+        # first keeps that from being mistaken for anything in the target
+        # portion itself.
+        stripped, type_name, expected_sig = _split_type_suffix(args.target)
+        is_raw = is_raw_target(stripped)
         try:
             if is_raw:
                 target_dir = resolve_target(args.target)
                 names = list_dir_tree(target_dir) if args.r else list_dir(target_dir)
             else:
-                node_path = expand(args.target)
+                node_path = expand(stripped)
+                if type_name is not None and node_path != ROOT:
+                    validate_node_signature(node_path, type_name, expected_sig, args.target)
                 if args.r:
-                    tree = list_root_tree() if node_path == ROOT else list_node_tree(node_path)
+                    # "topology" has no real class of its own, so at the
+                    # true root this is one full signature line per
+                    # top-level node rather than one combined line under
+                    # a synthetic root.
+                    targets = list_root() if node_path == ROOT else [node_path]
+                    tree_lines = [_render_node_tree(target) for target in targets]
                 elif node_path != ROOT:
-                    summary = list_node(node_path)
+                    node_lines = _render_node(node_path)
         except TopologyValidationError as exc:
             print(f"error: {exc}", file=sys.stderr)
             return 1
@@ -103,14 +104,21 @@ class LsCommand(Command):
             return 0
 
         if args.r:
-            for line in _render_node_tree(tree):
+            for line in tree_lines:
                 print(line)
             return 0
 
         if node_path == ROOT:
-            print(f"~ : topology({', '.join(list_root())})")
+            # "(@)<Topology>" -- a synthetic label for the true root,
+            # which has no real class of its own -- with each top-level
+            # node shown PascalCase, matching every other node name in
+            # the grammar (its real snake_case directory name is what
+            # `expand()`/`resolve_node_path` still take as input,
+            # unaffected).
+            names = ",".join(pascal_case(name) for name in list_root())
+            print(f"({ROOT})<Topology>({names})")
             return 0
 
-        for line in _render_node(summary):
+        for line in node_lines:
             print(line)
         return 0

@@ -1,6 +1,7 @@
 import argparse
 import sys
 
+from .._internal.naming import pascal_node_path
 from ..core.transform import apply_transform
 from ..errors import TopologyValidationError
 from ..topology_ops.scaffold import _node_dir
@@ -10,9 +11,10 @@ from .base import Command
 
 class PushCommand(Command):
     name = "push"
+    group = "chain"
     help = (
         "if the Chain has its own `push` transform, apply it (shorthand for "
-        "`apply push@<node.path>`); otherwise append one item, seeded as a "
+        "`apply Node.push`); otherwise append one item, seeded as a "
         "copy of the dummy head's own content"
     )
 
@@ -36,12 +38,12 @@ class PushCommand(Command):
             if has_push_transform:
                 context = parse_kv_args(args.args)
                 apply_transform(node_path, "push", context)
-                print(f"{node_path}.transforms.push: applied")
+                print(f"{pascal_node_path(node_path)}.transforms.push: applied")
                 return 0
 
             if args.args:
                 raise TopologyValidationError(
-                    f"{node_path!r} has no push transform of its own — "
+                    f"{pascal_node_path(node_path)} has no push transform of its own — "
                     f"extra arguments {args.args} only apply to one"
                 )
             index = list_cls.length()
@@ -50,5 +52,5 @@ class PushCommand(Command):
             print(f"error: {exc}", file=sys.stderr)
             return 1
 
-        print(f"{node_path}: pushed item {index}")
+        print(f"{pascal_node_path(node_path)}: pushed item {index}")
         return 0

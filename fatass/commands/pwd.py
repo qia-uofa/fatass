@@ -1,6 +1,7 @@
 import argparse
 
-from ..resolve.cwd import read_current_node
+from .._internal.naming import pascal_node_path
+from ..resolve.cwd import PAREN_ROOT, ROOT, read_current_node
 from .base import Command
 
 
@@ -12,5 +13,6 @@ class PwdCommand(Command):
         pass
 
     def run(self, args: argparse.Namespace) -> int:
-        print(read_current_node())
+        current = read_current_node()
+        print(PAREN_ROOT if current == ROOT else pascal_node_path(current))
         return 0

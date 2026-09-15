@@ -1,9 +1,10 @@
 import argparse
 import sys
 
+from .._internal.naming import pascal_node_path
 from ..errors import TopologyValidationError
 from ..topology_ops.bind import bind_transform, bound_dep_paths, unbind_transform
-from ._targets import parse_at_target, resolve_node_path
+from ._targets import parse_transform_target, resolve_and_validate_node_path
 from .base import Command
 
 
@@ -13,7 +14,7 @@ class BindCommand(Command):
     mutates_topology = True
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
-        parser.add_argument("target", help="<transform>@<node.path>")
+        parser.add_argument("target", help="Node.transform")
         parser.add_argument(
             "deps",
             nargs="*",
@@ -35,8 +36,8 @@ class BindCommand(Command):
             return 1
 
         try:
-            node_path, transform_name = parse_at_target(args.target)
-            dep_paths = [resolve_node_path(d) for d in args.deps]
+            node_path, transform_name = parse_transform_target(args.target)
+            dep_paths = [resolve_and_validate_node_path(d) for d in args.deps]
 
             if args.absolute:
                 removed = bound_dep_paths(node_path, transform_name)
@@ -50,14 +51,14 @@ class BindCommand(Command):
             print(f"error: {exc}", file=sys.stderr)
             return 1
 
-        label = f"{transform_name}@{node_path}"
+        label = f"{pascal_node_path(node_path)}.transforms.{transform_name}"
         if removed:
-            print(f"{label}: unbound {', '.join(removed)}")
+            print(f"{label}: unbound {', '.join(pascal_node_path(p) for p in removed)}")
         if bound:
-            print(f"{label}: bound {', '.join(bound)}")
+            print(f"{label}: bound {', '.join(pascal_node_path(p) for p in bound)}")
         skipped = [d for d in dep_paths if d not in bound]
         if skipped:
-            print(f"{label}: already bound {', '.join(skipped)}")
+            print(f"{label}: already bound {', '.join(pascal_node_path(p) for p in skipped)}")
         if not removed and not bound and not skipped:
             print(f"{label}: no dependencies")
         return 0

@@ -1,7 +1,7 @@
 import shutil
 from pathlib import Path
 
-from .._internal.fs import force_rmtree
+from .._internal.fs import copy_dir_contents, force_rmtree
 from ..errors import TopologyValidationError
 from .node import Node
 
@@ -9,22 +9,6 @@ _NEXT = ".next"
 _ENTRY = ".entry"
 _INSERT_TMP = ".next.insert-tmp"
 _POP_TMP = ".next.pop-tmp"
-
-
-def _copy_dir_contents(src: Path, dst: Path, *, exclude: set[str] = frozenset()) -> None:
-    """Copy every child of `src` (skipping names in `exclude`) into
-    `dst`, keeping each child's own basename. `dst` is assumed to already
-    exist (created empty by the caller)."""
-    if not src.is_dir():
-        return
-    for child in src.iterdir():
-        if child.name in exclude:
-            continue
-        target = dst / child.name
-        if child.is_dir():
-            shutil.copytree(child, target)
-        else:
-            shutil.copy2(child, target)
 
 
 def _copy_paths_into(dst: Path, paths: list[Path]) -> None:
@@ -128,20 +112,21 @@ members/
   something) should point outside its own list — same-item
   cross-referencing (e.g. `contribution` reading the same item's `info`)
   isn't supported.
-- `fatass len`/`insert`/`push`/`pop` (CLI, no agent call — deterministic
-  `home/`-directory operations, like `.extend()`) manage list length and
-  items directly: `len <node.path>` prints the current length; `push
-  <node.path>` appends one item, seeded as a copy of the dummy head's own
-  current content (its schema-child mirror directories and `.entry`) —
-  the "template" every item structurally resembles; `insert <n>
-  <node.path> [path1 path2 ...]` inserts at index `n` (shifting whatever
-  was there, and everything after it, one slot back) — with explicit
-  paths given (leaf lists only), the new item is seeded from exactly
-  those files/directories instead of the dummy-head template; `pop
-  <node.path> [n]` removes the tail (default) or item `n`, shifting
-  anything after it forward. `members[*]` (in a `run`/`apply`/`build`/
-  `free`/`sh`/`ls`/`vim` target) resolves to the current tail index —
-  useful right after a `push` without having to re-read `len` first."""
+- `fatass chain len`/`insert`/`push`/`pop` (CLI, no agent call —
+  deterministic `home/`-directory operations, like `.extend()`) manage
+  list length and items directly: `chain len <node.path>` prints the
+  current length; `chain push <node.path>` appends one item, seeded as a
+  copy of the dummy head's own current content (its schema-child mirror
+  directories and `.entry`) — the "template" every item structurally
+  resembles; `chain insert <n> <node.path> [path1 path2 ...]` inserts at
+  index `n` (shifting whatever was there, and everything after it, one
+  slot back) — with explicit paths given (leaf lists only), the new item
+  is seeded from exactly those files/directories instead of the
+  dummy-head template; `chain pop <node.path> [n]` removes the tail
+  (default) or item `n`, shifting anything after it forward. `members[*]`
+  (in a `run`/`apply`/`build`/`free`/`sh`/`ls`/`vim` target) resolves to
+  the current tail index — useful right after a `push` without having to
+  re-read `len` first."""
 
 
 class Chain(Node):
@@ -287,7 +272,7 @@ class Chain(Node):
             # old chain (`tmp`) is sitting directly in it as a sibling next
             # to the dummy head's real content — without this it would get
             # swept into the copy as bogus extra content of the new item.
-            _copy_dir_contents(
+            copy_dir_contents(
                 cls._assets_dir(), slot, exclude={_NEXT, _INSERT_TMP, _POP_TMP}
             )
         else:
@@ -366,8 +351,25 @@ class Chain(Node):
             if old_dir.is_dir():
                 shutil.move(str(old_dir), str(path / new_child_stem))
 
-    def __getitem__(self, index: int) -> "_ChainItem":
+    def __getitem__(self, index: int | slice | tuple) -> "_ChainItem | _ChainSelection":
+        """A plain `int` behaves exactly as before: one `_ChainItem`,
+        range-checked. A `slice` (`members[i:j]`) or a `tuple`
+        (`members[a,b,c]`) instead selects *several* indices at once —
+        every one of them still range-checked — and returns a
+        `_ChainSelection` wrapping one `_ChainItem` per selected index,
+        in the order given (not necessarily sorted, for a tuple)."""
         length = type(self).length()
+
+        if isinstance(index, (slice, tuple)):
+            indices = range(*index.indices(length)) if isinstance(index, slice) else index
+            for i in indices:
+                if not (0 <= i < length):
+                    raise TopologyValidationError(
+                        f"{type(self)._topology_path()}[{i}] is out of range "
+                        f"(length is {length})"
+                    )
+            return _ChainSelection([_ChainItem(type(self), i) for i in indices])
+
         if not (0 <= index < length):
             raise TopologyValidationError(
                 f"{type(self)._topology_path()}[{index}] is out of range "
@@ -407,37 +409,97 @@ class _ChainItem:
 
     def __getattr__(self, name: str):
         from ..core.transform import _import_node  # local import: avoid a cycle
+        from ..errors import TopologyValidationError
 
         full_path = f"{self._list_cls._topology_path()}.{name}"
-        schema_cls = _import_node(full_path)
+        try:
+            schema_cls = _import_node(full_path)
+        except TopologyValidationError:
+            # `name` isn't a real schema child at all — a clean, ordinary
+            # AttributeError (not TopologyValidationError) so a caller
+            # doing `getattr(item, name, default)`/`hasattr(item, name)`
+            # to probe for some *other* kind of attribute (e.g. `FIELDS`)
+            # gets its default back instead of an unrelated crash.
+            raise AttributeError(name) from None
 
-        target_dir = self._list_cls._depth_dir(self._index) / name
-        is_new = not target_dir.is_dir()
-        target_dir.mkdir(parents=True, exist_ok=True)
+        # A home/-tree bookkeeping slot for this item's own version of
+        # `name` — the base case of the same per-index accumulation
+        # `NodeMeta.__getattr__` continues for any further hop off of
+        # this class (see `_index_home_dir` there). Always home/-based,
+        # never a `Dir`'s own real external directory.
+        index_home_dir = self._list_cls._depth_dir(self._index) / name
+        is_new = not index_home_dir.is_dir()
+        index_home_dir.mkdir(parents=True, exist_ok=True)
 
-        indexed_cls = type(
-            f"{schema_cls.__name__}@{self._index}",
-            (schema_cls,),
-            {
-                "_assets_dir": classmethod(lambda cls, _dir=target_dir: _dir),
-                # The general primitive: which list, and which index into
-                # it, this indexed class was derived from. Enough on its
-                # own to reach ANY other schema child at the same index
-                # from anywhere — not just from within this class itself —
-                # via `list_cls()[index].other_child`, the exact same way
-                # indexing the list normally already works.
-                "_chain_index": classmethod(lambda cls, _i=self._index: _i),
-                "_chain_list_cls": classmethod(lambda cls, _lc=self._list_cls: _lc),
-                # `_sibling` is pure sugar over the two primitives above —
-                # equivalent to `cls._chain_list_cls()()[cls._chain_index()].sib_name`,
-                # just shorter to write from inside a transform that only
-                # has `current_node()` (itself one of these indexed
-                # classes) in hand.
-                "_sibling": classmethod(
-                    lambda cls, sib_name: getattr(cls._chain_list_cls()()[cls._chain_index()], sib_name)
-                ),
-            },
-        )
+        namespace = {
+            # `type()` stamps `__module__` from the calling frame
+            # (this module, fatass.node.chain) rather than the real
+            # fatass.topology.<...> module `schema_cls` was actually
+            # defined in — so the inherited `Node._topology_path()`
+            # would raise on any indexed class ("not defined under
+            # fatass.topology"). Only matters once you chase a second
+            # indexed hop off of an already-indexed class (a Chain
+            # nested inside a Chain item, e.g. `lectures[i].topics[j]
+            # .points`) — the first hop's `self._list_cls` above is
+            # always the real, literal top-level class, so its own
+            # `_topology_path()` already works fine; it's the *next*
+            # `__getattr__` call, off of THIS class, that would fail
+            # without this override. Overridden to the real (schema,
+            # unindexed) path we just computed as `full_path` — same
+            # value `_import_node(full_path)` above was keyed on —
+            # not `_assets_dir`'s concrete per-index directory.
+            "_topology_path": classmethod(lambda cls, _p=full_path: _p),
+            # The general primitive: which list, and which index into
+            # it, this indexed class was derived from. Enough on its
+            # own to reach ANY other schema child at the same index
+            # from anywhere — not just from within this class itself —
+            # via `list_cls()[index].other_child`, the exact same way
+            # indexing the list normally already works. `_index_key`/
+            # `_index_owner_cls` — not `_chain_*` — because `Dictionary`
+            # items (`_DictItem`, node/dictionary.py) stamp these same
+            # two names for the same reason, keyed by string instead of
+            # int; `NodeMeta.__getattr__`'s own second-hop logic and
+            # `core.transform._resolve_dependency`'s sibling-resolution
+            # both read these generically, working for either kind.
+            "_index_key": classmethod(lambda cls, _i=self._index: _i),
+            "_index_owner_cls": classmethod(lambda cls, _lc=self._list_cls: _lc),
+            # `_sibling` is pure sugar over the two primitives above —
+            # equivalent to `cls._index_owner_cls()()[cls._index_key()].sib_name`,
+            # just shorter to write from inside a transform that only
+            # has `current_node()` (itself one of these indexed
+            # classes) in hand.
+            "_sibling": classmethod(
+                lambda cls, sib_name: getattr(cls._index_owner_cls()()[cls._index_key()], sib_name)
+            ),
+            "_index_home_dir": classmethod(lambda cls, _d=index_home_dir: _d),
+            # The real, already-indexed object `name` was resolved off
+            # of (`self`, this very `_ChainItem`) — not just the bare
+            # schema — so a child with its own `_assets_dir()` override
+            # (`Dir`) can walk up through the *actual* indexed lineage
+            # to resolve correctly per index, instead of silently
+            # re-resolving against the unindexed schema class (which
+            # would collapse every index to the same answer). See
+            # `Dir._resolved_path()`.
+            "_parent_indexed": self,
+        }
+        # A schema child with its OWN `_assets_dir()` override (`Dir`,
+        # resolving to a real external filesystem path, not `home/`)
+        # must not have that shadowed by the generic home/-relative
+        # override below — doing so would silently replace its real
+        # resolution logic with a bogus phantom `home/` directory that
+        # gets created and used instead, and never actually invoke
+        # `Dir`'s own `_resolved_path()` at all. It still gets
+        # `_index_home_dir` (above) as its own per-index bookkeeping
+        # slot — that's where a `Dir` looks for its optional per-index
+        # `.path` override file (see `Dir._effective_path()`), letting a
+        # chain-indexed `Dir`'s real directory actually differ per index
+        # despite its `PATH` class attribute being schema-fixed.
+        has_custom_assets_dir = schema_cls._assets_dir.__func__ is not Node._assets_dir.__func__
+        if has_custom_assets_dir:
+            indexed_cls = type(f"{schema_cls.__name__}@{self._index}", (schema_cls,), namespace)
+        else:
+            namespace["_assets_dir"] = classmethod(lambda cls, _dir=index_home_dir: _dir)
+            indexed_cls = type(f"{schema_cls.__name__}@{self._index}", (schema_cls,), namespace)
         if is_new:
             # First-ever access of this item's schema child: mirror what
             # `fatass create` does for a freshly-scaffolded top-level
@@ -451,3 +513,54 @@ class _ChainItem:
             # already is).
             indexed_cls.on_created()
         return indexed_cls
+
+
+class _ChainSelection:
+    """`members[i:j]` / `members[a,b,c]` — several items (or, after a
+    `.child` access or a further `[...]`, several per-item results)
+    treated as one group.
+
+    Positionally indexable/iterable like a plain list of its own
+    elements — 0-based, same convention as a bare `members[i]` itself,
+    NOT keyed by the original chain-index values the selection was
+    built from (for `members[5,2,9]`, `selection[0]` is the item at
+    chain-index 5 — the first one *given* — not "chain-index 0").
+    `selection[k]` (plain int) drills one level into whatever
+    (nested-)selection structure is already there; `selection[i:j]` or
+    `selection[a,b,c]` instead *broadcasts* that multi-index Chain
+    operation onto every element (each must itself be indexable —
+    typically a `Chain`-typed schema child reached via `.child` first),
+    producing a selection-of-selections.
+
+    `.child` attribute access similarly broadcasts across every
+    element and returns a NEW `_ChainSelection` of the per-element
+    results — so `A[1,2,3].B[1,2,3]` is a 3x3 grid: the OUTER dimension
+    is `A`'s own selection (leftmost/first-applied), the INNER one is
+    `B`'s (rightmost/second-applied) — and `.write` (or any other
+    attribute) broadcasts across however many levels of nesting are
+    already there, since a nested `_ChainSelection`'s own `__getattr__`
+    fires the same way recursively."""
+
+    def __init__(self, items: list):
+        self._items = list(items)
+
+    def __len__(self) -> int:
+        return len(self._items)
+
+    def __iter__(self):
+        return iter(self._items)
+
+    def __getitem__(self, index):
+        if isinstance(index, (slice, tuple)):
+            if isinstance(index, slice):
+                return _ChainSelection(self._items[index])
+            # A tuple broadcasts — "index each of my elements with this
+            # same multi-index", not "select these positions from
+            # myself" (that's what a bare int below is for). Each
+            # element needs its own instance to index into, matching
+            # Chain.__getitem__'s own instance-method convention.
+            return _ChainSelection([item()[index] for item in self._items])
+        return self._items[index]
+
+    def __getattr__(self, name: str):
+        return _ChainSelection([getattr(item, name) for item in self._items])

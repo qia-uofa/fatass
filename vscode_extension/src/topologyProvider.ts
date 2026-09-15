@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as vscode from "vscode";
 import { execFileSync } from "child_process";
-import { topologyDir } from "./workspaceRoot";
+import { PAREN_ROOT, ROOT, toPascalPath, topologyDir } from "./workspaceRoot";
 
 interface DependencySummary {
   path: string;
@@ -21,6 +21,12 @@ interface NodeSummary {
   /** The node's own declared class, e.g. "MyNode" -- what the tree
    * actually labels the node with, not its snake_case module/path name. */
   own_class_name: string;
+  /** `path` converted to PascalCase per segment (fatass's own
+   * `_internal.naming.pascal_node_path`) -- "" for the synthetic root.
+   * Computed server-side rather than reimplemented here, so this
+   * extension never has its own (potentially drifting) copy of fatass's
+   * naming convention -- see `NodeItem.absolutePath`. */
+  pascal_path: string;
   children: string[];
   transforms: TransformInfo[];
 }
@@ -38,6 +44,7 @@ const LIST_NODES_SCRIPT = `
 import sys, json, dataclasses
 import fatass.ls as ls
 from fatass.core.transform import _import_node
+from fatass._internal.naming import pascal_node_path
 
 def summarize(path):
     if not path:
@@ -45,10 +52,12 @@ def summarize(path):
             "path": "",
             "class_name": "topology",
             "own_class_name": "topology",
+            "pascal_path": "",
             "children": ls.list_root(),
             "transforms": [],
         }
     data = dataclasses.asdict(ls.list_node(path))
+    data["pascal_path"] = pascal_node_path(path)
     try:
         data["own_class_name"] = _import_node(path).__name__
     except Exception:
@@ -70,10 +79,16 @@ function fetchNodeSummaries(root: string, paths: string[]): NodeSummary[] {
     });
     return JSON.parse(out) as NodeSummary[];
   } catch {
+    // fatass itself couldn't be reached (no python/fatass on PATH) -- no
+    // server-computed PascalCase path is available, so this degraded
+    // fallback is honest about it (raw snake_case) rather than guessing
+    // via a locally-reimplemented naming rule that could silently drift
+    // from the real one.
     return paths.map((p) => ({
       path: p,
       class_name: "Node",
-      own_class_name: p.split(".").pop() || "~",
+      own_class_name: p.split(".").pop() || PAREN_ROOT,
+      pascal_path: p,
       children: [],
       transforms: [],
     }));
@@ -109,7 +124,7 @@ function relativeDotPath(owner: string, target: string): string {
     common++;
   }
   const ascend = ownerParts.length - common;
-  return ".".repeat(ascend + 1) + targetParts.slice(common).join(".");
+  return ".".repeat(ascend + 1) + toPascalPath(targetParts.slice(common).join("."));
 }
 
 /** One node in the fatass topology tree (dotted path + real directory),
@@ -119,12 +134,23 @@ export class NodeItem extends vscode.TreeItem {
     public readonly dotPath: string,
     public readonly dirPath: string,
     label: string,
-    hasChildren: boolean
+    hasChildren: boolean,
+    /** `dotPath` in PascalCase (server-computed, see `NodeSummary.pascal_path`
+     * above) -- "" for the root. */
+    public readonly pascalPath: string
   ) {
     super(label, hasChildren ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
     this.contextValue = "node";
-    this.tooltip = dotPath || "~";
+    this.tooltip = pascalPath || PAREN_ROOT;
     this.iconPath = new vscode.ThemeIcon("symbol-class");
+  }
+
+  /** The absolute-path form fatass commands expect ("@Foo.Bar", or
+   * `PAREN_ROOT` for the root itself) -- the one place `extension.ts`
+   * should read this from when building a command line, instead of
+   * re-deriving it from `dotPath` itself. */
+  get absolutePath(): string {
+    return this.pascalPath ? `${ROOT}${this.pascalPath}` : PAREN_ROOT;
   }
 }
 
@@ -135,6 +161,9 @@ export class NodeItem extends vscode.TreeItem {
 export class TransformItem extends vscode.TreeItem {
   constructor(
     public readonly ownerDotPath: string,
+    /** The owning node's `pascalPath` (see `NodeItem`) -- server-computed,
+     * passed down by the caller rather than recomputed here. */
+    ownerPascalPath: string,
     name: string,
     public readonly dependencies: DependencySummary[]
   ) {
@@ -143,7 +172,7 @@ export class TransformItem extends vscode.TreeItem {
       dependencies.length > 0 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None
     );
     this.contextValue = "transform";
-    this.tooltip = `${name}@${ownerDotPath || "~"}`;
+    this.tooltip = `${ownerPascalPath || PAREN_ROOT}.transforms.${name}`;
     this.iconPath = new vscode.ThemeIcon("symbol-method");
   }
 }
@@ -184,7 +213,13 @@ export class TopologyProvider implements vscode.TreeDataProvider<TopologyElement
 
   private nodeItem(summary: NodeSummary, label?: string): NodeItem {
     const hasChildren = summary.children.length > 0 || summary.transforms.length > 0;
-    return new NodeItem(summary.path, dirForDotPath(this.root, summary.path), label ?? classLabel(summary), hasChildren);
+    return new NodeItem(
+      summary.path,
+      dirForDotPath(this.root, summary.path),
+      label ?? classLabel(summary),
+      hasChildren,
+      summary.pascal_path
+    );
   }
 
   getChildren(element?: TopologyElement): TopologyElement[] {
@@ -201,7 +236,9 @@ export class TopologyProvider implements vscode.TreeDataProvider<TopologyElement
     const [summary] = this.fetchSummaries([element.dotPath]);
     const childPaths = summary.children.map((name) => childDotPath(element.dotPath, name));
     const subnodes = this.fetchSummaries(childPaths).map((s) => this.nodeItem(s));
-    const transforms = summary.transforms.map((t) => new TransformItem(element.dotPath, t.name, t.dependencies));
+    const transforms = summary.transforms.map(
+      (t) => new TransformItem(element.dotPath, element.pascalPath, t.name, t.dependencies)
+    );
     return [...subnodes, ...transforms];
   }
 

@@ -14,10 +14,11 @@ from ..errors import TopologyValidationError
 from .free import _current_node
 from ..node.node import Node
 from ..node.chain import Chain
+from ..node.dictionary import Dictionary
 
 _CACHE_PATH = REPO_ROOT / ".fatass" / "cache.json"
 
-_INDEX_SEGMENT = re.compile(r"^(\w+)\[(\d+|\*)\]$")
+_INDEX_SEGMENT = re.compile(r"^(\w+)\[([^\[\]]+)\]$")
 
 
 @dataclasses.dataclass
@@ -62,115 +63,169 @@ def validate_node(node_cls: type[Node]) -> None:
         )
 
 
-def _split_index(node_path: str) -> tuple[str, int | str | None, str]:
-    """Split a node path with at most one `name[N]`/`name[*]` segment
-    (e.g. "members[2].info" or "members[*].info") into (list_node_path,
-    index, suffix) — here ("members", 2, "info") or ("members", "*",
-    "info"). `index` is an `int`, the literal string `"*"` (meaning "the
-    current tail" — resolved against the list's actual length by
-    `_resolve_index`, since that needs an import), or `None`. No bracket
-    anywhere returns (node_path, None, "") unchanged. More than one
-    indexed segment isn't supported (nested Chains aren't part of this
-    design)."""
-    parts = node_path.split(".")
-    matches = [(i, m) for i, part in enumerate(parts) if (m := _INDEX_SEGMENT.match(part))]
-    if not matches:
-        return node_path, None, ""
-    if len(matches) > 1:
-        raise ValueError(f"{node_path!r} has more than one indexed segment")
-
-    i, m = matches[0]
-    list_node_path = ".".join(parts[: i] + [m.group(1)])
-    raw_index = m.group(2)
-    index: int | str = raw_index if raw_index == "*" else int(raw_index)
-    suffix = ".".join(parts[i + 1 :])
-    return list_node_path, index, suffix
+def _has_index(node_path: str) -> bool:
+    """True if `node_path` contains at least one `name[...]` indexed
+    segment anywhere — a cheap presence check (`[` never appears in an
+    ordinary node-path segment — PascalCase-enforced, and a `Dictionary`
+    key can't contain one either, see `node.dictionary._validate_key`)
+    for a caller that only needs to decide whether to route through
+    indexed resolution at all, not the parsed details themselves (used
+    throughout `resolve.targets`, which doesn't need to know HOW MANY
+    indexed segments there are, just whether there's at least one)."""
+    return "[" in node_path
 
 
-def _resolve_index(list_cls: type[Chain], index: int | str) -> int:
-    """`index` as an actual, in-range-checkable `int` — `"*"` (the tail)
-    is resolved against the list's current `length()` here, since that
-    requires an import `_split_index` itself deliberately avoids (it's
-    pure string parsing, reused by targets that shouldn't need to import
-    anything just to tell whether a target is indexed at all)."""
-    if index == "*":
-        length = list_cls.length()
-        if length == 0:
+def _parse_indexed_path(node_path: str) -> list[tuple[str, str | None]]:
+    """Split `node_path` into its dot-separated segments, each already
+    split into `(name, raw_index)` — `raw_index` is a segment's own
+    bracket text (e.g. "2", "*", "alice"), untyped — deliberately: at
+    parse time nothing has imported anything yet to know whether a given
+    segment indexes a `Chain` (where "2"/"*" need converting to an actual
+    int position) or a `Dictionary` (where the text itself already IS
+    the key) — that decision belongs to `_index_into`, once each
+    segment's own owning class is actually known. `raw_index` is `None`
+    for a plain, unindexed segment. Any number of segments may carry
+    their own index, anywhere along the path — nesting one collection
+    inside another (e.g. "courses[eiki].lecture[0].exercise", a
+    `Dictionary` entry's own `Chain` schema child, itself indexed) is
+    fully supported; `_resolve_owning_node`/`resolve_indexed_assets_dir`
+    walk the segments left to right, indexing into whichever ones carry
+    a bracket. Raises `ValueError` if any segment doesn't match the
+    `name` / `name[index]` shape."""
+    segments = []
+    for part in node_path.split("."):
+        m = _INDEX_SEGMENT.match(part)
+        if m:
+            segments.append((m.group(1), m.group(2)))
+        elif re.fullmatch(r"\w+", part):
+            segments.append((part, None))
+        else:
+            raise ValueError(f"invalid path segment {part!r} in {node_path!r}")
+    return segments
+
+
+def _index_into(owner_cls: type[Node], raw_index: str, label: str):
+    """`raw_index` (one segment's own bracket text) resolved against
+    `owner_cls` — a `Chain` (`raw_index` must be a non-negative integer
+    literal, or "*" for the current tail) or a `Dictionary` (`raw_index`
+    is used as-is, the literal key) — returning `(item, index_repr)`:
+    `item` is the `_ChainItem`/`_DictItem` instance (bounds/existence-
+    checked, raises `TopologyValidationError` otherwise), and
+    `index_repr` is what the cache key/error messages should show (an
+    `int` for a `Chain`, the raw string key for a `Dictionary`).
+    `owner_cls` not being a `Chain`/`Dictionary` at all is also an error
+    here. `label` is the real dotted path up to and including this
+    segment's own name, used only to phrase an error message — works
+    for a segment at any depth (not just the first), since `owner_cls`
+    itself may already be a dynamically-derived, index-scoped class from
+    an earlier segment in the same walk."""
+    if issubclass(owner_cls, Chain):
+        if raw_index == "*":
+            length = owner_cls.length()
+            if length == 0:
+                raise TopologyValidationError(
+                    f"{owner_cls._topology_path()} is empty — [*] has no tail to resolve to"
+                )
+            index = length - 1
+        elif raw_index.lstrip("-").isdigit():
+            index = int(raw_index)
+        else:
             raise TopologyValidationError(
-                f"{list_cls._topology_path()} is empty — [*] has no tail to resolve to"
+                f"{label}[{raw_index}] isn't a valid Chain index — "
+                f"expected a non-negative integer or '*'"
             )
-        return length - 1
-    return index
+        return owner_cls()[index], index  # bounds-checked, raises TopologyValidationError
+    if issubclass(owner_cls, Dictionary):
+        return owner_cls()[raw_index], raw_index  # existence-checked, raises TopologyValidationError
+
+    from ..signature import SIMPLE_TYPED, pathed_signature  # local: avoid a cycle (signature imports this module)
+
+    raise TopologyValidationError(
+        f"{pathed_signature(owner_cls._topology_path(), SIMPLE_TYPED, max_depth=0)} "
+        f"is not a Chain or Dictionary, can't be indexed"
+    )
+
+
+def _walk_indexed_path(node_path: str):
+    """Shared walk behind `_resolve_owning_node`/`resolve_indexed_assets_dir`:
+    resolves every segment of `node_path` in order, importing the first
+    one and `getattr`-chasing (`_ChainItem`/`_DictItem.__getattr__`, or
+    `NodeMeta.__getattr__` for a second-plus hop off an already-indexed
+    class) every one after it, indexing into a segment wherever it
+    carries its own `[...]`. Returns `(resolved, real_path_parts,
+    cache_key_parts)` — `resolved` is a class if the path's last segment
+    was plain, or a bare `_ChainItem`/`_DictItem` instance if the last
+    segment was itself indexed with nothing after it (the two callers
+    tell these apart with `isinstance(resolved, type)`); the two part
+    lists are the real (index-free) and cache-key (index-baked-in)
+    dotted paths, segment by segment, for the caller to join as needed."""
+    segments = _parse_indexed_path(node_path)
+    resolved = None
+    real_path_parts: list[str] = []
+    cache_key_parts: list[str] = []
+    for name, raw_index in segments:
+        real_path_parts.append(name)
+        resolved = _import_node(".".join(real_path_parts)) if resolved is None else getattr(resolved, name)
+        cache_key_parts.append(name)
+        if raw_index is not None:
+            item, index_repr = _index_into(resolved, raw_index, ".".join(real_path_parts))
+            resolved = item
+            cache_key_parts[-1] = f"{name}[{index_repr}]"
+    return resolved, real_path_parts, cache_key_parts
 
 
 def _resolve_owning_node(node_path: str) -> tuple[type[Node], str, str]:
     """(owning_node_class, discovery_path, cache_key_prefix) for
-    `node_path` — plain (no `[N]`) or indexed into a `Chain`.
+    `node_path` — plain (no `[...]` anywhere) or indexed into one or more
+    nested `Chain`/`Dictionary` collections along the way (e.g.
+    "courses[eiki].lecture[0].exercise").
 
     `discovery_path` is always the *real* topology path (e.g.
     "members.info"), since `discover()` reflects on that node's own real
     package directory, which is the same regardless of which item is
-    being addressed. `cache_key_prefix` bakes the index in
-    ("members[2].info") so different items never share a cache entry.
-    `owning_node_class` is the class actually passed to `_call()` — for
-    an indexed target this is the dynamically-derived, depth-scoped class
-    from `Chain.__getitem__`/`_ChainItem.__getattr__`, not the
-    literal (dummy-head) schema class `_import_node` would otherwise
-    return."""
-    list_node_path, raw_index, suffix = _split_index(node_path)
-    if raw_index is None:
+    being addressed. `cache_key_prefix` bakes every index/key in along
+    the way ("members[2].info"/"courses[eiki].lecture[0].exercise") so
+    different items never share a cache entry. `owning_node_class` is the
+    class actually passed to `_call()` — for an indexed target this is
+    the dynamically-derived, depth-scoped class from `Chain.__getitem__`/
+    `_ChainItem.__getattr__` (or `Dictionary`/`_DictItem`'s own
+    equivalents), not the literal (dummy-head) schema class
+    `_import_node` would otherwise return."""
+    if not _has_index(node_path):
         return _import_node(node_path), node_path, node_path
 
-    list_cls = _import_node(list_node_path)
-    if not issubclass(list_cls, Chain):
+    resolved, real_path_parts, cache_key_parts = _walk_indexed_path(node_path)
+    if not isinstance(resolved, type):
+        # The last segment was itself indexed, with nothing after it --
+        # a bare list/dict item, which has no transform of its own.
+        cache_key_path = ".".join(cache_key_parts)
         raise TopologyValidationError(
-            f"{list_node_path!r} is not a Chain, can't be indexed"
-        )
-    index = _resolve_index(list_cls, raw_index)
-
-    item = list_cls()[index]  # bounds-checked, raises TopologyValidationError
-    if not suffix:
-        raise TopologyValidationError(
-            f"{list_node_path}[{index}] needs a schema child, e.g. "
-            f"{list_node_path}[{index}].<name> — the list node itself has "
+            f"{cache_key_path} needs a schema child, e.g. "
+            f"{cache_key_path}.<name> — the list/dict node itself has "
             f"no transforms of its own"
         )
 
-    node_cls = item
-    for name in suffix.split("."):
-        node_cls = getattr(node_cls, name)  # first hop: ChainItem.__getattr__
-
-    discovery_path = f"{list_node_path}.{suffix}"
-    cache_key_prefix = f"{list_node_path}[{index}].{suffix}"
-    return node_cls, discovery_path, cache_key_prefix
+    discovery_path = ".".join(real_path_parts)
+    cache_key_prefix = ".".join(cache_key_parts)
+    return resolved, discovery_path, cache_key_prefix
 
 
 def resolve_indexed_assets_dir(node_path: str) -> Path:
     """`home/` directory for an indexed `node_path` — like
     `_resolve_owning_node`, but for `sh`/`free`/`ls`/`vim`'s "/" target
     form rather than `run`/`apply`/`build`'s transform-scoping: a bare
-    indexed item (e.g. "members[2]", no schema-child suffix) is valid
-    here — it resolves straight to that item's own `._assets_dir()`
-    (`.entry` for a leaf list) — whereas `_resolve_owning_node` requires
-    a suffix, since a bare item has no *transform* to run. A suffix, if
-    given, is chased the same way (a schema child's own item-scoped
-    directory)."""
-    list_node_path, raw_index, suffix = _split_index(node_path)
-    if raw_index is None:
+    indexed item at the very end (e.g. "members[2]"/"members[alice]", no
+    schema-child suffix) is valid here — it resolves straight to that
+    item's own `._assets_dir()` (`.entry` for a leaf list/dict) — whereas
+    `_resolve_owning_node` requires a schema child after the last index,
+    since a bare item has no *transform* to run. Any earlier segment may
+    still carry its own index either way (nesting), same as
+    `_resolve_owning_node`."""
+    if not _has_index(node_path):
         raise ValueError(f"{node_path!r} has no indexed segment")
 
-    list_cls = _import_node(list_node_path)
-    if not issubclass(list_cls, Chain):
-        raise TopologyValidationError(
-            f"{list_node_path!r} is not a Chain, can't be indexed"
-        )
-    index = _resolve_index(list_cls, raw_index)
-    item = list_cls()[index]  # bounds-checked, raises TopologyValidationError
-
-    node_cls = item
-    for name in (suffix.split(".") if suffix else []):
-        node_cls = getattr(node_cls, name)  # first hop: ChainItem.__getattr__
-    return node_cls._assets_dir()
+    resolved, _real_path_parts, _cache_key_parts = _walk_indexed_path(node_path)
+    return resolved._assets_dir()
 
 
 def _load_transform_function(node_path: str, stem: str):
@@ -286,26 +341,59 @@ def invalidate_index_cache(list_path: str, from_index: int) -> int:
     return len(to_drop)
 
 
+_CACHE_KEY_DICT_INDEX = re.compile(r"^(?P<dict_path>.+)\[(?P<key>[^\]]+)\]\.")
+
+
+def invalidate_dict_key_cache(dict_path: str, key: str) -> int:
+    """Drop every cache entry keyed to exactly `dict_path[key]...` —
+    called by `Dictionary.pop`. Unlike `invalidate_index_cache`, this is
+    never a range: removing one key from a `Dictionary` never changes
+    any *other* key's own identity (nothing shifts), so only that one
+    key's own stale entries need dropping — guards the same false-
+    cache-hit risk `invalidate_index_cache` does, for the one case where
+    it can actually arise here: the same key gets `.set()` again later
+    with different content than what the cache last recorded for it.
+
+    Returns the number of entries dropped."""
+    cache = _load_cache()
+    prefix = f"{dict_path}["
+    to_drop = []
+    for cache_key in cache:
+        if not cache_key.startswith(prefix):
+            continue
+        match = _CACHE_KEY_DICT_INDEX.match(cache_key)
+        if match and match.group("dict_path") == dict_path and match.group("key") == key:
+            to_drop.append(cache_key)
+    for cache_key in to_drop:
+        del cache[cache_key]
+    if to_drop:
+        _save_cache(cache)
+    return len(to_drop)
+
+
 def _resolve_dependency(owning_node: type[Node], dep_cls: type[Node]) -> Node:
     """Normally just `dep_cls()` — the literal, non-indexed class a
     static `from fatass.topology... import X` always gives. But when
-    `owning_node` is itself one of `Chain`'s dynamically-derived per-index
-    schema-child classes (has `_sibling`, see `_ChainItem.__getattr__`)
-    and `dep_cls` names another schema child of that SAME list at the
-    SAME depth — a sibling — that literal class would be the wrong one:
-    every item's transform would read the shared dummy head instead of
-    its own sibling's actual content, no matter which item is running.
-    Detected by comparing `dep_cls`'s own real topology path against
-    `owning_node`'s owning list's path + one more segment; when it
+    `owning_node` is itself one of `Chain`/`Dictionary`'s dynamically-
+    derived per-index schema-child classes (has `_sibling`, see
+    `_ChainItem.__getattr__`/`_DictItem.__getattr__`) and `dep_cls`
+    names another schema child of that SAME list/dict at the SAME
+    depth — a sibling — that literal class would be the wrong one: every
+    item's transform would read the shared dummy head instead of its own
+    sibling's actual content, no matter which item is running. Detected
+    by comparing `dep_cls`'s own real topology path against
+    `owning_node`'s owning list/dict's path + one more segment; when it
     matches, resolve through `owning_node._sibling(...)` instead, which
-    is index-aware. This is what makes a normal `source: Source`-style
-    declared dependency usable on a per-item Chain schema-child transform
-    (e.g. `init(source)@projects.info`) without the caller having to know
-    or care that it's running per-item at all."""
+    is index/key-aware. This is what makes a normal `source: Source`-
+    style declared dependency usable on a per-item Chain/Dictionary
+    schema-child transform (e.g. `init(source)@projects.info`) without
+    the caller having to know or care that it's running per-item at
+    all — `_index_owner_cls`/`_index_key` are the shared, kind-agnostic
+    names both `Chain` and `Dictionary` items stamp."""
     sibling = getattr(owning_node, "_sibling", None)
     if sibling is not None:
         try:
-            list_path = owning_node._chain_list_cls()._topology_path()
+            list_path = owning_node._index_owner_cls()._topology_path()
             dep_path = dep_cls._topology_path()
             prefix = list_path + "."
             if dep_path.startswith(prefix) and "." not in dep_path[len(prefix):]:

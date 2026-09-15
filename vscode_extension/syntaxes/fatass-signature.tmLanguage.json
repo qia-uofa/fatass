@@ -1,0 +1,142 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "fatass Signature",
+  "scopeName": "source.fatass-sig",
+  "fileTypes": ["sig"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#expression" }
+  ],
+  "repository": {
+    "expression": {
+      "patterns": [
+        { "include": "#comments" },
+        { "include": "#strings" },
+        { "include": "#navigation" },
+        { "include": "#transform-call" },
+        { "include": "#type-suffix" },
+        { "include": "#transforms-block" },
+        { "include": "#children-block" },
+        { "include": "#pascal-name" },
+        { "include": "#punctuation" }
+      ]
+    },
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.fatass-sig",
+          "match": "#.*$"
+        }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.fatass-sig",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        { "name": "constant.character.escape.fatass-sig", "match": "\\\\." }
+      ]
+    },
+    "navigation": {
+      "patterns": [
+        {
+          "name": "keyword.other.root.fatass-sig",
+          "match": "~"
+        },
+        {
+          "name": "punctuation.accessor.navigation.fatass-sig",
+          "match": "\\.{2,}"
+        }
+      ]
+    },
+    "transform-call": {
+      "comment": "A lowerCamelCase segment right after a \".\" -- the transform name in PathedNodeSignature.transformName<params>(deps).",
+      "match": "(\\.)([a-z][A-Za-z0-9_]*)\\b",
+      "captures": {
+        "1": { "name": "punctuation.accessor.fatass-sig" },
+        "2": { "name": "entity.name.function.fatass-sig" }
+      }
+    },
+    "pascal-name": {
+      "name": "entity.name.type.class.fatass-sig",
+      "match": "\\b[A-Z][A-Za-z0-9_]*\\b"
+    },
+    "node-type": {
+      "comment": "The NodeType identifier immediately after \"<\" in <NodeType arg1 arg2> -- a node's own base kind (e.g. \"Chain\", \"Dir\"), scoped separately from #pascal-name so it can be colored differently than the node's own class name (also PascalCase, matched by #pascal-name everywhere else in a type-suffix, e.g. later dep/child names). \\G anchors this to fire only right after \"<\" (type-suffix's own \"begin\"), i.e. exactly once per type-suffix, on its leading token only.",
+      "match": "\\G\\s*\\b([A-Z][A-Za-z0-9_]*)\\b",
+      "captures": {
+        "1": { "name": "storage.type.fatass-sig" }
+      }
+    },
+    "type-suffix": {
+      "comment": "<NodeType arg1 arg2> / <params> -- space-separated args, or name:type=value named entries.",
+      "begin": "<",
+      "beginCaptures": { "0": { "name": "punctuation.definition.typeparameters.begin.fatass-sig" } },
+      "end": ">",
+      "endCaptures": { "0": { "name": "punctuation.definition.typeparameters.end.fatass-sig" } },
+      "patterns": [
+        { "include": "#strings" },
+        { "include": "#node-type" },
+        { "include": "#dim-entry" },
+        { "include": "#named-param" },
+        { "include": "#pascal-name" },
+        {
+          "name": "variable.other.fatass-sig",
+          "match": "\\b[a-z_][A-Za-z0-9_]*\\b"
+        }
+      ]
+    },
+    "transforms-block": {
+      "comment": "{transform1<params>(deps);transform2<params>(deps);} -- a node's own transforms block (see fatass.signature.FULL_SIGNATURE). Each entry is bare -- no node-path prefix, the node is already known -- so a leading lowerCamelCase identifier here is always a transform name (mirrors #transform-call's own function-name scope, just without the preceding \".\").",
+      "begin": "\\{",
+      "beginCaptures": { "0": { "name": "punctuation.section.block.begin.fatass-sig" } },
+      "end": "\\}",
+      "endCaptures": { "0": { "name": "punctuation.section.block.end.fatass-sig" } },
+      "patterns": [
+        { "include": "#comments" },
+        { "include": "#type-suffix" },
+        { "include": "#children-block" },
+        {
+          "name": "entity.name.function.fatass-sig",
+          "match": "\\b[a-z][A-Za-z0-9_]*\\b"
+        },
+        {
+          "name": "punctuation.terminator.statement.fatass-sig",
+          "match": ";"
+        }
+      ]
+    },
+    "dim-entry": {
+      "match": "\\b(dim)(=)([0-9]+(?:x[0-9]+)*)\\b",
+      "captures": {
+        "1": { "name": "variable.parameter.fatass-sig" },
+        "2": { "name": "keyword.operator.assignment.fatass-sig" },
+        "3": { "name": "constant.numeric.fatass-sig" }
+      }
+    },
+    "named-param": {
+      "comment": "name:type=value / name:type / name=value -- a node's own named/typed type-args, or a transform's <params>.",
+      "match": "\\b([a-z_][A-Za-z0-9_]*)(?:(:)([A-Za-z_][A-Za-z0-9_]*))?(=)?",
+      "captures": {
+        "1": { "name": "variable.parameter.fatass-sig" },
+        "2": { "name": "punctuation.separator.key-value.fatass-sig" },
+        "3": { "name": "support.type.fatass-sig" },
+        "4": { "name": "keyword.operator.assignment.fatass-sig" }
+      }
+    },
+    "children-block": {
+      "comment": "(Child1<Type1>(...),Child2<Type2>) node-tree children, or (deps) on a transform target.",
+      "begin": "\\(",
+      "beginCaptures": { "0": { "name": "punctuation.section.group.begin.fatass-sig" } },
+      "end": "\\)",
+      "endCaptures": { "0": { "name": "punctuation.section.group.end.fatass-sig" } },
+      "patterns": [{ "include": "#expression" }, { "include": "#punctuation" }]
+    },
+    "punctuation": {
+      "patterns": [
+        { "name": "punctuation.separator.comma.fatass-sig", "match": "," },
+        { "name": "punctuation.accessor.fatass-sig", "match": "\\." }
+      ]
+    }
+  }
+}

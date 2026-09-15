@@ -1,8 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.PAREN_ROOT = exports.ROOT = void 0;
 exports.findFatassRoot = findFatassRoot;
 exports.topologyDir = topologyDir;
 exports.homeDir = homeDir;
+exports.toPascalPath = toPascalPath;
 exports.envPath = envPath;
 exports.readCurrentNode = readCurrentNode;
 const fs = require("fs");
@@ -28,7 +30,38 @@ function topologyDir(root) {
 function homeDir(root) {
     return path.join(root, "home");
 }
-const FATASS_ROOT_SENTINEL = "~";
+// Mirrors `fatass.resolve.cwd.ROOT`/`PAREN_ROOT` -- the ONE place in this
+// extension that knows the sentinel's actual spelling.
+exports.ROOT = "@";
+exports.PAREN_ROOT = `(${exports.ROOT})`;
+/** "writing_sample" -> "WritingSample" -- mirrors fatass's own
+ * `_internal.naming.pascal_case`. Used only for display labels that have
+ * no server round-trip already fetching a real node (`nodeLabel`'s
+ * current-node title, `relativeDotPath`'s dependency label) -- anywhere
+ * a `NodeItem` already exists, its own `pascalPath`/`absolutePath` (see
+ * topologyProvider.ts) is server-computed via `fatass._internal.naming`
+ * itself and should be used instead of calling this. */
+function pascalCase(snake) {
+    return snake
+        .split("_")
+        .filter(Boolean)
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join("");
+}
+/** "my_node.other_thing[0]" -> "MyNode.OtherThing[0]" -- per-segment
+ * PascalCase conversion (see `pascalCase`), preserving any "[idx]"
+ * chain-index suffix on a segment as-is. */
+function toPascalPath(dotPath) {
+    return dotPath
+        .split(".")
+        .map((seg) => {
+        const bracketIdx = seg.indexOf("[");
+        const name = bracketIdx === -1 ? seg : seg.slice(0, bracketIdx);
+        const suffix = bracketIdx === -1 ? "" : seg.slice(bracketIdx);
+        return pascalCase(name) + suffix;
+    })
+        .join(".");
+}
 /** Path (relative to `.fatass/.env`) of the FATASS_NODE dotenv file. */
 function envPath(root) {
     return path.join(root, ".fatass", ".env");
@@ -57,7 +90,7 @@ function readCurrentNode(root) {
         if (value.length >= 2 && value[0] === value[value.length - 1] && (value[0] === '"' || value[0] === "'")) {
             value = value.slice(1, -1);
         }
-        return value === FATASS_ROOT_SENTINEL ? "" : value;
+        return value === exports.ROOT ? "" : value;
     }
     return "";
 }

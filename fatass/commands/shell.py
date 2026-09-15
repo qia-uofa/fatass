@@ -3,14 +3,16 @@ import contextlib
 import io
 import shlex
 import sys
+from pathlib import Path
 
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 
 from .._internal.import_tree import reload_all
-from .._internal.paths import SHELL_HISTORY_PATH, SHELL_OUTPUT_PATH
+from .._internal.paths import OUT_ROOT, SHELL_HISTORY_PATH, SHELL_OUTPUT_PATH
 from ..errors import TopologyValidationError
 from ..resolve.cwd import (
+    PAREN_ROOT,
     ROOT,
     display_current_node,
     enter_session,
@@ -19,9 +21,144 @@ from ..resolve.cwd import (
     read_current_node,
     write_current_node,
 )
+from ..resolve.targets import resolve_file
 from ..topology_ops.scaffold import _node_dir
 from ._shell_completion import ShellCompleter
 from .base import Command
+
+
+def _protect_angle_spans(line: str) -> tuple[str, dict[str, str]]:
+    """Replace each top-level "<...>" span in `line` (fatass's own node-
+    type-suffix grammar — see `fatass.signature`) with a whitespace-free
+    placeholder, before `shlex.split()` ever sees the line. `shlex` has
+    no notion of this grammar — left alone, it would consume a
+    `"..."`-quoted value inside the span (e.g. `Chat prompt:str="hello,
+    world"`) for its OWN space-preservation purposes, permanently
+    discarding the quote characters themselves before fatass's own
+    parsing (`fatass.signature._tokenize_space_args`) ever gets a chance
+    to see them and know that value's own internal spaces/commas need
+    protecting — `cli._merge_paren_tokens` can restore a lost *space*
+    (shlex only ever collapses one to a split point, nothing more to
+    recover), but by the time it runs the quote *characters* are already
+    gone for good, nothing left to restore them from.
+
+    A `"..."`-quoted region inside the span is tracked while scanning
+    (backslash-escaping honored, matching `_tokenize_space_args`'s own
+    rules) so a stray "<"/">" inside a quoted value doesn't prematurely
+    end the span. Returns the placeholder-substituted line and a mapping
+    from each placeholder back to its original literal span text, for
+    `_restore_angle_spans` to splice back in once `shlex.split()` (and
+    `cli._merge_paren_tokens`, downstream) are done splitting/rejoining
+    everything else."""
+    spans: dict[str, str] = {}
+    out: list[str] = []
+    i, n = 0, len(line)
+    counter = 0
+    while i < n:
+        if line[i] != "<":
+            out.append(line[i])
+            i += 1
+            continue
+        start = i
+        depth = 1
+        i += 1
+        in_quotes = False
+        while i < n and depth > 0:
+            ch = line[i]
+            if in_quotes:
+                if ch == "\\" and i + 1 < n:
+                    i += 2
+                    continue
+                if ch == '"':
+                    in_quotes = False
+                i += 1
+                continue
+            if ch == '"':
+                in_quotes = True
+            elif ch == "<":
+                depth += 1
+            elif ch == ">":
+                depth -= 1
+            i += 1
+        placeholder = f"\x00{counter}\x00"
+        spans[placeholder] = line[start:i]
+        out.append(placeholder)
+        counter += 1
+    return "".join(out), spans
+
+
+def _restore_angle_spans(tokens: list[str], spans: dict[str, str]) -> list[str]:
+    """Splice each placeholder `_protect_angle_spans` substituted back
+    into whichever token it ended up in, restoring the original literal
+    "<...>" span text (quotes and all) `shlex.split()` never actually
+    saw."""
+    if not spans:
+        return tokens
+    restored = []
+    for token in tokens:
+        for placeholder, original in spans.items():
+            token = token.replace(placeholder, original)
+        restored.append(token)
+    return restored
+
+
+def _split_redirect(line: str) -> tuple[str, str | None]:
+    """Split a trailing, top-level (unquoted) ">> path" output-redirect
+    off `line` — fatass shell's own redirect syntax (see
+    `_resolve_redirect_path`) — returning `(command_line, path)`, or
+    `(line, None)` if there's no such redirect. A ">>" inside a
+    "..."-quoted value (e.g. a modify prompt that happens to mention it)
+    is left alone, same quote-tracking convention as
+    `_protect_angle_spans`/`touch._strip_comments`. Runs on the raw line
+    BEFORE `_protect_angle_spans`/`shlex.split()` ever see it, so
+    `command_line` alone is what gets parsed as the actual fatass
+    command."""
+    in_quotes = False
+    i, n = 0, len(line)
+    while i < n:
+        ch = line[i]
+        if in_quotes:
+            if ch == "\\" and i + 1 < n:
+                i += 2
+                continue
+            if ch == '"':
+                in_quotes = False
+            i += 1
+            continue
+        if ch == '"':
+            in_quotes = True
+            i += 1
+            continue
+        if ch == ">" and i + 1 < n and line[i + 1] == ">":
+            return line[:i].rstrip(), line[i + 2 :].strip() or None
+        i += 1
+    return line, None
+
+
+def _resolve_redirect_path(raw: str) -> Path:
+    """Resolve `fatass shell`'s own ">> path" redirect target:
+
+    - An absolute filesystem path is used as-is.
+    - A "Node.Path/rel/file" target (the same "/" grammar `sh`/`vim`/
+      `free` already use — see `fatass.resolve.targets.resolve_file`)
+      writes under that node's own home/ assets directory — a bare
+      "Node.Path/" with no filename after it is rejected (it resolves to
+      a directory, not a file — give it one).
+    - Anything else (no "/" — a bare relative filename) is written under
+      `OUT_ROOT`, alongside the dispatch log and `fatass graph`'s own
+      default output."""
+    candidate = Path(raw)
+    if candidate.is_absolute():
+        return candidate
+    if "/" in raw:
+        resolved = resolve_file(raw)
+        if resolved.is_dir():
+            raise TopologyValidationError(
+                f"{raw!r} resolves to a directory — include a filename "
+                f"after the '/' to redirect output there"
+            )
+        return resolved
+    return OUT_ROOT / raw
 
 
 class _Tee(io.TextIOBase):
@@ -54,9 +191,9 @@ def _append_output_history(line: str, output: str) -> None:
 
 
 def _prompt() -> str:
-    """"~.tests.list2 >>> " (or just "~ >>> " at the root) — the current
-    node, re-read fresh each time since a `cd` run through the loop below
-    may have just changed it."""
+    """"@Tests.List2 >>> " (or "(@) >>> " at the root) — the current
+    node, re-read fresh each time since a `cd` run through the loop
+    below may have just changed it."""
     return f"{display_current_node()} >>> "
 
 
@@ -69,8 +206,9 @@ class ShellCommand(Command):
             "path",
             nargs="?",
             default=None,
-            help="~.node.path to cd to before entering the shell (must be "
-            "absolute, i.e. start with '~'); omit to keep the current node",
+            help="@node.path to cd to before entering the shell (must be "
+            "absolute, i.e. start with '@' or '(@)'); omit to keep the "
+            "current node",
         )
 
     def run(self, args: argparse.Namespace) -> int:
@@ -81,10 +219,10 @@ class ShellCommand(Command):
         from ..cli import main
 
         if args.path is not None:
-            if not args.path.startswith(ROOT):
+            if not (args.path.startswith(ROOT) or args.path.startswith(PAREN_ROOT)):
                 print(
-                    f"error: shell's path argument must be absolute (start with {ROOT!r}), "
-                    f"got {args.path!r}",
+                    f"error: shell's path argument must be absolute (start with "
+                    f"{ROOT!r} or {PAREN_ROOT!r}), got {args.path!r}",
                     file=sys.stderr,
                 )
                 return 1
@@ -110,14 +248,14 @@ class ShellCommand(Command):
         print("Up/Down for history, Tab to complete commands and node paths.")
 
         # Local import: avoid a commands/-package-load-time cycle through
-        # cli.py -> commands (ALL_COMMANDS is only needed here, for the
-        # completer's command-name list).
-        from . import ALL_COMMANDS
+        # cli.py -> commands (only needed here, for the completer's
+        # command-name lists).
+        from . import GROUP_SUBCOMMAND_NAMES, TOP_LEVEL_NAMES
 
         # A FileHistory (not InMemoryHistory) so `>>> ` lines persist to
         # .fatass/shell_history across every `fatass shell` invocation,
         # past and present — `fatass debug` reads its tail as one of its
-        # two history sources (the other being ./log). session.prompt()
+        # two history sources (the other being out/log). session.prompt()
         # appends to it automatically on each accepted line; the plain-
         # input fallback below appends manually, since bypassing
         # session.prompt() also bypasses that.
@@ -135,7 +273,7 @@ class ShellCommand(Command):
         try:
             session = PromptSession(
                 history=history,
-                completer=ShellCompleter([c.name for c in ALL_COMMANDS]),
+                completer=ShellCompleter(sorted(TOP_LEVEL_NAMES), GROUP_SUBCOMMAND_NAMES),
             )
             use_plain_input = False
         except Exception:
@@ -168,25 +306,47 @@ class ShellCommand(Command):
                 if line in ("exit", "quit"):
                     break
 
+                last_error: str | None = None
                 if line:
                     if use_plain_input:
                         # session.prompt() records accepted input into
                         # `history` on its own; bare input() doesn't, so
                         # the fallback path has to do it itself.
                         history.append_string(line)
+                    command_line, redirect_raw = _split_redirect(line)
                     buffer = io.StringIO()
+                    redirect_path: Path | None = None
                     try:
-                        with contextlib.redirect_stdout(
-                            _Tee(sys.stdout, buffer)
-                        ), contextlib.redirect_stderr(_Tee(sys.stderr, buffer)):
-                            main(shlex.split(line))
+                        if redirect_raw is not None:
+                            redirect_path = _resolve_redirect_path(redirect_raw)
+                        protected_line, spans = _protect_angle_spans(command_line)
+                        argv = _restore_angle_spans(shlex.split(protected_line), spans)
+                        if redirect_path is not None:
+                            # True redirect, not a tee — the whole point
+                            # of ">>" is that this command's own output
+                            # goes to the file INSTEAD of the console.
+                            with contextlib.redirect_stdout(
+                                buffer
+                            ), contextlib.redirect_stderr(buffer):
+                                main(argv)
+                        else:
+                            with contextlib.redirect_stdout(
+                                _Tee(sys.stdout, buffer)
+                            ), contextlib.redirect_stderr(_Tee(sys.stderr, buffer)):
+                                main(argv)
                     except SystemExit:
                         pass  # argparse already printed its own error/help
                     except KeyboardInterrupt:
                         print()
                     except Exception as exc:
+                        last_error = str(exc)
                         print(f"error: {exc}", file=sys.stderr)
                         buffer.write(f"error: {exc}\n")
+                    if redirect_path is not None:
+                        redirect_path.parent.mkdir(parents=True, exist_ok=True)
+                        with redirect_path.open("a", encoding="utf-8") as fh:
+                            fh.write(buffer.getvalue())
+                        print(f"(output appended to {redirect_path})")
                     _append_output_history(line, buffer.getvalue())
 
                 # Reload after every iteration — even a blank line — not
@@ -200,7 +360,12 @@ class ShellCommand(Command):
                 try:
                     reload_all("fatass.topology")
                 except Exception as exc:
-                    print(f"error: {exc}", file=sys.stderr)
+                    # `main()` above already reloads (and reports) for a
+                    # mutates_topology command — don't print the exact same
+                    # failure a second time when this catch-all pass hits it
+                    # again on the still-broken tree.
+                    if str(exc) != last_error:
+                        print(f"error: {exc}", file=sys.stderr)
         finally:
             exit_session()
 

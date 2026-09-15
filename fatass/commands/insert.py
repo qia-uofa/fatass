@@ -3,6 +3,7 @@ import re
 import sys
 from pathlib import Path
 
+from .._internal.naming import pascal_node_path
 from ..errors import TopologyValidationError
 from ..resolve.targets import resolve_file
 from ._targets import resolve_chain
@@ -15,18 +16,19 @@ def _is_real_fs_path(raw: str) -> bool:
     """True if `raw` looks like an absolute real filesystem path rather
     than a fatass target expression — a leading "/" (POSIX), a drive
     letter ("C:\\..."/"C:/..."), or a UNC path ("\\\\server\\share\\...").
-    Unambiguous either way: a fatass node.path is dot-separated
-    identifiers (never a drive letter or a leading slash — resolve()
-    explicitly rejects a leading "/" as a likely shell-tilde-expansion
-    accident), so nothing here could be mistaken for one."""
+    Unambiguous either way: a fatass node.path always starts with a
+    PascalCase node name, "@", or "(" (never a drive letter or a leading
+    slash — resolve()/resolve_file() explicitly reject an empty node-path
+    portion before a "/" home-dir separator), so nothing here could be
+    mistaken for one."""
     return raw.startswith("/") or bool(_WINDOWS_ABS_RE.match(raw))
 
 
 def _resolve_path_arg(raw: str) -> Path:
     """One of `insert`'s `path1 path2 ...` arguments: an absolute real
     filesystem path is used as-is (must exist); anything else is a
-    fatass target expression (node.path / transform@node.path /
-    node.path(rel/path)), resolved via resolve_file() to the actual file
+    fatass target expression (Node.Path / Node.Path.transformName /
+    Node.Path/rel/path), resolved via resolve_file() to the actual file
     or directory it names."""
     if _is_real_fs_path(raw):
         path = Path(raw)
@@ -38,6 +40,7 @@ def _resolve_path_arg(raw: str) -> Path:
 
 class InsertCommand(Command):
     name = "insert"
+    group = "chain"
     help = "insert an item into a Chain at index n, shifting the rest back"
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
@@ -48,8 +51,8 @@ class InsertCommand(Command):
             nargs="*",
             help="files/dirs to seed the new item with (leaf lists only) — "
             "each either an absolute real filesystem path, or a fatass "
-            "target expression (node.path / transform@node.path / "
-            "node.path(rel/path)); omit to instead copy the dummy head's "
+            "target expression (Node.Path / Node.Path.transformName / "
+            "Node.Path/rel/path); omit to instead copy the dummy head's "
             "own current content",
         )
 
@@ -62,5 +65,5 @@ class InsertCommand(Command):
             print(f"error: {exc}", file=sys.stderr)
             return 1
 
-        print(f"{list_cls._topology_path()}: inserted item {args.n}")
+        print(f"{pascal_node_path(list_cls._topology_path())}: inserted item {args.n}")
         return 0

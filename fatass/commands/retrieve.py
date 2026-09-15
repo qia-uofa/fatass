@@ -1,9 +1,10 @@
 import argparse
 import sys
 
+from .._internal.naming import pascal_node_path
 from ..errors import TopologyValidationError
 from ..topology_ops.archive import retrieve_node, retrieve_topology
-from ._targets import resolve_node_path
+from ._targets import resolve_and_validate_node_path
 from .base import Command
 
 
@@ -34,7 +35,7 @@ class RetrieveCommand(Command):
             if args.node:
                 if not args.name:
                     raise TopologyValidationError("--node requires a named archive")
-                node_path = resolve_node_path(args.node)
+                node_path = resolve_and_validate_node_path(args.node)
                 dir_name = retrieve_node(args.name, node_path)
             else:
                 node_path = None
@@ -44,7 +45,7 @@ class RetrieveCommand(Command):
             return 1
 
         if node_path:
-            print(f"retrieved {node_path} from archive/{dir_name}")
+            print(f"retrieved {pascal_node_path(node_path)} from archive/{dir_name}")
         else:
             print(f"retrieved archive/{dir_name}")
         return 0
